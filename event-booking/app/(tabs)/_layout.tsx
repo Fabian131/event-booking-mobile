@@ -1,10 +1,22 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/src/components/ui/haptic-tab';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
+import { Loader } from '@/src/components/ui/Loader';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function TabLayout() {
+  const { isBusiness, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <Loader message="Restaurando sesion..." />;
+  }
+
+  if (!isBusiness) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
