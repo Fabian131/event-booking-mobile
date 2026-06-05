@@ -32,12 +32,12 @@ async function renderLoginScreen() {
   return view;
 }
 
-describe('customer login denied', () => {
+describe('customer login success', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should clear customer session and show business-only error', async () => {
+  it('should persist the session and redirect to customer tabs', async () => {
     (authService.login as jest.Mock).mockResolvedValueOnce({
       access_token: 'customer-token',
       token_type: 'bearer',
@@ -58,11 +58,26 @@ describe('customer login denied', () => {
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('Este acceso es solo para usuarios business.')).toBeTruthy();
+      expect(authService.login).toHaveBeenCalledWith({
+        email: 'maria@example.com',
+        password: 'CustomerPassword123#',
+      });
     });
 
-    expect(router.replace).not.toHaveBeenCalled();
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_token');
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_user');
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith('/(customer)');
+    });
+
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith('auth_token', 'customer-token');
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      'auth_user',
+      JSON.stringify({
+        id: 'customer-001',
+        first_name: 'Maria',
+        last_name: 'Garcia',
+        email: 'maria@example.com',
+        role: 'customer',
+      }),
+    );
   });
 });

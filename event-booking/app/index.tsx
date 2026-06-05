@@ -3,7 +3,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { Loader } from '@/src/components/ui/Loader';
 
 export default function IndexScreen() {
-  const { isBusiness, isLoading } = useAuth();
+  const { isAuthenticated, isBusiness, isLoading } = useAuth();
 
   if (isLoading) {
     return <Loader message="Restaurando sesion..." />;
@@ -11,6 +11,10 @@ export default function IndexScreen() {
 
   if (isBusiness) {
     return <Redirect href="/(tabs)" />;
+  }
+
+  if (isAuthenticated) {
+    return <Redirect href="/(customer)" />;
   }
 
   return <Redirect href="/(auth)/login" />;

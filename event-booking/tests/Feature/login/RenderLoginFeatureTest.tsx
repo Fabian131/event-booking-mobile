@@ -38,7 +38,7 @@ describe('login form render', () => {
     await renderLoginScreen();
 
     expect(screen.getByText('Iniciar Sesion')).toBeTruthy();
-    expect(screen.getByText('Accede al dashboard administrativo')).toBeTruthy();
+    expect(screen.getByText('Accede a tu cuenta de Event Booking')).toBeTruthy();
     expect(screen.getByText('Correo electronico')).toBeTruthy();
     expect(screen.getByText('Contrasena')).toBeTruthy();
     expect(screen.getByPlaceholderText('Ingresa tu correo')).toBeTruthy();

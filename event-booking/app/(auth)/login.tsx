@@ -11,7 +11,7 @@ import { ApiError, type FieldError } from '@/src/types/auth';
 import { validateLoginForm, type LoginFormValues } from '@/src/utils/validators';
 
 export default function LoginScreen() {
-  const { login, logout } = useAuth();
+  const { login } = useAuth();
   const { registered } = useLocalSearchParams<{ registered?: string }>();
   const [showSuccess, setShowSuccess] = useState(registered === 'true');
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -69,13 +69,11 @@ export default function LoginScreen() {
         password,
       });
 
-      if (authenticatedUser.role !== 'business') {
-        await logout();
-        setServerError('Este acceso es solo para usuarios business.');
-        return;
+      if (authenticatedUser.role === 'business') {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/(customer)');
       }
-
-      router.replace('/(tabs)');
     } catch (err) {
       if (err instanceof ApiError) {
         if (Array.isArray(err.details) && err.details.length > 0) {
@@ -111,7 +109,7 @@ export default function LoginScreen() {
         >
           <ThemedView style={styles.header}>
             <ThemedText type="title">Iniciar Sesion</ThemedText>
-            <ThemedText>Accede al dashboard administrativo</ThemedText>
+            <ThemedText>Accede a tu cuenta de Event Booking</ThemedText>
           </ThemedView>
 
           {showSuccess && (
