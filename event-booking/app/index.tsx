@@ -1,1 +1,5 @@
-// TODO: Pantalla inicial - Redirecci\u00f3n a Login o Dashboard seg\u00fan estado de autenticaci\u00f3n
+import { Redirect } from 'expo-router';
+
+export default function IndexScreen() {
+  return <Redirect href="/(auth)/login" />;
+}

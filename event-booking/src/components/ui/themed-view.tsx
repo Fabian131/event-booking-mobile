@@ -1,1 +1,6 @@
-// TODO: Componente ThemedView - Vista con soporte de tema claro/oscuro
+import type { ViewProps } from 'react-native';
+import { View } from 'react-native';
+
+export function ThemedView({ style, ...rest }: ViewProps) {
+  return <View style={[{ backgroundColor: '#fff' }, style]} {...rest} />;
+}
