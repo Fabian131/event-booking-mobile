@@ -1,5 +1,5 @@
 import type { TouchableOpacityProps } from 'react-native';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, ViewStyle, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { ThemedText } from './themed-text';
 
 interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
@@ -35,17 +35,15 @@ export function Button({
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />
       ) : (
-        <View>
-          <ThemedText
-            type="defaultSemiBold"
-            style={[
-              styles.text,
-              variant === 'secondary' && styles.secondaryText,
-            ]}
-          >
-            {title}
-          </ThemedText>
-        </View>
+        <ThemedText
+          type="defaultSemiBold"
+          style={[
+            styles.text,
+            variant === 'secondary' && styles.secondaryText,
+          ]}
+        >
+          {title}
+        </ThemedText>
       )}
     </TouchableOpacity>
   );

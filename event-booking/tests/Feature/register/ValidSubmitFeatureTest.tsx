@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth';
+import { router } from 'expo-router';
 import RegisterScreen from '@/app/(auth)/register';
 
 jest.mock('@/src/services/auth');
@@ -15,7 +16,7 @@ describe('valid form submit', () => {
     jest.clearAllMocks();
   });
 
-  it('should call authService.register with correct payload', async () => {
+  it('should call authService.register with correct payload and redirect to login', async () => {
     (authService.register as jest.Mock).mockResolvedValueOnce({
       id: '1', first_name: 'John', last_name: 'Doe', email: 'test@test.com',
       phone: null, role: 'customer', is_active: true,
@@ -41,6 +42,10 @@ describe('valid form submit', () => {
         first_name: 'John', last_name: 'Doe', email: 'test@test.com',
         phone: undefined, password: 'Test1234#',
       });
+    });
+
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith('/(auth)/login?registered=true');
     });
   });
 });

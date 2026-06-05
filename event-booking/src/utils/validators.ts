@@ -68,7 +68,7 @@ export function validateRegistrationForm(values: RegisterFormValues): FieldError
     errors.push({ field: 'password', message: 'La contraseña debe contener al menos un carácter especial' });
   }
 
-  if (!values.confirmPassword) {
+  if (!values.confirmPassword.trim()) {
     errors.push({ field: 'confirmPassword', message: 'Confirma tu contraseña' });
   } else if (values.password !== values.confirmPassword) {
     errors.push({ field: 'confirmPassword', message: 'Las contraseñas no coinciden' });

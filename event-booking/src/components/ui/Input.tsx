@@ -28,6 +28,7 @@ export function Input({ label, error, secureTextEntry, style, ...rest }: InputPr
           ]}
           placeholderTextColor="#9ba1a6"
           autoCapitalize="none"
+          accessibilityLabel={label}
           secureTextEntry={secureTextEntry && !showPassword}
           {...rest}
         />
