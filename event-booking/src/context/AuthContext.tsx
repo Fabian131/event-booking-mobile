@@ -16,7 +16,7 @@ type AuthContextType = {
   isGuest: boolean;
   isLoading: boolean;
   isRestoring: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<AuthUser>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -116,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(response.user);
     setStatus(response.user.role);
+    return response.user;
   };
 
   const register = async (data: RegisterRequest) => {
