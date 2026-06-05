@@ -4,12 +4,12 @@ import { storage } from './storage';
 
 let authToken: string | null = null;
 
-export function setToken(token: string | null) {
+export async function setToken(token: string | null): Promise<void> {
   authToken = token;
   if (token) {
-    storage.set('auth_token', token);
+    await storage.set('auth_token', token);
   } else {
-    storage.remove('auth_token');
+    await storage.remove('auth_token');
   }
 }
 

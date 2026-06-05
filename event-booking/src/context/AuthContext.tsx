@@ -9,7 +9,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (data: LoginRequest) => {
     const response = await authService.login(data);
-    setToken(response.access_token);
+    await setToken(response.access_token);
     setUser(response.user);
   };
 
@@ -27,10 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.register(data);
   };
 
-  const logout = () => {
-    setToken(null);
+  const logout = async () => {
     setUser(null);
-    storage.clear();
+    await setToken(null);
+    await storage.clear();
   };
 
   return (
