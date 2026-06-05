@@ -66,7 +66,7 @@ export default function RegisterScreen() {
         password,
       });
 
-      router.replace('/(auth)/login');
+      router.replace('/(auth)/login?registered=true');
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.details && err.details.length > 0) {
