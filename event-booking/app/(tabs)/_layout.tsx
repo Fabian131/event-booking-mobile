@@ -9,7 +9,7 @@ export default function AdminLayout() {
   const { isBusiness, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Loader message="Restaurando sesion..." />;
+    return <Loader message="Restaurando sesión..." />;
   }
 
   if (!isBusiness) {
@@ -20,7 +20,7 @@ export default function AdminLayout() {
     <Stack
       screenOptions={{
         headerTitle: '',
-        headerRight: () => <LogoutButton />,
+        headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     />
   );

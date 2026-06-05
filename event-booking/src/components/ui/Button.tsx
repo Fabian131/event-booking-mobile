@@ -30,6 +30,8 @@ export function Button({
       style={buttonStyle}
       disabled={isDisabled}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
       {...rest}
     >
       {loading ? (

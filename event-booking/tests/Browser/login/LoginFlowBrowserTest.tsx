@@ -55,7 +55,7 @@ describe('login flow', () => {
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'admin@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contrasena'), 'YourAdminPassword123#');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'YourAdminPassword123#');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
@@ -81,12 +81,12 @@ describe('login flow', () => {
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'admin@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contrasena'), 'YourAdminPassword123#');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'YourAdminPassword123#');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText('Ingresa tu correo').props.editable).toBe(false);
-      expect(screen.getByPlaceholderText('Ingresa tu contrasena').props.editable).toBe(false);
+      expect(screen.getByPlaceholderText('Ingresa tu contraseña').props.editable).toBe(false);
     });
 
     resolvePromise!({

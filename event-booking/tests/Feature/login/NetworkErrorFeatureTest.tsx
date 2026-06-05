@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-
 import { router } from 'expo-router';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth';
-import { ApiError } from '@/src/types/auth';
 import LoginScreen from '@/app/(auth)/login';
 
 jest.mock('@/src/services/auth');
@@ -32,24 +31,24 @@ async function renderLoginScreen() {
   return view;
 }
 
-describe('invalid login credentials', () => {
+describe('network error', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should show invalid credentials error on 401', async () => {
+  it('should display connection error when server is unreachable', async () => {
     (authService.login as jest.Mock).mockRejectedValueOnce(
-      new ApiError('Invalid email or password', 401),
+      new TypeError('Network request failed'),
     );
 
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'admin@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'WrongPassword');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'AnyPassword');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('Credenciales inválidas. Verifica tu correo y contraseña.')).toBeTruthy();
+      expect(screen.getByText('No se pudo conectar con el servidor. Verifica tu conexión.')).toBeTruthy();
     });
 
     expect(router.replace).not.toHaveBeenCalled();

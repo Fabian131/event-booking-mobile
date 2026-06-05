@@ -25,8 +25,8 @@ describe('form interaction patterns', () => {
       </AuthProvider>,
     );
 
-    const passwordInput = screen.getByPlaceholderText('Crea una contrasena');
-    const confirmInput = screen.getByPlaceholderText('Confirma tu contrasena');
+    const passwordInput = screen.getByPlaceholderText('Crea una contraseña');
+    const confirmInput = screen.getByPlaceholderText('Confirma tu contraseña');
 
     // Both password fields should be hidden by default
     expect(passwordInput.props.secureTextEntry).toBe(true);
@@ -67,10 +67,10 @@ describe('form interaction patterns', () => {
       screen.getByPlaceholderText('Ingresa tu correo'), 'maria@example.com',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Crea una contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Crea una contraseña'), 'Secure1#',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Confirma tu contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Confirma tu contraseña'), 'Secure1#',
     );
 
     // Resubmit
@@ -103,10 +103,10 @@ describe('form interaction patterns', () => {
       screen.getByPlaceholderText('Ingresa tu correo'), 'invalid',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Crea una contrasena'), 'weak',
+      screen.getByPlaceholderText('Crea una contraseña'), 'weak',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Confirma tu contrasena'), 'mismatch',
+      screen.getByPlaceholderText('Confirma tu contraseña'), 'mismatch',
     );
 
     fireEvent.press(screen.getByText('Registrarse'));

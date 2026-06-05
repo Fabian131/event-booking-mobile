@@ -54,7 +54,7 @@ describe('customer login success', () => {
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'maria@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contrasena'), 'CustomerPassword123#');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'CustomerPassword123#');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
@@ -81,3 +81,4 @@ describe('customer login success', () => {
     );
   });
 });
+

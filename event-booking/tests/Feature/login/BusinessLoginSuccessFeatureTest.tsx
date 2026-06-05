@@ -54,7 +54,7 @@ describe('business login success', () => {
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'Admin@Example.com ');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contrasena'), 'YourAdminPassword123#');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'YourAdminPassword123#');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {

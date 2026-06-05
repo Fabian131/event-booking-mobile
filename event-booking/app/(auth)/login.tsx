@@ -108,14 +108,14 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <ThemedView style={styles.header}>
-            <ThemedText type="title">Iniciar Sesion</ThemedText>
+            <ThemedText type="title">Iniciar Sesión</ThemedText>
             <ThemedText>Accede a tu cuenta de Event Booking</ThemedText>
           </ThemedView>
 
           {showSuccess && (
             <Animated.View style={[styles.successBanner, { opacity: fadeAnim }]}>
               <ThemedText style={styles.successText}>
-                Cuenta creada exitosamente. Ahora puedes iniciar sesion.
+                Cuenta creada exitosamente. Ahora puedes iniciar sesión.
               </ThemedText>
             </Animated.View>
           )}
@@ -128,7 +128,7 @@ export default function LoginScreen() {
 
           <ThemedView style={styles.form}>
             <Input
-              label="Correo electronico"
+              label="Correo electrónico"
               placeholder="Ingresa tu correo"
               value={email}
               onChangeText={setEmail}
@@ -140,8 +140,8 @@ export default function LoginScreen() {
             />
 
             <Input
-              label="Contrasena"
-              placeholder="Ingresa tu contrasena"
+              label="Contraseña"
+              placeholder="Ingresa tu contraseña"
               value={password}
               onChangeText={setPassword}
               error={getFieldError('password')}
@@ -157,9 +157,9 @@ export default function LoginScreen() {
             />
 
             <View style={styles.footer}>
-              <ThemedText>No tienes cuenta? </ThemedText>
-              <Link href="/(auth)/register">
-                <ThemedText type="link">Registrate</ThemedText>
+              <ThemedText>¿No tienes cuenta? </ThemedText>
+              <Link href="/(auth)/register" accessibilityRole="link">
+                <ThemedText type="link">Regístrate</ThemedText>
               </Link>
             </View>
           </ThemedView>

@@ -24,8 +24,8 @@ describe('navigation between screens', () => {
       </AuthProvider>,
     );
 
-    expect(screen.getByText('Ya tienes cuenta? ')).toBeTruthy();
-    expect(screen.getByText('Inicia sesion')).toBeTruthy();
+    expect(screen.getByText('¿Ya tienes cuenta? ')).toBeTruthy();
+    expect(screen.getByText('Inicia sesión')).toBeTruthy();
   });
 
   it('should display all form labels in the correct order', () => {
@@ -37,16 +37,16 @@ describe('navigation between screens', () => {
 
     const labels = [
       'Crear Cuenta',
-      'Registrate para reservar eventos',
+      'Regístrate para reservar eventos',
       'Nombre',
       'Apellido',
-      'Correo electronico',
-      'Telefono (opcional)',
-      'Contrasena',
-      'Confirmar contrasena',
+      'Correo electrónico',
+      'Teléfono (opcional)',
+      'Contraseña',
+      'Confirmar contraseña',
       'Registrarse',
-      'Ya tienes cuenta? ',
-      'Inicia sesion',
+      '¿Ya tienes cuenta? ',
+      'Inicia sesión',
     ];
 
     for (const label of labels) {

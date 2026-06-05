@@ -6,7 +6,7 @@ export default function IndexScreen() {
   const { isAuthenticated, isBusiness, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Loader message="Restaurando sesion..." />;
+    return <Loader message="Restaurando sesión..." />;
   }
 
   if (isBusiness) {

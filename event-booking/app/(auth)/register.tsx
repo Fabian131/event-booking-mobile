@@ -97,7 +97,7 @@ export default function RegisterScreen() {
         >
           <ThemedView style={styles.header}>
             <ThemedText type="title">Crear Cuenta</ThemedText>
-            <ThemedText>Registrate para reservar eventos</ThemedText>
+            <ThemedText>Regístrate para reservar eventos</ThemedText>
           </ThemedView>
 
           {serverError ? (
@@ -126,7 +126,7 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Correo electronico"
+              label="Correo electrónico"
               placeholder="Ingresa tu correo"
               value={email}
               onChangeText={setEmail}
@@ -137,8 +137,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Telefono (opcional)"
-              placeholder="Ingresa tu telefono"
+              label="Teléfono (opcional)"
+              placeholder="Ingresa tu teléfono"
               value={phone}
               onChangeText={setPhone}
               error={getFieldError('phone')}
@@ -147,8 +147,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Contrasena"
-              placeholder="Crea una contrasena"
+              label="Contraseña"
+              placeholder="Crea una contraseña"
               value={password}
               onChangeText={setPassword}
               error={getFieldError('password')}
@@ -157,8 +157,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Confirmar contrasena"
-              placeholder="Confirma tu contrasena"
+              label="Confirmar contraseña"
+              placeholder="Confirma tu contraseña"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               error={getFieldError('confirmPassword')}
@@ -174,9 +174,9 @@ export default function RegisterScreen() {
             />
 
             <View style={styles.footer}>
-              <ThemedText>Ya tienes cuenta? </ThemedText>
-              <Link href="/(auth)/login">
-                <ThemedText type="link">Inicia sesion</ThemedText>
+              <ThemedText>¿Ya tienes cuenta? </ThemedText>
+              <Link href="/(auth)/login" accessibilityRole="link">
+                <ThemedText type="link">Inicia sesión</ThemedText>
               </Link>
             </View>
           </ThemedView>

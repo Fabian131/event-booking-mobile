@@ -32,24 +32,24 @@ async function renderLoginScreen() {
   return view;
 }
 
-describe('invalid login credentials', () => {
+describe('server error', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should show invalid credentials error on 401', async () => {
+  it('should display generic server error on 500', async () => {
     (authService.login as jest.Mock).mockRejectedValueOnce(
-      new ApiError('Invalid email or password', 401),
+      new ApiError('Internal Server Error', 500),
     );
 
     await renderLoginScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'admin@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'WrongPassword');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'AnyPassword');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('Credenciales inválidas. Verifica tu correo y contraseña.')).toBeTruthy();
+      expect(screen.getByText('Ocurrió un error inesperado. Intenta nuevamente.')).toBeTruthy();
     });
 
     expect(router.replace).not.toHaveBeenCalled();

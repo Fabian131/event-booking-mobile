@@ -29,6 +29,7 @@ export function Input({ label, error, secureTextEntry, style, ...rest }: InputPr
           placeholderTextColor="#9ba1a6"
           autoCapitalize="none"
           accessibilityLabel={label}
+          accessibilityState={{ disabled: rest.editable === false }}
           secureTextEntry={secureTextEntry && !showPassword}
           {...rest}
         />

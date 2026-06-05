@@ -32,26 +32,31 @@ async function renderLoginScreen() {
   return view;
 }
 
-describe('invalid login credentials', () => {
+describe('server validation error', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should show invalid credentials error on 401', async () => {
+  it('should display field errors and validation banner on 422', async () => {
     (authService.login as jest.Mock).mockRejectedValueOnce(
-      new ApiError('Invalid email or password', 401),
+      new ApiError('One or more validation errors occurred', 422, [
+        { field: 'email', message: 'Email must be a valid email address' },
+        { field: 'password', message: 'Password is required' },
+      ]),
     );
 
     await renderLoginScreen();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'admin@example.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'WrongPassword');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'user@example.com');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu contraseña'), 'AnyPassword1');
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('Credenciales inválidas. Verifica tu correo y contraseña.')).toBeTruthy();
+      expect(screen.getByText('Email must be a valid email address')).toBeTruthy();
+      expect(screen.getByText('Password is required')).toBeTruthy();
     });
 
+    expect(screen.getByText('Revisa los campos ingresados e intenta nuevamente.')).toBeTruthy();
     expect(router.replace).not.toHaveBeenCalled();
   });
 });

@@ -24,10 +24,10 @@ describe('register form render', () => {
     expect(screen.getByText('Crear Cuenta')).toBeTruthy();
     expect(screen.getByText('Nombre')).toBeTruthy();
     expect(screen.getByText('Apellido')).toBeTruthy();
-    expect(screen.getByText('Correo electronico')).toBeTruthy();
-    expect(screen.getByText('Telefono (opcional)')).toBeTruthy();
-    expect(screen.getByText('Contrasena')).toBeTruthy();
-    expect(screen.getByText('Confirmar contrasena')).toBeTruthy();
+    expect(screen.getByText('Correo electrónico')).toBeTruthy();
+    expect(screen.getByText('Teléfono (opcional)')).toBeTruthy();
+    expect(screen.getByText('Contraseña')).toBeTruthy();
+    expect(screen.getByText('Confirmar contraseña')).toBeTruthy();
     expect(screen.getByText('Registrarse')).toBeTruthy();
   });
 });

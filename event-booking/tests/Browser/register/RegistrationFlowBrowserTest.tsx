@@ -51,17 +51,17 @@ describe('registration flow', () => {
 
     // Step 4: Type phone
     fireEvent.changeText(
-      screen.getByPlaceholderText('Ingresa tu telefono'), '87654321',
+      screen.getByPlaceholderText('Ingresa tu teléfono'), '87654321',
     );
 
     // Step 5: Type password
     fireEvent.changeText(
-      screen.getByPlaceholderText('Crea una contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Crea una contraseña'), 'Secure1#',
     );
 
     // Step 6: Confirm password
     fireEvent.changeText(
-      screen.getByPlaceholderText('Confirma tu contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Confirma tu contraseña'), 'Secure1#',
     );
 
     // Step 7: Submit
@@ -110,10 +110,10 @@ describe('registration flow', () => {
       screen.getByPlaceholderText('Ingresa tu correo'), 'maria@example.com',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Crea una contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Crea una contraseña'), 'Secure1#',
     );
     fireEvent.changeText(
-      screen.getByPlaceholderText('Confirma tu contrasena'), 'Secure1#',
+      screen.getByPlaceholderText('Confirma tu contraseña'), 'Secure1#',
     );
 
     fireEvent.press(screen.getByText('Registrarse'));

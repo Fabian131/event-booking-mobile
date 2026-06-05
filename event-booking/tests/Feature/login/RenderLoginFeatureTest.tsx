@@ -37,13 +37,13 @@ describe('login form render', () => {
   it('should render all login form fields', async () => {
     await renderLoginScreen();
 
-    expect(screen.getByText('Iniciar Sesion')).toBeTruthy();
+    expect(screen.getByText('Iniciar Sesión')).toBeTruthy();
     expect(screen.getByText('Accede a tu cuenta de Event Booking')).toBeTruthy();
-    expect(screen.getByText('Correo electronico')).toBeTruthy();
-    expect(screen.getByText('Contrasena')).toBeTruthy();
+    expect(screen.getByText('Correo electrónico')).toBeTruthy();
+    expect(screen.getByText('Contraseña')).toBeTruthy();
     expect(screen.getByPlaceholderText('Ingresa tu correo')).toBeTruthy();
-    expect(screen.getByPlaceholderText('Ingresa tu contrasena')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Ingresa tu contraseña')).toBeTruthy();
     expect(screen.getByText('Ingresar')).toBeTruthy();
-    expect(screen.getByText('Registrate')).toBeTruthy();
+    expect(screen.getByText('Regístrate')).toBeTruthy();
   });
 });

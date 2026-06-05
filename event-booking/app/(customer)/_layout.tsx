@@ -11,7 +11,7 @@ export default function CustomerLayout() {
   const { isAuthenticated, isBusiness, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Loader message="Restaurando sesion..." />;
+    return <Loader message="Restaurando sesión..." />;
   }
 
   if (!isAuthenticated) {
@@ -27,7 +27,7 @@ export default function CustomerLayout() {
       initialRouteName="index"
       screenOptions={{
         headerTitle: '',
-        headerRight: () => <LogoutButton />,
+        headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
         tabBarButton: HapticTab,
       }}
     >
