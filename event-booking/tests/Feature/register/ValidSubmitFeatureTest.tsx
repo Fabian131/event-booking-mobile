@@ -32,8 +32,8 @@ describe('valid form submit', () => {
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'test@test.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contraseña'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contraseña'), 'Test1234#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 

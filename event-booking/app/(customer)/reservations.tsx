@@ -3,12 +3,12 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 
-export default function ProfileScreen() {
+export default function CustomerReservationsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Perfil</ThemedText>
-        <ThemedText>Gestiona tu información personal</ThemedText>
+        <ThemedText type="title">Mis Reservas</ThemedText>
+        <ThemedText>Historial y estado de tus reservaciones</ThemedText>
       </ThemedView>
     </ThemedView>
   );

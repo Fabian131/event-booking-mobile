@@ -17,6 +17,27 @@ export interface RegisterFormValues {
   confirmPassword: string;
 }
 
+export interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+export function validateLoginForm(values: LoginFormValues): FieldError[] {
+  const errors: FieldError[] = [];
+
+  if (!values.email.trim()) {
+    errors.push({ field: 'email', message: 'El correo electrónico es obligatorio' });
+  } else if (!EMAIL_REGEX.test(values.email.trim())) {
+    errors.push({ field: 'email', message: 'Ingresa un correo electrónico válido' });
+  }
+
+  if (!values.password) {
+    errors.push({ field: 'password', message: 'La contraseña es obligatoria' });
+  }
+
+  return errors;
+}
+
 export function validateRegistrationForm(values: RegisterFormValues): FieldError[] {
   const errors: FieldError[] = [];
 

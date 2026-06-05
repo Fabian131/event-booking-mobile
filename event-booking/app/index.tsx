@@ -1,11 +1,20 @@
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
+import { Loader } from '@/src/components/ui/Loader';
 
 export default function IndexScreen() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isBusiness, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <Loader message="Restaurando sesión..." />;
+  }
+
+  if (isBusiness) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)/" />;
+    return <Redirect href="/(customer)" />;
   }
 
   return <Redirect href="/(auth)/login" />;

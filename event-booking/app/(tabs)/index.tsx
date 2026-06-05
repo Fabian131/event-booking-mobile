@@ -1,21 +1,26 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-export default function DashboardScreen() {
+import { ThemedText } from '@/src/components/ui/themed-text';
+import { ThemedView } from '@/src/components/ui/themed-view';
+
+export default function AdminCalendarScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Eventos disponibles</Text>
-    </View>
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title">Calendario</ThemedText>
+        <ThemedText>Consulta la disponibilidad de eventos</ThemedText>
+      </ThemedView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 24,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  header: {
+    gap: 8,
+    marginBottom: 24,
   },
 });

@@ -71,29 +71,39 @@ If a browser test fails: a multi-step user flow is broken.
 ```
 tests/
 ├── Unit/
-│   └── register/
-│       ├── ValidInputUnitTest.ts
-│       ├── FirstNameValidationUnitTest.ts
-│       ├── LastNameValidationUnitTest.ts
-│       ├── EmailValidationUnitTest.ts
-│       ├── PhoneValidationUnitTest.ts
-│       ├── PasswordStrengthValidationUnitTest.ts
-│       ├── ConfirmPasswordValidationUnitTest.ts
-│       └── MultipleErrorsUnitTest.ts
+│   ├── register/
+│   │   ├── ValidInputUnitTest.ts
+│   │   ├── FirstNameValidationUnitTest.ts
+│   │   ├── LastNameValidationUnitTest.ts
+│   │   ├── EmailValidationUnitTest.ts
+│   │   ├── PhoneValidationUnitTest.ts
+│   │   ├── PasswordStrengthValidationUnitTest.ts
+│   │   ├── ConfirmPasswordValidationUnitTest.ts
+│   │   └── MultipleErrorsUnitTest.ts
+│   └── login/
+│       └── LoginValidationUnitTest.ts
 ├── Feature/
-│   └── register/
-│       ├── RenderFormFeatureTest.tsx
+│   ├── register/
+│   │   ├── RenderFormFeatureTest.tsx
+│   │   ├── EmptySubmitFeatureTest.tsx
+│   │   ├── EmailFormatFeatureTest.tsx
+│   │   ├── PasswordMismatchFeatureTest.tsx
+│   │   ├── ValidSubmitFeatureTest.tsx
+│   │   ├── ServerErrorFeatureTest.tsx
+│   │   └── NetworkErrorFeatureTest.tsx
+│   └── login/
+│       ├── RenderLoginFeatureTest.tsx
 │       ├── EmptySubmitFeatureTest.tsx
-│       ├── EmailFormatFeatureTest.tsx
-│       ├── PasswordMismatchFeatureTest.tsx
-│       ├── ValidSubmitFeatureTest.tsx
-│       ├── ServerErrorFeatureTest.tsx
-│       └── NetworkErrorFeatureTest.tsx
+│       ├── InvalidCredentialsFeatureTest.tsx
+│       ├── BusinessLoginSuccessFeatureTest.tsx
+│       └── CustomerDeniedFeatureTest.tsx
 └── Browser/
-    └── register/
-        ├── RegistrationFlowBrowserTest.tsx
-        ├── NavigationBrowserTest.tsx
-        └── FormInteractionBrowserTest.tsx
+    ├── register/
+    │   ├── RegistrationFlowBrowserTest.tsx
+    │   ├── NavigationBrowserTest.tsx
+    │   └── FormInteractionBrowserTest.tsx
+    └── login/
+        └── LoginFlowBrowserTest.tsx
 ```
 
 Each module gets its own subdirectory under each test layer (e.g., `Unit/register/`,
@@ -153,6 +163,7 @@ npx jest tests/Unit/ tests/Feature/
 npx jest tests/Unit/register/
 npx jest tests/Feature/register/
 npx jest tests/Browser/register/
+npx jest tests/Unit/login/ tests/Feature/login/ tests/Browser/login/
 ```
 
 ### Run single file

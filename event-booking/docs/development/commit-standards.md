@@ -2,14 +2,14 @@
 
 Guide for **Conventional Commits** to maintain a clean, structured, and traceable Git history.
 
-> **IMPORTANT**: All commits must be in **ENGLISH**. The ticket prefix is **LVT** (La VuelTica).
+> **IMPORTANT**: All commits must be in **ENGLISH**. The ticket prefix is **EBM** (Event Booking Mobile).
 
 ---
 
 ## Why Conventional Commits
 
 - **Readable history** — Understand what changed and why
-- **Traceability** — Link commits to project tickets (LVT-XXX)
+- **Traceability** — Link commits to project tickets (EBM-XXX)
 - **Semantic versioning** — Automatically determine patch, minor, or major
 - **Collaboration** — Everyone follows the same format
 
@@ -41,7 +41,7 @@ Implements JWT Bearer token generation using HMAC-SHA256.
 Tokens include accountId, email, and accountType claims.
 Expiration is configurable via appsettings.json.
 
-Refs: LVT-003
+Refs: EBM-003
 ```
 
 ---
@@ -108,14 +108,14 @@ Refs: LVT-003
 
 ### 1. Create Branch
 
-Format: `feature/LVT-XXX-short-description`
+Format: `feature/EBM-XXX-short-description`
 
 Examples:
 ```
-feature/LVT-001-user-registration
-feature/LVT-003-jwt-login
-fix/LVT-015-token-expiration
-docs/LVT-020-api-reference
+feature/EBM-001-user-registration
+feature/EBM-003-jwt-login
+fix/EBM-015-token-expiration
+docs/EBM-020-api-reference
 ```
 
 ### 2. Staging
@@ -139,14 +139,14 @@ Implements POST /api/auth/register with:
 - JWT token generation
 - Email uniqueness validation
 
-Refs: LVT-001
+Refs: EBM-001
 ```
 
 ### 4. Create Pull Request
 
 PR title:
 ```
-[LVT-001] feat(auth): add register endpoint
+[EBM-001] feat(auth): add register endpoint
 ```
 
 Use the template defined in `docs/04-development/pr-template.md`.
@@ -225,4 +225,4 @@ fix(auth): fix login and feat(businesses): add create endpoint
 
 ---
 
-**Last updated**: May 3, 2026
+**Last updated**: June 5, 2026

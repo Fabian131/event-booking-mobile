@@ -7,7 +7,7 @@
 
 ## General Information
 
-- **Module Code**: `EVB-[XXX]`
+- **Module Code**: `EBM-[XXX]`
 - **API Contract**: `api-contracts/[contract-file].yaml`
 - **Responsible**: `[Developer name]`
 - **Status**: Pending / In Development / Completed / Maintenance

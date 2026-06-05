@@ -3,12 +3,12 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 
-export default function CalendarScreen() {
+export default function CustomerEventsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Calendario</ThemedText>
-        <ThemedText>Consulta la disponibilidad de eventos</ThemedText>
+        <ThemedText type="title">Eventos</ThemedText>
+        <ThemedText>Explora los eventos disponibles</ThemedText>
       </ThemedView>
     </ThemedView>
   );
