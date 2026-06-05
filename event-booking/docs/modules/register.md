@@ -1,0 +1,492 @@
+# Module: User Registration
+
+---
+
+## General Information
+
+- **Module Code**: `EVB-001`
+- **API Contract**: `api-contracts/register-user.yaml`
+- **Responsible**: Fabian Sanchez Salinas
+- **Status**: Completed
+- **Version**: `1.0.0`
+- **Created**: `2026-06-05`
+- **Last Updated**: `2026-06-05`
+
+---
+
+## Description
+
+Registration screen that allows new customers to create an account by providing
+their personal details (first name, last name, email, optional phone, and
+password). Implements the `register-user.yaml` contract. Performs client-side
+validation before submission, displays both client-side and server-side errors
+per field, shows a loading indicator during the network request, and redirects
+the user to the Login screen upon successful registration.
+
+---
+
+## API Contract
+
+**File:** `api-contracts/register-user.yaml`
+
+| Method | Route                    | Auth | Description               |
+|--------|--------------------------|------|---------------------------|
+| POST   | `/api/v1/auth/register`  | No   | Creates a new user account |
+
+### Request Body
+
+| Field        | Type   | Required | Constraints                                      |
+|--------------|--------|----------|--------------------------------------------------|
+| `first_name` | string | Yes      | minLength: 2, maxLength: 50, letters only        |
+| `last_name`  | string | Yes      | minLength: 2, maxLength: 50, letters only        |
+| `email`      | string | Yes      | format: email, maxLength: 150, unique            |
+| `phone`      | string | No       | maxLength: 20, unique, 7-15 digits               |
+| `password`   | string | Yes      | minLength: 8, maxLength: 255                     |
+
+### Response (201 Created)
+
+```json
+{
+  "id": "a1b2c3d4-...",
+  "first_name": "Fabian",
+  "last_name": "Sanchez Salinas",
+  "email": "fs7290423@gmail.com",
+  "phone": "61101461",
+  "is_active": true,
+  "created_at": "2026-06-05T12:00:00Z",
+  "updated_at": "2026-06-05T12:00:00Z"
+}
+```
+
+### Response (422 Validation Error)
+
+```json
+{
+  "error": "validation_error",
+  "message": "One or more validation errors occurred",
+  "details": [
+    { "field": "first_name", "message": "First name can only contain letters" },
+    { "field": "password", "message": "Password must contain at least one uppercase letter" },
+    { "field": "password", "message": "Password must contain at least one number" }
+  ]
+}
+```
+
+### Response (409 Conflict)
+
+```json
+{
+  "error": "validation_error",
+  "message": "One or more validation errors occurred",
+  "details": [
+    { "field": "email", "message": "Email already registered" },
+    { "field": "phone", "message": "Phone number already registered" }
+  ]
+}
+```
+
+---
+
+## Architecture
+
+### File Map
+
+```
+src/
+├── types/
+│   └── auth.ts                        # TypeScript interfaces: RegisterRequest, UserResponse,
+│                                      #   FieldError, ValidationError, ApiError, LoginRequest,
+│                                      #   LoginResponse, AuthUser
+├── config/
+│   └── api.ts                         # API base URL (auto-detects host via Expo Constants)
+├── utils/
+│   └── validators.ts                  # validateRegistrationForm(): returns FieldError[]
+├── services/
+│   ├── api.ts                         # HTTP client: fetch wrapper, Bearer token, ApiError
+│   ├── storage.ts                     # In-memory key-value storage for auth token
+│   └── auth.ts                        # authService.register(), authService.login()
+├── context/
+│   └── AuthContext.tsx                # AuthProvider: user state, login, register, logout
+├── components/
+│   ├── ui/
+│   │   ├── Input.tsx                  # Reusable input: label, placeholder, error state,
+│   │   │                              #   password visibility toggle (MaterialIcons eye icon)
+│   │   ├── Button.tsx                 # Reusable button: loading spinner, primary/secondary
+│   │   │                              #   variants, disabled state
+│   │   ├── Loader.tsx                 # Full-screen loading indicator with message
+│   │   ├── themed-text.tsx            # Text with types: title, defaultSemiBold, link
+│   │   └── themed-view.tsx            # View container with white background
+│   └── domain/
+│       ├── EventCard.tsx              # TODO stub (not used in this module)
+│       └── ReservationItem.tsx        # TODO stub (not used in this module)
+├── hooks/
+│   ├── useEvents.ts                   # TODO stub (not used in this module)
+│   ├── usePushNotifications.ts        # TODO stub (not used in this module)
+│   └── useReservations.ts             # TODO stub (not used in this module)
+app/
+├── _layout.tsx                        # Root layout: wraps app with AuthProvider
+├── index.tsx                          # Entry point: redirects to /(auth)/login
+├── (auth)/
+│   ├── _layout.tsx                    # Auth group layout: headerless stack navigator
+│   ├── login.tsx                      # Login screen (wireframe, pending implementation)
+│   └── register.tsx                   # Registration screen (this module)
+└── (tabs)/
+    └── ...
+tests/
+├── validators.test.ts                 # 22 unit tests for validation logic
+└── register.test.tsx                  # 7 integration tests for registration screen
+```
+
+### Data Flow
+
+```
+User fills form (6 fields)
+    │
+    ▼
+Press "Registrarse"
+    │
+    ▼
+handleRegister() in register.tsx
+    │
+    ├── clearErrors() resets all error states
+    │
+    ▼
+validateRegistrationForm(values)
+    │
+    ├── Client error? → setErrors(fieldErrors) → red border + text per field
+    │
+    ▼ No client errors
+authService.register(RegisterRequest)
+    │
+    ├── setLoading(true) → Button shows spinner, inputs disabled
+    │
+    ▼
+api.post('/api/v1/auth/register', data)
+    │
+    ├── 201 → router.replace('/(auth)/login')
+    │
+    ├── 422/409 → throw ApiError with details[] → setErrors(details) + setServerError(message)
+    │
+    ├── 500 → throw ApiError → setServerError(message)
+    │
+    └── Network error → TypeError → setServerError("No se pudo conectar...")
+    │
+    ▼
+setLoading(false) → Button restored, inputs enabled
+```
+
+---
+
+## Files
+
+### Screen
+
+**File:** `app/(auth)/register.tsx`
+
+| State          | Type                     | Description                                      |
+|----------------|--------------------------|--------------------------------------------------|
+| `firstName`    | `string`                 | First name input value                           |
+| `lastName`     | `string`                 | Last name input value                            |
+| `email`        | `string`                 | Email input value                                |
+| `phone`        | `string`                 | Phone input value (optional)                     |
+| `password`     | `string`                 | Password input value                             |
+| `confirmPassword` | `string`              | Password confirmation input value                |
+| `errors`       | `FieldError[]`           | Per-field errors from client + server validation |
+| `serverError`  | `string`                 | Generic error message displayed in red banner    |
+| `loading`      | `boolean`                | Disables form during API request                 |
+
+**Functions:**
+
+| Function              | Description                                                 |
+|-----------------------|-------------------------------------------------------------|
+| `getFieldError(field)`| Looks up and returns the error message for a given field    |
+| `clearErrors()`       | Resets `errors` and `serverError` to empty                  |
+| `handleRegister()`    | Orchestrates validation, API call, error handling, redirect |
+
+**UI structure:**
+- `KeyboardAvoidingView` wraps for iOS keyboard handling
+- `ScrollView` with `keyboardShouldPersistTaps="handled"` for scrollable form
+- Header: title "Crear Cuenta" + subtitle "Registrate para reservar eventos"
+- Server error banner (conditional red box at top)
+- 6 `Input` components with labels, placeholders, and error states
+- 1 `Button` component for submission
+- Footer: "Ya tienes cuenta? Inicia sesion" link to login
+
+### Components
+
+**Reusable UI components used:**
+
+| Component     | File                                  | Key Props                                               |
+|---------------|---------------------------------------|---------------------------------------------------------|
+| `Input`       | `src/components/ui/Input.tsx`         | `label, error, secureTextEntry, editable, placeholder, keyboardType, autoCapitalize` |
+| `Button`      | `src/components/ui/Button.tsx`        | `title, loading, onPress, variant, disabled`            |
+| `ThemedText`  | `src/components/ui/themed-text.tsx`   | `type` ("title", "defaultSemiBold", "link"), `style`    |
+| `ThemedView`  | `src/components/ui/themed-view.tsx`   | Standard `View` with `backgroundColor: '#fff'`          |
+
+**Password visibility toggle:**
+The `Input` component detects the `secureTextEntry` prop and automatically renders an eye icon (`MaterialIcons`: `visibility` / `visibility-off`) as a `TouchableOpacity` positioned absolutely on the right side of the input. Tapping it toggles `showPassword` state, which controls whether `secureTextEntry` is passed to the underlying `TextInput`.
+
+### Services
+
+**Auth API calls:**
+
+| Method                      | Endpoint                        | Returns        | Description            |
+|-----------------------------|---------------------------------|----------------|------------------------|
+| `authService.register(req)` | `POST /api/v1/auth/register`    | `UserResponse` | Creates a new user     |
+| `authService.login(req)`    | `POST /api/v1/auth/login`       | `LoginResponse`| Authenticates user     |
+
+**HTTP Client:** `src/services/api.ts`
+- Wraps native `fetch` with `Content-Type: application/json`
+- Reads auth token from storage and attaches `Authorization: Bearer <token>`
+- Parses response JSON; on non-2xx, throws `ApiError` with `status`, `message`, and `details[]`
+- Exports `setToken()` and `getToken()` for token management
+- Provides `api.get()`, `api.post()`, `api.put()`, `api.patch()`, `api.delete()`
+
+**Storage:** `src/services/storage.ts`
+- Simple in-memory key-value store (`Map<string, string>`)
+- `storage.set(key, value)`, `storage.get(key)`, `storage.remove(key)`, `storage.clear()`
+
+### Context
+
+**File:** `src/context/AuthContext.tsx`
+
+| Method                          | Description                                                   |
+|---------------------------------|---------------------------------------------------------------|
+| `register(RegisterRequest)`     | Calls `authService.register()`. Throws `ApiError` on failure. Does NOT auto-login. |
+| `login(LoginRequest)`           | Calls `authService.login()`, stores JWT token, sets user.     |
+| `logout()`                      | Clears token via `setToken(null)`, clears user, clears storage. |
+
+**State:**
+
+| Field            | Type            | Description                     |
+|------------------|-----------------|---------------------------------|
+| `user`           | `AuthUser null` | `UserResponse` from API          |
+| `isAuthenticated`| `boolean`       | Derived from `!!user`           |
+
+**Note:** `register()` does not set the user or store a token because the register endpoint returns only user data (no token). The user must log in separately after registration, matching the redirect to the Login screen.
+
+### Types
+
+**File:** `src/types/auth.ts`
+
+| Type                | Description                                                          |
+|---------------------|----------------------------------------------------------------------|
+| `RegisterRequest`   | `{ first_name, last_name, email, phone?, password }`                |
+| `UserResponse`      | `{ id, first_name, last_name, email, phone, is_active, created_at, updated_at }` |
+| `LoginRequest`      | `{ email, password }`                                               |
+| `LoginResponse`     | `{ access_token, token_type, expires_in, user: UserResponse }`      |
+| `FieldError`        | `{ field: string, message: string }`                                |
+| `ValidationError`   | `{ error, message, details: FieldError[] }`                         |
+| `ErrorResponse`     | `{ error, message, details?: Record<string, unknown> }`             |
+| `ApiError`          | Custom `Error` subclass: `status`, `message`, `details?: FieldError[]` |
+| `AuthUser`          | Type alias for `UserResponse`                                       |
+
+### Validators
+
+**File:** `src/utils/validators.ts`
+
+| Function                          | Returns         | Description                                        |
+|-----------------------------------|-----------------|----------------------------------------------------|
+| `validateRegistrationForm(values)` | `FieldError[]`  | Accumulates all validation errors into one array   |
+
+**Fields validated:**
+
+| Field                | Rules                                                               |
+|----------------------|---------------------------------------------------------------------|
+| `first_name`         | Required, min 2 chars, max 50, letters + spaces only (including accented) |
+| `last_name`          | Required, min 2 chars, max 50, letters + spaces only (including accented) |
+| `email`              | Required, valid format, max 150 chars                               |
+| `phone`              | Optional. If provided: 7-15 digits only                             |
+| `password`           | Required, min 8 chars, max 255, at least 1 uppercase, at least 1 number |
+| `confirmPassword`    | Required, must match `password`                                     |
+
+**Regex patterns used:**
+- Name: `/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/`
+- Email: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
+- Phone: `/^\d{7,15}$/`
+- Password uppercase: `/[A-Z]/`
+- Password number: `/[0-9]/`
+
+### Config
+
+**File:** `src/config/api.ts`
+
+Dynamically determines the API base URL at runtime:
+
+| Scenario                         | URL                                             |
+|----------------------------------|-------------------------------------------------|
+| Expo Go on physical device       | `http://<computer-ip-from-metro>:8000`          |
+| Android emulator                 | `http://10.0.2.2:8000`                          |
+| iOS simulator                    | `http://localhost:8000`                          |
+| Web                              | `http://localhost:8000`                          |
+
+Uses `Constants.expoConfig.hostUri` to extract the computer's IP from the Metro bundler connection when running in Expo Go.
+
+---
+
+## UI / UX
+
+### Component Tree
+
+```
+RegisterScreen
+└── KeyboardAvoidingView (behavior: padding/height)
+    └── ScrollView (keyboardShouldPersistTaps: handled)
+        ├── Header
+        │   ├── ThemedText type="title"  → "Crear Cuenta"
+        │   └── ThemedText               → "Registrate para reservar eventos"
+        ├── ServerErrorBanner (conditional: serverError is set)
+        │   └── ThemedText (red)         → serverError message
+        ├── Form (gap: 16)
+        │   ├── Input label="Nombre"           → first_name
+        │   ├── Input label="Apellido"         → last_name
+        │   ├── Input label="Correo electronico" → email (keyboard: email-address)
+        │   ├── Input label="Telefono (opcional)" → phone (keyboard: phone-pad)
+        │   ├── Input label="Contrasena"       → password (secureTextEntry, eye toggle)
+        │   ├── Input label="Confirmar contrasena" → confirmPassword (secureTextEntry, eye toggle)
+        │   ├── Button title="Registrarse"     → submit (loading spinner)
+        │   └── Footer
+        │       ├── ThemedText                → "Ya tienes cuenta? "
+        │       └── Link href="/(auth)/login"  → "Inicia sesion"
+```
+
+### Visual States
+
+| State              | What the user sees                                              |
+|--------------------|-----------------------------------------------------------------|
+| **Initial**        | Empty form with 6 inputs, all fields ready, submit button active |
+| **Client error**   | Red border on affected inputs, error text (red, 13px) below each |
+| **Server error**   | Red banner above form (background: `#fdecea`, border: `#dc3545`) + per-field errors if returned |
+| **Loading**        | Button shows `ActivityIndicator` spinner, all inputs `editable={false}`, button opacity 0.5 |
+| **Network error**  | Red banner: "No se pudo conectar con el servidor. Verifica tu conexion a internet." |
+| **Success**        | `router.replace('/(auth)/login')` - redirects to Login screen automatically |
+
+---
+
+## Error Handling
+
+### Client-Side Errors
+
+All errors are accumulated and displayed simultaneously (matching the API contract behavior of returning all errors at once).
+
+| Error message                                        | Trigger                                        |
+|------------------------------------------------------|------------------------------------------------|
+| "El nombre es obligatorio"                           | Empty `first_name`                             |
+| "El nombre debe tener al menos 2 caracteres"         | `first_name.length < 2`                        |
+| "El nombre no puede exceder 50 caracteres"           | `first_name.length > 50`                       |
+| "El nombre solo puede contener letras"               | `first_name` contains numbers/symbols          |
+| "El apellido es obligatorio"                         | Empty `last_name`                              |
+| "El apellido debe tener al menos 2 caracteres"       | `last_name.length < 2`                         |
+| "El apellido no puede exceder 50 caracteres"         | `last_name.length > 50`                        |
+| "El apellido solo puede contener letras"             | `last_name` contains numbers/symbols           |
+| "El correo electronico es obligatorio"               | Empty `email`                                  |
+| "El correo no puede exceder 150 caracteres"          | `email.length > 150`                           |
+| "Ingresa un correo electronico valido"               | Invalid email format                           |
+| "El telefono debe tener entre 7 y 15 digitos"        | `phone` contains non-digits or wrong length    |
+| "La contrasena es obligatoria"                       | Empty `password`                               |
+| "La contrasena debe tener al menos 8 caracteres"     | `password.length < 8`                          |
+| "La contrasena no puede exceder 255 caracteres"      | `password.length > 255`                        |
+| "La contrasena debe contener al menos una mayuscula" | No uppercase letter in password                |
+| "La contrasena debe contener al menos un numero"     | No digit in password                           |
+| "Confirma tu contrasena"                             | Empty `confirmPassword`                        |
+| "Las contrasenas no coinciden"                       | `password !== confirmPassword`                 |
+
+### Server-Side Errors
+
+| Status   | Condition                  | UI Mapping                                      |
+|----------|----------------------------|-------------------------------------------------|
+| 422      | Backend validation failure | `details[]` merged into field-level errors      |
+| 409      | Duplicate email or phone   | `details[]` merged into field-level errors      |
+| 500      | Unexpected server error    | Red banner with `ApiError.message`              |
+| Network  | `fetch` throws `TypeError` | Red banner: "No se pudo conectar..."            |
+| Unknown  | Any other error            | Red banner: "Ocurrio un error inesperado..."    |
+
+---
+
+## Test Scenarios
+
+| # | Scenario                                    | Expected Result                                            | Status |
+|---|---------------------------------------------|------------------------------------------------------------|--------|
+| 1 | Render registration screen                  | 6 inputs, submit button, login link visible                | PASS   |
+| 2 | Submit empty form                           | 5+ field-level error messages displayed                    | PASS   |
+| 3 | Input "notanemail" as email                 | "Ingresa un correo electronico valido" error shown         | PASS   |
+| 4 | Input mismatched passwords                  | "Las contrasenas no coinciden" error shown                 | PASS   |
+| 5 | Fill all fields correctly and submit        | `authService.register` called with correct RegisterRequest | PASS   |
+| 6 | Server returns 422 with field errors        | Per-field errors rendered from API `details[]`             | PASS   |
+| 7 | Server unreachable / network error          | "No se pudo conectar con el servidor..." banner shown      | PASS   |
+
+**Validation unit tests** (`tests/validators.test.ts`):
+
+| # | Category         | Tests |
+|---|------------------|-------|
+| 1 | `first_name`     | Rejects empty, too short, with numbers; accepts accented + spaces |
+| 2 | `last_name`      | Rejects empty, too short, with numbers                    |
+| 3 | `email`          | Rejects empty, invalid format, missing domain             |
+| 4 | `phone`          | Accepts empty; rejects letters, too short                 |
+| 5 | `password`       | Rejects empty, too short, no uppercase, no number         |
+| 6 | `confirmPassword`| Rejects empty, mismatched                                 |
+| 7 | Multiple errors  | Returns 5+ errors at once for fully invalid form          |
+
+**Total:** 22 validator unit tests + 7 screen integration tests = **29 tests passing**
+
+---
+
+## Technical Notes
+
+### Design Decisions
+
+- **Reusable Input component**: Centralizes label, placeholder, error state (red border + message), password visibility toggle, and disabled state. Avoids duplicating ~20 lines per input across all forms in the app.
+- **Reusable Button component**: Handles loading spinner (`ActivityIndicator`) and disabled state internally via `loading` prop, keeping screen code focused on orchestration.
+- **Two-layer validation (client + server)**: Client validates structure and format immediately for fast feedback. Server validates business rules (DNS, uniqueness) and returns all errors at once. Server errors are merged into the same field-level UI as client errors.
+- **Auto-detect API base URL**: Reads the computer's IP from `Constants.expoConfig.hostUri` when running in Expo Go on a physical device. Eliminates manual IP configuration per developer/per machine. Falls back to `10.0.2.2`/`localhost` for emulators.
+- **No auto-login on register**: The register endpoint does not return a JWT token. The API contract dictates a separate login step. The screen correctly redirects to Login instead of setting the auth state.
+- **Spanish UI strings**: All labels, placeholders, error messages, and buttons use Spanish to match the target audience.
+- **Accumulated error display**: Both client and server return all errors at once (not one at a time), matching the API contract specification. The `validateRegistrationForm` function returns `FieldError[]` and the API returns `details[]` in the same shape.
+
+### Known Limitations
+
+- Token storage uses an in-memory map (`storage.ts`), which does not persist across app restarts. When login is implemented, this should be migrated to `expo-secure-store` for encrypted persistence.
+- `ThemedView` and `ThemedText` are currently hardcoded to light theme. Full dark mode support requires wiring the `ThemeContext` into these components.
+- Phone validation on the client side only checks the digit format (7-15 digits). The backend additionally enforces uniqueness and may apply per-country format rules.
+- No password strength meter or visual feedback beyond the error message.
+
+---
+
+## Changelog
+
+### v1.0.0 — 2026-06-05
+- Initial implementation of User Registration module
+- Created `RegisterScreen` with 6-field form (first_name, last_name, email, phone, password, confirmPassword)
+- Implemented `validateRegistrationForm()` with 20+ validation rules
+- Created reusable `Input` component (label, error state, password toggle)
+- Created reusable `Button` component (loading spinner, disabled state, variants)
+- Created reusable `Loader` component (full-screen loading indicator)
+- Implemented `ThemedText` (title, defaultSemiBold, link types)
+- Implemented `ThemedView` (white background container)
+- Built HTTP client (`api.ts`) with Bearer token support and typed error handling
+- Created `authService.register()` integrating with `POST /api/v1/auth/register`
+- Built `AuthContext` with `register()`, `login()`, and `logout()` methods
+- Configured auto-detect API base URL via `expo-constants`
+- Wrapped root layout with `AuthProvider`
+- Set `app/index.tsx` to redirect to Login as the entry point
+- Added 22 unit tests for validators
+- Added 7 integration tests for the registration screen
+
+---
+
+## Documentation Checklist
+
+- [x] API contract file linked
+- [x] File map reflects all created/modified files
+- [x] Component tree shows screen hierarchy
+- [x] All visual states documented (initial, error, loading, success)
+- [x] All error messages mapped (client + server)
+- [x] Test scenarios verified and passing
+- [ ] Screenshots added for each visual state
+- [x] Design decisions explained
+- [x] Changelog updated
+
+---
+
+**Last updated**: `2026-06-05`
+**Documented by**: Fabian Sanchez Salinas
