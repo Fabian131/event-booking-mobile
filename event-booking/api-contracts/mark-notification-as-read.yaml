@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Mark Notification as Read API
+  version: 1.0.0
+
+paths:
+  /api/v1/notifications/{notification_id}/read:
+    patch:
+      summary: Mark notification as read
+      description: >
+        Flips the `is_read` field to `true` for the specified notification.
+        Uses PATCH semantics for a clean partial-state update.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: notification_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "notif-uuid-1234-5678-abcd"
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '400':
+          description: Notification is already marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        reservation_id:
+          type: string
+          format: uuid
+          nullable: true
+        event_id:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+          enum:
+            - reservation_confirmed
+            - reservation_cancelled
+            - event_updated
+            - event_cancelled
+            - general
+          example: "reservation_confirmed"
+        title:
+          type: string
+          example: "Reservation Confirmed"
+        message:
+          type: string
+          example: "Your reservation for Summer Festival has been confirmed."
+        is_read:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          example:
+            - field: "is_read"
+              message: "Notification is already marked as read"

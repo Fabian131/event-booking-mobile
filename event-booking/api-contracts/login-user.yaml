@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: Login User API
+  version: 1.0.0
+
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Login user
+      description: >
+        Authenticates a user and returns a JWT token alongside a compact user
+        profile (including `role`) so the mobile app can perform conditional
+        routing immediately after login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials or inactive account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '422':
+          description: Validation failed (invalid email format, missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        password:
+          type: string
+          example: "SecurePass123"
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: "JWT Bearer token"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          example: "bearer"
+        expires_in:
+          type: integer
+          description: "Token expiration time in seconds"
+          example: 3600
+        user:
+          $ref: '#/components/schemas/AuthenticatedUser'
+
+    AuthenticatedUser:
+      type: object
+      description: "Compact user profile for immediate client-side role routing"
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        first_name:
+          type: string
+          example: "John"
+        last_name:
+          type: string
+          example: "Doe"
+        role:
+          type: string
+          enum: [business, customer]
+          description: "Controls app routing: 'business' sees admin dashboard, 'customer' sees booking flow"
+          example: "customer"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          example:
+            - field: "credentials"
+              message: "Invalid email or password"
