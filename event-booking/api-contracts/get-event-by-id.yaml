@@ -1,0 +1,101 @@
+openapi: 3.0.3
+info:
+  title: Get Event by ID API
+  version: 1.0.0
+
+paths:
+  /api/v1/events/{event_id}:
+    get:
+      summary: Get event by ID
+      description: >
+        Returns full event details by ID including embedded schedule fields
+        and live `remaining_capacity`.
+      parameters:
+        - in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          example: "Summer Festival"
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+          example: "https://cdn.example.com/events/summer-festival.jpg"
+        max_capacity:
+          type: integer
+          example: 500
+        remaining_capacity:
+          type: integer
+          description: "Live computed: max_capacity minus total tickets across active reservations"
+          example: 342
+        category:
+          type: string
+          example: "music"
+        date:
+          type: string
+          format: date
+          example: "2026-07-15"
+        start_time:
+          type: string
+          format: time
+          example: "10:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "18:00:00"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true

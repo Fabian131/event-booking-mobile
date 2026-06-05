@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: Create Event API
+  version: 1.0.0
+
+paths:
+  /api/v1/events:
+    post:
+      summary: Create a new event
+      description: >
+        Admin-only. Creates a new event with its schedule (date, time) embedded.
+        Accepts multipart/form-data to support optional image upload.
+        Returns 409 if the supplied date + start_time/end_time range overlaps
+        any existing event in the venue.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+      responses:
+        '201':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+        '401':
+          description: Unauthorized - missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Schedule conflict - time slot overlaps an existing event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "schedule_conflict"
+                message: "An event already occupies this date and time slot"
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateEventRequest:
+      type: object
+      required:
+        - title
+        - max_capacity
+        - category
+        - date
+        - start_time
+        - end_time
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 64
+          example: "Summer Festival"
+        description:
+          type: string
+          maxLength: 255
+          example: "Annual summer celebration with live music and food"
+        image:
+          type: string
+          format: binary
+          description: "Optional event banner image (max 5 MB)"
+        max_capacity:
+          type: integer
+          minimum: 1
+          maximum: 32767
+          example: 500
+        category:
+          type: string
+          enum:
+            - sports
+            - music
+            - culture
+            - gastronomy
+            - wellness
+            - education
+            - other
+          example: "music"
+        date:
+          type: string
+          format: date
+          example: "2026-07-15"
+        start_time:
+          type: string
+          format: time
+          example: "10:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "18:00:00"
+
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          example: "Summer Festival"
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+          example: "https://cdn.example.com/events/summer-festival.jpg"
+        max_capacity:
+          type: integer
+          example: 500
+        remaining_capacity:
+          type: integer
+          description: "max_capacity minus total tickets currently booked"
+          example: 342
+        category:
+          type: string
+          example: "music"
+        date:
+          type: string
+          format: date
+          example: "2026-07-15"
+        start_time:
+          type: string
+          format: time
+          example: "10:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "18:00:00"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          example:
+            - field: "title"
+              message: "Title must be at least 3 characters"
+            - field: "end_time"
+              message: "end_time must be after start_time"

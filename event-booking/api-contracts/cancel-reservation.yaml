@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: Cancel Reservation API
+  version: 1.0.0
+
+paths:
+  /api/v1/reservations/{reservation_id}/cancel:
+    patch:
+      summary: Cancel a reservation
+      description: >
+        Cancels an active (PENDING or CONFIRMED) reservation.
+        Automatically restores the freed ticket slots back into the event's
+        `remaining_capacity` pool.
+        Triggers a cancellation notification to the user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: reservation_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "abc12345-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Reservation cancelled. Capacity restored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          description: Reservation is already cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                error: "already_cancelled"
+                message: "This reservation has already been cancelled"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ReservationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        event_title:
+          type: string
+          example: "Summer Festival"
+        event_date:
+          type: string
+          format: date
+          example: "2026-07-15"
+        event_start_time:
+          type: string
+          format: time
+          example: "10:00:00"
+        event_end_time:
+          type: string
+          format: time
+          example: "18:00:00"
+        ticket_quantity:
+          type: integer
+          example: 2
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]
+          example: "CANCELLED"
+        notes:
+          type: string
+          nullable: true
+        user:
+          $ref: '#/components/schemas/ReservationUserContext'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ReservationUserContext:
+      type: object
+      description: "User context block containing customer profile details"
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        user_name:
+          type: string
+          example: "Jane Doe"
+        user_email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+          example:
+            - field: "status"
+              message: "Reservation is already cancelled"
