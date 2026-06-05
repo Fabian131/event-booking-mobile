@@ -1,16 +1,14 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-
-type AuthUser = {
-  id: string;
-  name: string;
-  email: string;
-};
+import type { AuthUser, LoginRequest, RegisterRequest } from '@/src/types/auth';
+import { authService } from '@/src/services/auth';
+import { setToken } from '@/src/services/api';
+import { storage } from '@/src/services/storage';
 
 type AuthContextType = {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
 };
 
@@ -19,16 +17,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
 
-  const login = async (_email: string, _password: string) => {
-    // TODO: Implementar llamada a la API de autenticación
+  const login = async (data: LoginRequest) => {
+    const response = await authService.login(data);
+    setToken(response.access_token);
+    setUser(response.user);
   };
 
-  const register = async (_name: string, _email: string, _password: string) => {
-    // TODO: Implementar llamada a la API de registro
+  const register = async (data: RegisterRequest) => {
+    await authService.register(data);
   };
 
   const logout = () => {
+    setToken(null);
     setUser(null);
+    storage.clear();
   };
 
   return (

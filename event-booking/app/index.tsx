@@ -1,1 +1,12 @@
-// TODO: Pantalla inicial - Redirecci\u00f3n a Login o Dashboard seg\u00fan estado de autenticaci\u00f3n
+import { Redirect } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
+
+export default function IndexScreen() {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)/" />;
+  }
+
+  return <Redirect href="/(auth)/login" />;
+}
