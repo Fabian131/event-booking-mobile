@@ -10,7 +10,7 @@ export default function IndexScreen() {
   }
 
   if (isBusiness) {
-    return <Redirect href="/(tabs)/" />;
+    return <Redirect href="/(tabs)" />;
   }
 
   return <Redirect href="/(auth)/login" />;

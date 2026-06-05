@@ -75,7 +75,7 @@ export default function LoginScreen() {
         return;
       }
 
-      router.replace('/(tabs)/');
+      router.replace('/(tabs)');
     } catch (err) {
       if (err instanceof ApiError) {
         if (Array.isArray(err.details) && err.details.length > 0) {
