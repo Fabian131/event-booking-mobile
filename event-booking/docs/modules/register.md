@@ -8,7 +8,7 @@
 - **API Contract**: `api-contracts/register-user.yaml`
 - **Responsible**: Fabian Sanchez Salinas
 - **Status**: Completed
-- **Version**: `1.1.0`
+- **Version**: `1.2.0`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-05`
 
@@ -137,8 +137,30 @@ app/
 └── (tabs)/
     └── ...
 tests/
-├── validators.test.ts                 # 25 unit tests for validation logic
-└── register.test.tsx                  # 7 integration tests for registration screen
+├── Unit/
+│   └── register/
+│       ├── ValidInputUnitTest.ts                       # Valid data returns no errors
+│       ├── FirstNameValidationUnitTest.ts              # 4 tests: empty, short, numbers, special chars
+│       ├── LastNameValidationUnitTest.ts               # 3 tests: empty, short, numbers
+│       ├── EmailValidationUnitTest.ts                  # 3 tests: empty, invalid format, no domain
+│       ├── PhoneValidationUnitTest.ts                  # 5 tests: empty ok, letters, <8, >8, valid
+│       ├── PasswordStrengthValidationUnitTest.ts       # 6 tests: empty, short, no upper, no lower, no num, no special
+│       ├── ConfirmPasswordValidationUnitTest.ts        # 2 tests: empty, mismatched
+│       └── MultipleErrorsUnitTest.ts                   # 1 test: all fields invalid → 5+ errors
+├── Feature/
+│   └── register/
+│       ├── RenderFormFeatureTest.tsx                   # All inputs + button rendered
+│       ├── EmptySubmitFeatureTest.tsx                  # Empty form → field errors
+│       ├── EmailFormatFeatureTest.tsx                  # Invalid email → format error
+│       ├── PasswordMismatchFeatureTest.tsx             # Different passwords → mismatch error
+│       ├── ValidSubmitFeatureTest.tsx                  # Correct data → API called
+│       ├── ServerErrorFeatureTest.tsx                  # 422 from API → per-field errors
+│       └── NetworkErrorFeatureTest.tsx                 # Network failure → connection banner
+└── Browser/
+    └── register/
+        ├── RegistrationFlowBrowserTest.tsx               # 2 tests: full flow, inputs disabled during loading
+        ├── NavigationBrowserTest.tsx                     # 3 tests: login link, label order, accented names
+        └── FormInteractionBrowserTest.tsx                # 3 tests: password toggle, clear + resubmit, simultaneous errors
 ```
 
 ### Data Flow
@@ -428,31 +450,201 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 
 ---
 
-## Test Scenarios
+## Tests
 
-| # | Scenario                                    | Expected Result                                            | Status |
-|---|---------------------------------------------|------------------------------------------------------------|--------|
-| 1 | Render registration screen                  | 6 inputs, submit button, login link visible                | PASS   |
-| 2 | Submit empty form                           | 5+ field-level error messages displayed                    | PASS   |
-| 3 | Input "notanemail" as email                 | "Ingresa un correo electronico valido" error shown         | PASS   |
-| 4 | Input mismatched passwords                  | "Las contrasenas no coinciden" error shown                 | PASS   |
-| 5 | Fill all fields correctly and submit        | `authService.register` called with correct RegisterRequest | PASS   |
-| 6 | Server returns 422 with field errors        | Per-field errors rendered from API `details[]`             | PASS   |
-| 7 | Server unreachable / network error          | "No se pudo conectar con el servidor..." banner shown      | PASS   |
+Test suite follows a **three-layer strategy**:
+- **Unit tests** validate pure logic (validators) in isolation — no rendering, no mocks, sub-millisecond.
+- **Feature tests** render one component and verify screen behavior with mocked API services.
+- **Browser tests** simulate complete user journeys across multiple interactions, state transitions, and error correction flows.
 
-**Validation unit tests** (`tests/validators.test.ts`):
+### Test File Map
 
-| # | Category         | Tests                                                                     |
-|---|------------------|---------------------------------------------------------------------------|
-| 1 | `first_name`     | Rejects empty, too short, with numbers; accepts accented, hyphens, apostrophes |
-| 2 | `last_name`      | Rejects empty, too short, with numbers                                    |
-| 3 | `email`          | Rejects empty, invalid format, missing domain                             |
-| 4 | `phone`          | Accepts empty; rejects letters, too short, too long                        |
-| 5 | `password`       | Rejects empty, too short, no uppercase, no lowercase, no number, no special char |
-| 6 | `confirmPassword`| Rejects empty, mismatched                                                 |
-| 7 | Multiple errors  | Returns 5+ errors at once for fully invalid form                          |
+```
+tests/
+├── Unit/register/         # 8 files — pure function validation tests
+├── Feature/register/      # 7 files — screen integration tests
+└── Browser/register/      # 3 files — end-to-end user flow tests
+```
 
-**Total:** 25 validator unit tests + 7 screen integration tests = **32 tests passing**
+### Naming Convention
+
+Files follow the pattern: `[TestName][TestType]Test.ts`
+
+| Test Type | Suffix       | Extension | Example                                      |
+|-----------|--------------|-----------|----------------------------------------------|
+| Unit      | `UnitTest`   | `.ts`     | `FirstNameValidationUnitTest.ts`             |
+| Feature   | `FeatureTest`| `.tsx`    | `RenderFormFeatureTest.tsx`                  |
+| Browser   | `BrowserTest`| `.tsx`    | `RegistrationFlowBrowserTest.tsx`            |
+
+---
+
+### Unit Tests
+
+**Location:** `tests/Unit/register/`
+
+Test pure validation functions with no React rendering, no network, no mocks.
+Each test calls `validateRegistrationForm()` directly and asserts on the returned
+`FieldError[]`.
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| `ValidInputUnitTest.ts` | 1 | Valid data returns no errors |
+| `FirstNameValidationUnitTest.ts` | 4 | empty, too short, numbers, hyphens/apostrophes |
+| `LastNameValidationUnitTest.ts` | 3 | empty, too short, numbers |
+| `EmailValidationUnitTest.ts` | 3 | empty, invalid format, no domain |
+| `PhoneValidationUnitTest.ts` | 5 | empty ok, letters, < 8 digits, > 8 digits, valid 8-digit |
+| `PasswordStrengthValidationUnitTest.ts` | 6 | empty, too short, no upper, no lower, no num, no special |
+| `ConfirmPasswordValidationUnitTest.ts` | 2 | empty, mismatched |
+| `MultipleErrorsUnitTest.ts` | 1 | all fields invalid → 5+ errors |
+
+**Characteristics:**
+- Synchronous — no `async/await`
+- No React — no `render()`, no JSX
+- No mocks — all dependencies are pure functions
+- Instant execution — all 25 tests complete in < 1 second
+
+**Example:**
+
+```typescript
+it('should reject password without special character', () => {
+  const errors = validateRegistrationForm({
+    ...validValues(),
+    password: 'Test12345',
+    confirmPassword: 'Test12345',
+  });
+  expect(errors.some((e) => e.field === 'password')).toBe(true);
+});
+```
+
+---
+
+### Feature Tests
+
+**Location:** `tests/Feature/register/`
+
+Render the full `RegisterScreen` component wrapped in `AuthProvider`. Mock the
+`authService` to control API responses. Verify UI behavior end-to-end: form
+rendering, validation flow, API calls, error display, and loading states.
+
+| File | Scenario | Status |
+|------|----------|--------|
+| `RenderFormFeatureTest.tsx` | All 6 inputs, submit button, link visible | PASS |
+| `EmptySubmitFeatureTest.tsx` | Empty form → 5+ field errors displayed | PASS |
+| `EmailFormatFeatureTest.tsx` | Invalid email → format error shown | PASS |
+| `PasswordMismatchFeatureTest.tsx` | Mismatched passwords → error shown | PASS |
+| `ValidSubmitFeatureTest.tsx` | Correct data → API called with payload | PASS |
+| `ServerErrorFeatureTest.tsx` | API 422 → per-field errors from `details[]` | PASS |
+| `NetworkErrorFeatureTest.tsx` | Network failure → connection banner | PASS |
+
+**Characteristics:**
+- Asynchronous — `await waitFor(...)` for state changes
+- React rendering — uses `@testing-library/react-native`
+- Mocked API — `jest.mock('@/src/services/auth')` prevents real HTTP calls
+- Full form flow — `fireEvent.changeText` + `fireEvent.press` simulates user
+
+**Example:**
+
+```tsx
+it('should display server validation errors', async () => {
+  (authService.register as jest.Mock).mockRejectedValueOnce(
+    new ApiError('Validation failed', 422, [
+      { field: 'email', message: 'Email domain does not exist' },
+    ]),
+  );
+
+  // Fill form with valid data
+  fireEvent.changeText(..., 'John');
+  fireEvent.changeText(..., 'john@invalid-domain.xyz');
+  // ... other fields ...
+
+  fireEvent.press(screen.getByText('Registrarse'));
+
+  await waitFor(() => {
+    expect(screen.getByText('Email domain does not exist')).toBeTruthy();
+  });
+});
+```
+
+---
+
+### Browser Tests
+
+**Location:** `tests/Browser/register/`
+
+Test complete user journeys across multiple interactions within a single screen.
+These simulate real user behavior: filling forms across multiple steps, correcting
+errors, toggling UI elements, and verifying navigation. Run slower than Feature
+tests but validate end-to-end flows.
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| `RegistrationFlowBrowserTest.tsx` | 2 | Full 7-step flow: fill → submit → API → redirect; inputs disabled during loading |
+| `NavigationBrowserTest.tsx` | 3 | Link to login present; all 11 labels in correct order; accented names accepted |
+| `FormInteractionBrowserTest.tsx` | 3 | Password toggle hidden by default; correct → resubmit clears errors; multiple errors shown simultaneously without false positives |
+
+**Characteristics:**
+- Multi-step user journeys — multiple `fireEvent` calls simulating real flow
+- Verifies state transitions — loading → success, error → correction → success
+- Tests UI element properties — `secureTextEntry`, `props.editable`, `props.value`
+- Verifies error clearing — previous errors gone after correction
+- Higher timeouts — `jest.setTimeout(15000)` for longer flows
+
+**Example:**
+
+```tsx
+it('should clear errors when user corrects invalid field and resubmits', async () => {
+  // Submit empty form to trigger errors
+  fireEvent.press(screen.getByText('Registrarse'));
+  await waitFor(() => {
+    expect(screen.getByText('El nombre es obligatorio')).toBeTruthy();
+  });
+
+  // Correct all fields
+  fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Maria');
+  // ... fill remaining fields ...
+
+  // Resubmit — errors should be gone
+  fireEvent.press(screen.getByText('Registrarse'));
+  await waitFor(() => {
+    expect(authService.register).toHaveBeenCalled();
+  });
+  expect(screen.queryByText('El nombre es obligatorio')).toBeNull();
+});
+```
+
+---
+
+### Running Tests
+
+```bash
+# All tests (40 total)
+npm test
+
+# Unit tests only (fastest — 25 tests, < 1s)
+npx jest tests/Unit/
+
+# Feature tests only (7 tests, ~6s)
+npx jest tests/Feature/
+
+# Browser tests only (8 tests, ~6s)
+npx jest tests/Browser/
+
+# Specific module
+npx jest tests/Unit/register/
+npx jest tests/Feature/register/
+npx jest tests/Browser/register/
+
+# Single file
+npx jest tests/Unit/register/PasswordStrengthValidationUnitTest
+
+# Watch mode (re-run on file changes)
+npx jest --watch
+
+# Verbose with coverage
+npx jest --ci --coverage --verbose
+```
+
+**Total:** 8 Unit files (25 tests) + 7 Feature files (7 tests) + 3 Browser files (8 tests) = **40 tests passing**
 
 ---
 
@@ -497,6 +689,14 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 
 ## Changelog
 
+### v1.2.0 — 2026-06-05
+- Reorganized tests into three-layer structure: `tests/Unit/`, `tests/Feature/`, `tests/Browser/`
+- Split 2 monolithic test files into 18 individual files by test type and scenario
+- Added 8 Browser tests across 3 files (full registration flow, navigation, form interaction)
+- Updated Jest `testMatch` pattern to support `*UnitTest.ts`, `*FeatureTest.tsx`, `*BrowserTest.tsx`
+- Updated `package.json` with custom testMatch configuration
+- Total: 40 tests passing (25 Unit + 7 Feature + 8 Browser)
+
 ### v1.1.0 — 2026-06-05
 - Aligned client-side validation with updated API contract:
   - Phone: changed from 7-15 digits to exactly 8 digits (`^\d{8}$`)
@@ -516,7 +716,7 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 - Built HTTP client (`api.ts`) with Bearer token support
 - Created `authService.register()` integrating with `POST /api/v1/auth/register`
 - Built `AuthContext` with `register()`, `login()`, and `logout()`
-- Added 25 unit tests for validators + 7 integration tests (32 total)
+- Added 25 validator unit tests + 7 screen integration tests (32 total)
 - Created CI workflow (`.github/workflows/ci.yml`)
 
 ---
