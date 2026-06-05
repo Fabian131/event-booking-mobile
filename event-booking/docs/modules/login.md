@@ -106,7 +106,11 @@ src/
 |   `-- ui/
 |       |-- Input.tsx                  # Labeled input, errors, password toggle
 |       |-- Button.tsx                 # Loading submit button
-|       `-- Loader.tsx                 # Session restoration loading state
+|       |-- Loader.tsx                 # Session restoration loading state
+|       |-- LogoutButton.tsx           # Reusable logout icon, calls AuthContext.logout
+|       |-- icon-symbol.tsx            # SF Symbol to Material Icons mapping (includes logout)
+|       |-- themed-text.tsx            # Theme-aware text component
+|       `-- themed-view.tsx            # Theme-aware view container
 app/
 |-- _layout.tsx                        # Root layout: registers (auth), (tabs), (customer) groups
 |-- index.tsx                          # Entry redirect by restored role
@@ -208,6 +212,8 @@ The root entry `app/index.tsx` redirects based on restored status:
 | `ThemedText` | `src/components/ui/themed-text.tsx` | Title, body text, link text, and banner text |
 | `ThemedView` | `src/components/ui/themed-view.tsx` | Screen and form containers |
 | `Loader` | `src/components/ui/Loader.tsx` | Session restoration loading state in route guards |
+| `LogoutButton` | `src/components/ui/LogoutButton.tsx` | Header-right logout icon in admin and customer layouts |
+| `IconSymbol` | `src/components/ui/icon-symbol.tsx` | Tab bar icons and logout icon |
 | `IconSymbol` | `src/components/ui/icon-symbol.tsx` | Tab bar icons for customer section |
 | `HapticTab` | `src/components/ui/haptic-tab.tsx` | Haptic feedback on tab press |
 
@@ -349,6 +355,7 @@ LoginScreen
 | **Network error** | Red banner: `No se pudo conectar con el servidor. Verifica tu conexion.` |
 | **Business success** | Redirected to `/(tabs)` (admin calendar stack) |
 | **Customer success** | Redirected to `/(customer)` (customer tabs with eventos + reservas) |
+| **Logout** | Logout icon in header-right clears session and redirects to login |
 
 ---
 
@@ -446,6 +453,7 @@ npm test
 - Converted admin layout from tabs to stack.
 - Removed business-only rejection in favor of role-based routing.
 - Updated root entry redirect to support restored customer sessions.
+- Added reusable LogoutButton component with logout icon in admin and customer headers.
 
 ### v1.0.0 - 2026-06-05
 
