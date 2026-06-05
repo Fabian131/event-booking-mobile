@@ -1,4 +1,4 @@
-# Module: Business Login
+# Module: Authentication and Login
 
 ---
 
@@ -8,7 +8,7 @@
 - **API Contract**: `api-contracts/login-user.yaml`
 - **Responsible**: Abigail Ramirez Chavarria
 - **Status**: Completed
-- **Version**: `1.0.0`
+- **Version**: `1.1.0`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-05`
 
@@ -16,11 +16,15 @@
 
 ## Description
 
-Business login screen that authenticates users with email and password, persists
-the JWT session in secure storage, restores saved sessions on app startup, and
-routes only `business` users to the administrative dashboard. Users with the
-`customer` role are denied access to the business dashboard and the saved session
-is cleared immediately.
+Login screen that authenticates users with email and password, persists the
+JWT session in secure storage, restores saved sessions on app startup, and
+routes users by role:
+
+- **business** users enter the admin stack (calendario, future event management).
+- **customer** users enter a tabbed section (eventos disponibles, mis reservas).
+
+Both roles share the same login form and session persistence; the only
+difference is the post-login redirect and the layout that wraps each group.
 
 ---
 
@@ -91,24 +95,32 @@ src/
 |-- types/
 |   `-- auth.ts                        # LoginRequest, LoginResponse, AuthenticatedUser, UserRole
 |-- utils/
-|   `-- validators.ts                  # validateLoginForm()
+|   `-- validators.ts                  # validateLoginForm(), validateRegistrationForm()
 |-- services/
 |   |-- api.ts                         # HTTP client, async Bearer token persistence
-|   |-- auth.ts                        # authService.login()
+|   |-- auth.ts                        # authService.login(), authService.register()
 |   `-- storage.ts                     # SecureStore async wrapper
 |-- context/
-|   `-- AuthContext.tsx                # Session restore, role status, login/logout
+|   `-- AuthContext.tsx                # Session restore, role status, login, register, logout
 |-- components/
 |   `-- ui/
 |       |-- Input.tsx                  # Labeled input, errors, password toggle
 |       |-- Button.tsx                 # Loading submit button
 |       `-- Loader.tsx                 # Session restoration loading state
 app/
-|-- index.tsx                          # Redirects by restored business/guest state
+|-- _layout.tsx                        # Root layout: registers (auth), (tabs), (customer) groups
+|-- index.tsx                          # Entry redirect by restored role
 |-- (auth)/
-|   `-- login.tsx                      # Business login screen
-`-- (tabs)/
-    `-- _layout.tsx                    # Business-only route guard
+|   |-- _layout.tsx                    # Auth group layout (headerless stack)
+|   |-- login.tsx                      # Login screen, bifurcates by role after authentication
+|   `-- register.tsx                   # Registration screen
+|-- (tabs)/
+|   |-- _layout.tsx                    # Admin stack layout, business-only guard
+|   `-- index.tsx                      # Admin calendar (placeholder)
+`-- (customer)/
+    |-- _layout.tsx                    # Customer tabs layout, auth guard + business exclusion
+    |-- index.tsx                      # Customer events (placeholder)
+    `-- reservations.tsx               # Customer reservations (placeholder)
 tests/
 |-- Unit/login/
 |-- Feature/login/
@@ -136,8 +148,8 @@ authService.login() -> POST /api/v1/auth/login
     v
 AuthContext stores auth_token and auth_user in SecureStore
     |
-    |-- role business -> router.replace('/(tabs)/')
-    |-- role customer -> logout(), show business-only access error
+    |-- role business -> router.replace('/(tabs)')     -> Admin Stack (calendario)
+    |-- role customer -> router.replace('/(customer)') -> Customer Tabs (eventos + reservas)
 ```
 
 ### Session Restore
@@ -146,6 +158,19 @@ On `AuthProvider` mount, the context reads `auth_token` and `auth_user` from
 SecureStore. A valid stored compact user sets `status` to `business` or
 `customer`. Missing, malformed, or partial session data is cleared and the app
 falls back to `guest`.
+
+The root entry `app/index.tsx` redirects based on restored status:
+- `isBusiness` → `/(tabs)`
+- `isAuthenticated` (customer) → `/(customer)`
+- `isGuest` → `/(auth)/login`
+
+### Route Guards
+
+| Level | File | Rule |
+|-------|------|------|
+| Root entry | `app/index.tsx` | Wait restore, then redirect by role |
+| Admin layout | `app/(tabs)/_layout.tsx` | `!isBusiness` → login |
+| Customer layout | `app/(customer)/_layout.tsx` | `!isAuthenticated` → login, `isBusiness` → admin |
 
 ---
 
@@ -160,7 +185,7 @@ falls back to `guest`.
 | `email` | Email input value |
 | `password` | Password input value |
 | `errors` | Field errors from client or server validation |
-| `serverError` | Banner error for credentials, network, role, or unexpected failures |
+| `serverError` | Banner error for credentials, network, or unexpected failures |
 | `loading` | Disables inputs and shows button spinner during login |
 | `showSuccess` | Registration success banner from `registered=true` query param |
 
@@ -170,7 +195,7 @@ falls back to `guest`.
 |----------|-------------|
 | `getFieldError(field)` | Finds field-specific error text |
 | `clearErrors()` | Clears field and banner errors before submit |
-| `handleLogin()` | Validates input, calls auth context, routes or denies by role |
+| `handleLogin()` | Validates input, calls auth context, routes by role |
 
 ### Components
 
@@ -183,6 +208,8 @@ falls back to `guest`.
 | `ThemedText` | `src/components/ui/themed-text.tsx` | Title, body text, link text, and banner text |
 | `ThemedView` | `src/components/ui/themed-view.tsx` | Screen and form containers |
 | `Loader` | `src/components/ui/Loader.tsx` | Session restoration loading state in route guards |
+| `IconSymbol` | `src/components/ui/icon-symbol.tsx` | Tab bar icons for customer section |
+| `HapticTab` | `src/components/ui/haptic-tab.tsx` | Haptic feedback on tab press |
 
 **Domain-specific components used:**
 
@@ -290,8 +317,8 @@ backend handles invalid credentials.
 | Client error | Not captured |
 | Loading | Not captured |
 | Invalid credentials | Not captured |
-| Customer denied | Not captured |
 | Business success | Not captured |
+| Customer success | Not captured |
 
 ### Component Tree
 
@@ -320,8 +347,8 @@ LoginScreen
 | **Server error** | Red banner and field errors when API returns validation details |
 | **Loading** | Button spinner, disabled inputs, no duplicate submit |
 | **Network error** | Red banner: `No se pudo conectar con el servidor. Verifica tu conexion.` |
-| **Customer denied** | Red banner: `Este acceso es solo para usuarios business.` |
-| **Success** | Business users are redirected to `/(tabs)/` |
+| **Business success** | Redirected to `/(tabs)` (admin calendar stack) |
+| **Customer success** | Redirected to `/(customer)` (customer tabs with eventos + reservas) |
 
 ---
 
@@ -343,7 +370,6 @@ LoginScreen
 | `422` | Backend validation failure | Field errors from `details[]` plus validation banner |
 | `500` or unexpected `ApiError` | Unexpected backend failure | Generic red error banner |
 | `TypeError` | Network request failed | Red banner: `No se pudo conectar con el servidor. Verifica tu conexion.` |
-| `role !== business` | Authenticated user is not a business account | Clears session and shows business-only red banner |
 
 ---
 
@@ -355,10 +381,10 @@ LoginScreen
 | Submit empty form | Email and password required errors are displayed |
 | Invalid email format | Email format error is displayed and API is not called |
 | Invalid credentials | API 401 displays invalid credentials banner |
-| Business login success | Calls `authService.login`, stores session, redirects to `/(tabs)/` |
-| Customer login denied | Clears stored session and shows business-only access error |
+| Business login success | Calls `authService.login`, stores session, redirects to `/(tabs)` |
+| Customer login success | Calls `authService.login`, stores session, redirects to `/(customer)` |
 | Login request loading | Inputs are disabled while the request is pending |
-| Full browser login flow | Form fill, submit, API call, and dashboard redirect all succeed |
+| Full browser login flow | Form fill, submit, API call, and role-based redirect all succeed |
 
 ---
 
@@ -367,7 +393,7 @@ LoginScreen
 | Layer | Files | Coverage |
 |-------|-------|----------|
 | Unit | `tests/Unit/login/LoginValidationUnitTest.ts` | Pure login validation rules |
-| Feature | `tests/Feature/login/*.tsx` | Render, empty submit, invalid credentials, business success, customer denied |
+| Feature | `tests/Feature/login/*.tsx` | Render, empty submit, invalid credentials, business success, customer success |
 | Browser | `tests/Browser/login/LoginFlowBrowserTest.tsx` | Full business login flow and loading state |
 
 ### Commands
@@ -387,13 +413,16 @@ npm test
 
 - **Compact login user**: `LoginResponse.user` uses `AuthenticatedUser` because the login contract does not return full profile fields.
 - **Secure session persistence**: `expo-secure-store` replaces memory storage so sessions survive app restarts.
-- **Role-based routing**: `business` users enter the dashboard and `customer` users are denied until a customer flow exists.
+- **Role-based routing**: business users enter the admin stack and customer users enter customer tabs. The login screen bifurcates with a simple `if/else` on the compact user role.
+- **Admin is a Stack, not Tabs**: the admin calendar-centric flow (future: date tap, event list, create/edit, reservations) is navigated as a stack, not as tabs.
+- **Customer is Tabs**: customers see eventos and reservas as top-level tabs.
 - **Minimal login validation**: Login validates required fields and email format only; invalid credentials remain a backend concern.
-- **Route guards**: `app/index.tsx` and `app/(tabs)/_layout.tsx` wait for session restoration before redirecting.
+- **Layered route guards**: the root entry, admin layout, and customer layout each enforce their own access rules.
 
 ### Known Limitations
 
-- Customer login flow is intentionally not implemented in this issue.
+- Customer home and reservations screens are placeholders; full event browsing and booking are future features.
+- Admin calendar is a placeholder; full Google Calendar-style date navigation is pending.
 - Stored sessions are restored locally; token freshness is not validated against `/api/v1/users/me` on startup.
 - Screenshots were not captured as part of this documentation update.
 
@@ -404,11 +433,19 @@ npm test
 - Frontend must not edit `api-contracts/login-user.yaml`; contract changes must be requested in backend.
 - `LoginResponse.user` uses `AuthenticatedUser`, not the full `UserResponse`.
 - SecureStore stores only strings, so `auth_user` is persisted with `JSON.stringify()` and restored with `JSON.parse()`.
-- The dashboard route is business-only for this issue; customer flow is intentionally denied.
+- The login screen does not reject any authenticated role; business and customer both receive valid redirects after login.
 
 ---
 
 ## Changelog
+
+### v1.1.0 - 2026-06-05
+
+- Enabled dual business and customer login with role-based redirects.
+- Added customer route group with eventos and reservas tabs.
+- Converted admin layout from tabs to stack.
+- Removed business-only rejection in favor of role-based routing.
+- Updated root entry redirect to support restored customer sessions.
 
 ### v1.0.0 - 2026-06-05
 
