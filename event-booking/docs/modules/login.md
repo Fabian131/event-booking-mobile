@@ -8,7 +8,7 @@
 - **API Contract**: `api-contracts/login-user.yaml`
 - **Responsible**: Abigail Ramirez Chavarria
 - **Status**: Completed
-- **Version**: `1.1.0`
+- **Version**: `1.2.0`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-05`
 
@@ -365,18 +365,18 @@ LoginScreen
 
 | Error | Trigger |
 |-------|---------|
-| `El correo electronico es obligatorio` | Empty `email` |
-| `Ingresa un correo electronico valido` | Invalid email format |
-| `La contrasena es obligatoria` | Empty `password` |
+| `El correo electrónico es obligatorio` | Empty `email` |
+| `Ingresa un correo electrónico válido` | Invalid email format |
+| `La contraseña es obligatoria` | Empty `password` |
 
 ### Server-Side Errors
 
 | Status / Error | Trigger | UI Mapping |
 |----------------|---------|------------|
-| `401` | Invalid credentials or inactive account | Red banner: `Credenciales invalidas. Verifica tu correo y contrasena.` |
+| `401` | Invalid credentials or inactive account | Red banner: `Credenciales inválidas. Verifica tu correo y contraseña.` |
 | `422` | Backend validation failure | Field errors from `details[]` plus validation banner |
 | `500` or unexpected `ApiError` | Unexpected backend failure | Generic red error banner |
-| `TypeError` | Network request failed | Red banner: `No se pudo conectar con el servidor. Verifica tu conexion.` |
+| `TypeError` | Network request failed | Red banner: `No se pudo conectar con el servidor. Verifica tu conexión.` |
 
 ---
 
@@ -390,6 +390,9 @@ LoginScreen
 | Invalid credentials | API 401 displays invalid credentials banner |
 | Business login success | Calls `authService.login`, stores session, redirects to `/(tabs)` |
 | Customer login success | Calls `authService.login`, stores session, redirects to `/(customer)` |
+| Network error | API unreachable shows connection error banner |
+| Server 500 error | Generic unexpected error banner is displayed |
+| Server 422 with details | Field-level errors from `details[]` plus validation banner |
 | Login request loading | Inputs are disabled while the request is pending |
 | Full browser login flow | Form fill, submit, API call, and role-based redirect all succeed |
 
@@ -400,7 +403,7 @@ LoginScreen
 | Layer | Files | Coverage |
 |-------|-------|----------|
 | Unit | `tests/Unit/login/LoginValidationUnitTest.ts` | Pure login validation rules |
-| Feature | `tests/Feature/login/*.tsx` | Render, empty submit, invalid credentials, business success, customer success |
+| Feature | `tests/Feature/login/*.tsx` | Render, empty submit, invalid credentials, business success, customer success, network error, server 500, server 422 |
 | Browser | `tests/Browser/login/LoginFlowBrowserTest.tsx` | Full business login flow and loading state |
 
 ### Commands
@@ -425,6 +428,8 @@ npm test
 - **Customer is Tabs**: customers see eventos and reservas as top-level tabs.
 - **Minimal login validation**: Login validates required fields and email format only; invalid credentials remain a backend concern.
 - **Layered route guards**: the root entry, admin layout, and customer layout each enforce their own access rules.
+- **Accessibility**: Button, Input, LogoutButton, and navigation Links expose `accessibilityRole` and `accessibilityState` so screen readers correctly identify interactive elements and their disabled states.
+- **Dark mode logout icon**: LogoutButton receives `tintColor` from the navigation header, adapting to light and dark themes. Static hex colors are avoided.
 
 ### Known Limitations
 
@@ -445,6 +450,15 @@ npm test
 ---
 
 ## Changelog
+
+### v1.2.0 - 2026-06-05
+
+- Applied correct Spanish orthography (diacritics, accents, opening question marks) across login and register screens.
+- Added feature tests for network errors, server 500 errors, and server 422 validation with field details.
+- Added `accessibilityRole` and `accessibilityState` to Button, Input, LogoutButton, and Link components.
+- Made LogoutButton dark-mode compatible via navigation header `tintColor`.
+- Renamed `CustomerDeniedFeatureTest` to `CustomerLoginSuccessFeatureTest`.
+- Fixed "Restaurando sesión" typo across all layout guards.
 
 ### v1.1.0 - 2026-06-05
 
