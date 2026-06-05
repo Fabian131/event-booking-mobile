@@ -21,6 +21,7 @@ const MAPPING = {
   'calendar': 'calendar-month',
   'list.bullet': 'list',
   'person.fill': 'person',
+  'rectangle.portrait.and.arrow.right': 'logout',
 } as IconMapping;
 
 /**

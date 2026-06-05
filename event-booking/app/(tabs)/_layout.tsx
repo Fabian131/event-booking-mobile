@@ -2,6 +2,7 @@ import { Redirect, Stack } from 'expo-router';
 import React from 'react';
 
 import { Loader } from '@/src/components/ui/Loader';
+import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { useAuth } from '@/src/context/AuthContext';
 
 export default function AdminLayout() {
@@ -18,7 +19,8 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false,
+        headerTitle: '',
+        headerRight: () => <LogoutButton />,
       }}
     />
   );
