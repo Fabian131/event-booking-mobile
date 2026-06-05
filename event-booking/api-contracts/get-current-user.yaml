@@ -57,7 +57,7 @@ components:
         phone:
           type: string
           nullable: true
-          example: "61101461"
+          example: "12345678"
         role:
           type: string
           enum: [business, customer]

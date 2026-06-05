@@ -2,12 +2,12 @@ import { validateRegistrationForm, type RegisterFormValues } from '@/src/utils/v
 
 function validValues(): RegisterFormValues {
   return {
-    first_name: 'Fabian',
-    last_name: 'Sanchez',
-    email: 'fs7290423@gmail.com',
+    first_name: 'Maria',
+    last_name: 'Garcia',
+    email: 'user@example.com',
     phone: '',
-    password: 'Fabian1234#',
-    confirmPassword: 'Fabian1234#',
+    password: 'Test1234#',
+    confirmPassword: 'Test1234#',
   };
 }
 
@@ -29,12 +29,12 @@ describe('validateRegistrationForm', () => {
     });
 
     it('should reject first_name with numbers', () => {
-      const errors = validateRegistrationForm({ ...validValues(), first_name: 'Fab1an' });
+      const errors = validateRegistrationForm({ ...validValues(), first_name: 'J0hn' });
       expect(errors.some((e) => e.field === 'first_name')).toBe(true);
     });
 
-    it('should accept first_name with spaces and accented letters', () => {
-      const errors = validateRegistrationForm({ ...validValues(), first_name: 'María José' });
+    it('should accept first_name with hyphens and apostrophes', () => {
+      const errors = validateRegistrationForm({ ...validValues(), first_name: "O'Connor-Smith" });
       expect(errors.filter((e) => e.field === 'first_name')).toHaveLength(0);
     });
   });
@@ -51,7 +51,7 @@ describe('validateRegistrationForm', () => {
     });
 
     it('should reject last_name with numbers', () => {
-      const errors = validateRegistrationForm({ ...validValues(), last_name: 'S4nchez' });
+      const errors = validateRegistrationForm({ ...validValues(), last_name: 'D0e' });
       expect(errors.some((e) => e.field === 'last_name')).toBe(true);
     });
   });
@@ -84,13 +84,18 @@ describe('validateRegistrationForm', () => {
       expect(errors.some((e) => e.field === 'phone')).toBe(true);
     });
 
-    it('should reject phone shorter than 7 digits', () => {
-      const errors = validateRegistrationForm({ ...validValues(), phone: '123456' });
+    it('should reject phone with fewer than 8 digits', () => {
+      const errors = validateRegistrationForm({ ...validValues(), phone: '1234567' });
+      expect(errors.some((e) => e.field === 'phone')).toBe(true);
+    });
+
+    it('should reject phone with more than 8 digits', () => {
+      const errors = validateRegistrationForm({ ...validValues(), phone: '123456789' });
       expect(errors.some((e) => e.field === 'phone')).toBe(true);
     });
 
     it('should accept valid 8-digit phone', () => {
-      const errors = validateRegistrationForm({ ...validValues(), phone: '61101461' });
+      const errors = validateRegistrationForm({ ...validValues(), phone: '12345678' });
       expect(errors.filter((e) => e.field === 'phone')).toHaveLength(0);
     });
   });
@@ -109,8 +114,17 @@ describe('validateRegistrationForm', () => {
     it('should reject password without uppercase', () => {
       const errors = validateRegistrationForm({
         ...validValues(),
-        password: 'fabian1234#',
-        confirmPassword: 'fabian1234#',
+        password: 'test1234#',
+        confirmPassword: 'test1234#',
+      });
+      expect(errors.some((e) => e.field === 'password')).toBe(true);
+    });
+
+    it('should reject password without lowercase', () => {
+      const errors = validateRegistrationForm({
+        ...validValues(),
+        password: 'TEST1234#',
+        confirmPassword: 'TEST1234#',
       });
       expect(errors.some((e) => e.field === 'password')).toBe(true);
     });
@@ -118,8 +132,17 @@ describe('validateRegistrationForm', () => {
     it('should reject password without numbers', () => {
       const errors = validateRegistrationForm({
         ...validValues(),
-        password: 'FabianSanchez#',
-        confirmPassword: 'FabianSanchez#',
+        password: 'JohnDoeNoNumbers#',
+        confirmPassword: 'JohnDoeNoNumbers#',
+      });
+      expect(errors.some((e) => e.field === 'password')).toBe(true);
+    });
+
+    it('should reject password without special character', () => {
+      const errors = validateRegistrationForm({
+        ...validValues(),
+        password: 'Test12345',
+        confirmPassword: 'Test12345',
       });
       expect(errors.some((e) => e.field === 'password')).toBe(true);
     });
@@ -134,8 +157,8 @@ describe('validateRegistrationForm', () => {
     it('should reject mismatched passwords', () => {
       const errors = validateRegistrationForm({
         ...validValues(),
-        password: 'Fabian1234#',
-        confirmPassword: 'Different1234#',
+        password: 'Test1234#',
+        confirmPassword: 'WrongPass1#',
       });
       expect(errors.some((e) => e.field === 'confirmPassword')).toBe(true);
     });

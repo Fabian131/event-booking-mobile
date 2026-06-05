@@ -54,11 +54,11 @@ describe('RegisterScreen', () => {
   it('should show password mismatch error', async () => {
     renderWithProviders();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Fabian');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Sanchez');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'test@test.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Fabian123');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Fabian456');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Wrong5678#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 
@@ -70,11 +70,11 @@ describe('RegisterScreen', () => {
   it('should show email format error', async () => {
     renderWithProviders();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Fabian');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Sanchez');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'notanemail');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Fabian123');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Fabian123');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Test1234#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 
@@ -86,10 +86,11 @@ describe('RegisterScreen', () => {
   it('should call authService.register on valid form submit', async () => {
     (authService.register as jest.Mock).mockResolvedValueOnce({
       id: '1',
-      first_name: 'Fabian',
-      last_name: 'Sanchez',
+      first_name: 'John',
+      last_name: 'Doe',
       email: 'test@test.com',
       phone: null,
+      role: 'customer',
       is_active: true,
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
@@ -97,21 +98,21 @@ describe('RegisterScreen', () => {
 
     renderWithProviders();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Fabian');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Sanchez');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'test@test.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Fabian123');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Fabian123');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Test1234#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 
     await waitFor(() => {
       expect(authService.register).toHaveBeenCalledWith({
-        first_name: 'Fabian',
-        last_name: 'Sanchez',
+        first_name: 'John',
+        last_name: 'Doe',
         email: 'test@test.com',
         phone: undefined,
-        password: 'Fabian123',
+        password: 'Test1234#',
       });
     });
   });
@@ -120,23 +121,23 @@ describe('RegisterScreen', () => {
     (authService.register as jest.Mock).mockRejectedValueOnce(
       new ApiError('One or more validation errors occurred', 422, [
         { field: 'email', message: 'Email domain does not exist' },
-        { field: 'phone', message: 'Phone must be 7-15 digits' },
+        { field: 'phone', message: 'Phone must be exactly 8 digits' },
       ]),
     );
 
     renderWithProviders();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Fabian');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Sanchez');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'test@invalid-domain.xyz');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Fabian123');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Fabian123');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Test1234#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 
     await waitFor(() => {
       expect(screen.getByText('Email domain does not exist')).toBeTruthy();
-      expect(screen.getByText('Phone must be 7-15 digits')).toBeTruthy();
+      expect(screen.getByText('Phone must be exactly 8 digits')).toBeTruthy();
     });
   });
 
@@ -147,11 +148,11 @@ describe('RegisterScreen', () => {
 
     renderWithProviders();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'Fabian');
-    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Sanchez');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu nombre'), 'John');
+    fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu apellido'), 'Doe');
     fireEvent.changeText(screen.getByPlaceholderText('Ingresa tu correo'), 'test@test.com');
-    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Fabian123');
-    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Fabian123');
+    fireEvent.changeText(screen.getByPlaceholderText('Crea una contrasena'), 'Test1234#');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirma tu contrasena'), 'Test1234#');
 
     fireEvent.press(screen.getByText('Registrarse'));
 

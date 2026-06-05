@@ -1,10 +1,12 @@
 import type { FieldError } from '@/src/types/auth';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NAME_REGEX = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/;
+const NAME_REGEX = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\-']+$/;
 const PASSWORD_UPPER = /[A-Z]/;
+const PASSWORD_LOWER = /[a-z]/;
 const PASSWORD_NUMBER = /[0-9]/;
-const PHONE_REGEX = /^\d{7,15}$/;
+const PASSWORD_SPECIAL = /[!@#$%^&*(),.?":{}|<>\-_+=\[\]\/\\]/;
+const PHONE_REGEX = /^\d{8}$/;
 
 export interface RegisterFormValues {
   first_name: string;
@@ -47,7 +49,7 @@ export function validateRegistrationForm(values: RegisterFormValues): FieldError
   }
 
   if (values.phone.trim() && !PHONE_REGEX.test(values.phone.trim())) {
-    errors.push({ field: 'phone', message: 'El teléfono debe tener entre 7 y 15 dígitos' });
+    errors.push({ field: 'phone', message: 'El teléfono debe tener exactamente 8 dígitos' });
   }
 
   if (!values.password) {
@@ -58,8 +60,12 @@ export function validateRegistrationForm(values: RegisterFormValues): FieldError
     errors.push({ field: 'password', message: 'La contraseña no puede exceder 255 caracteres' });
   } else if (!PASSWORD_UPPER.test(values.password)) {
     errors.push({ field: 'password', message: 'La contraseña debe contener al menos una mayúscula' });
+  } else if (!PASSWORD_LOWER.test(values.password)) {
+    errors.push({ field: 'password', message: 'La contraseña debe contener al menos una minúscula' });
   } else if (!PASSWORD_NUMBER.test(values.password)) {
     errors.push({ field: 'password', message: 'La contraseña debe contener al menos un número' });
+  } else if (!PASSWORD_SPECIAL.test(values.password)) {
+    errors.push({ field: 'password', message: 'La contraseña debe contener al menos un carácter especial' });
   }
 
   if (!values.confirmPassword) {

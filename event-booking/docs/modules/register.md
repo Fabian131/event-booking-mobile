@@ -8,7 +8,7 @@
 - **API Contract**: `api-contracts/register-user.yaml`
 - **Responsible**: Fabian Sanchez Salinas
 - **Status**: Completed
-- **Version**: `1.0.0`
+- **Version**: `1.1.0`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-05`
 
@@ -35,23 +35,24 @@ the user to the Login screen upon successful registration.
 
 ### Request Body
 
-| Field        | Type   | Required | Constraints                                      |
-|--------------|--------|----------|--------------------------------------------------|
-| `first_name` | string | Yes      | minLength: 2, maxLength: 50, letters only        |
-| `last_name`  | string | Yes      | minLength: 2, maxLength: 50, letters only        |
-| `email`      | string | Yes      | format: email, maxLength: 150, unique            |
-| `phone`      | string | No       | maxLength: 20, unique, 7-15 digits               |
-| `password`   | string | Yes      | minLength: 8, maxLength: 255                     |
+| Field        | Type   | Required | Constraints                                                              |
+|--------------|--------|----------|--------------------------------------------------------------------------|
+| `first_name` | string | Yes      | minLength: 2, maxLength: 50, letters + spaces + hyphens + apostrophes    |
+| `last_name`  | string | Yes      | minLength: 2, maxLength: 50, letters + spaces + hyphens + apostrophes    |
+| `email`      | string | Yes      | format: email, maxLength: 150, unique                                    |
+| `phone`      | string | No       | minLength: 8, maxLength: 8, pattern: `^\d{8}$`, unique                   |
+| `password`   | string | Yes      | minLength: 8, maxLength: 255, pattern: uppercase + lowercase + number + special character |
 
 ### Response (201 Created)
 
 ```json
 {
   "id": "a1b2c3d4-...",
-  "first_name": "Fabian",
-  "last_name": "Sanchez Salinas",
-  "email": "fs7290423@gmail.com",
-  "phone": "61101461",
+  "first_name": "Example",
+  "last_name": "User",
+  "email": "user@example.com",
+  "phone": "12345678",
+  "role": "customer",
   "is_active": true,
   "created_at": "2026-06-05T12:00:00Z",
   "updated_at": "2026-06-05T12:00:00Z"
@@ -67,7 +68,9 @@ the user to the Login screen upon successful registration.
   "details": [
     { "field": "first_name", "message": "First name can only contain letters" },
     { "field": "password", "message": "Password must contain at least one uppercase letter" },
-    { "field": "password", "message": "Password must contain at least one number" }
+    { "field": "password", "message": "Password must contain at least one lowercase letter" },
+    { "field": "password", "message": "Password must contain at least one number" },
+    { "field": "password", "message": "Password must contain at least one special character" }
   ]
 }
 ```
@@ -98,7 +101,8 @@ src/
 │                                      #   FieldError, ValidationError, ApiError, LoginRequest,
 │                                      #   LoginResponse, AuthUser
 ├── config/
-│   └── api.ts                         # API base URL (auto-detects host via Expo Constants)
+│   └── api.ts                         # API base URL (auto-detects host via Expo Constants
+│                                      #   or reads EXPO_PUBLIC_API_URL from .env)
 ├── utils/
 │   └── validators.ts                  # validateRegistrationForm(): returns FieldError[]
 ├── services/
@@ -125,7 +129,7 @@ src/
 │   └── useReservations.ts             # TODO stub (not used in this module)
 app/
 ├── _layout.tsx                        # Root layout: wraps app with AuthProvider
-├── index.tsx                          # Entry point: redirects to /(auth)/login
+├── index.tsx                          # Entry point: auth-based redirect (tabs vs login)
 ├── (auth)/
 │   ├── _layout.tsx                    # Auth group layout: headerless stack navigator
 │   ├── login.tsx                      # Login screen (wireframe, pending implementation)
@@ -133,7 +137,7 @@ app/
 └── (tabs)/
     └── ...
 tests/
-├── validators.test.ts                 # 22 unit tests for validation logic
+├── validators.test.ts                 # 25 unit tests for validation logic
 └── register.test.tsx                  # 7 integration tests for registration screen
 ```
 
@@ -272,7 +276,7 @@ The `Input` component detects the `secureTextEntry` prop and automatically rende
 | Type                | Description                                                          |
 |---------------------|----------------------------------------------------------------------|
 | `RegisterRequest`   | `{ first_name, last_name, email, phone?, password }`                |
-| `UserResponse`      | `{ id, first_name, last_name, email, phone, is_active, created_at, updated_at }` |
+| `UserResponse`      | `{ id, first_name, last_name, email, phone, role, is_active, created_at, updated_at }` |
 | `LoginRequest`      | `{ email, password }`                                               |
 | `LoginResponse`     | `{ access_token, token_type, expires_in, user: UserResponse }`      |
 | `FieldError`        | `{ field: string, message: string }`                                |
@@ -291,36 +295,55 @@ The `Input` component detects the `secureTextEntry` prop and automatically rende
 
 **Fields validated:**
 
-| Field                | Rules                                                               |
-|----------------------|---------------------------------------------------------------------|
-| `first_name`         | Required, min 2 chars, max 50, letters + spaces only (including accented) |
-| `last_name`          | Required, min 2 chars, max 50, letters + spaces only (including accented) |
-| `email`              | Required, valid format, max 150 chars                               |
-| `phone`              | Optional. If provided: 7-15 digits only                             |
-| `password`           | Required, min 8 chars, max 255, at least 1 uppercase, at least 1 number |
-| `confirmPassword`    | Required, must match `password`                                     |
+| Field                | Rules                                                                                       |
+|----------------------|---------------------------------------------------------------------------------------------|
+| `first_name`         | Required, min 2 chars, max 50, letters + spaces + hyphens + apostrophes only (incl. accented) |
+| `last_name`          | Required, min 2 chars, max 50, letters + spaces + hyphens + apostrophes only (incl. accented) |
+| `email`              | Required, valid format, max 150 chars                                                       |
+| `phone`              | Optional. If provided: exactly 8 digits                                                      |
+| `password`           | Required, min 8 chars, max 255, uppercase + lowercase + number + special character           |
+| `confirmPassword`    | Required, must match `password`                                                             |
 
 **Regex patterns used:**
-- Name: `/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/`
+- Name: `` /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\-']+$/ ``
 - Email: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
-- Phone: `/^\d{7,15}$/`
+- Phone: `/^\d{8}$/`
 - Password uppercase: `/[A-Z]/`
+- Password lowercase: `/[a-z]/`
 - Password number: `/[0-9]/`
+- Password special: `` /[!@#$%^&*(),.?":{}|<>\-_+=\[\]\/\\]/ ``
 
 ### Config
 
 **File:** `src/config/api.ts`
 
-Dynamically determines the API base URL at runtime:
+API base URL is resolved at runtime with the following priority:
 
-| Scenario                         | URL                                             |
-|----------------------------------|-------------------------------------------------|
-| Expo Go on physical device       | `http://<computer-ip-from-metro>:8000`          |
-| Android emulator                 | `http://10.0.2.2:8000`                          |
-| iOS simulator                    | `http://localhost:8000`                          |
-| Web                              | `http://localhost:8000`                          |
+| Priority | Source                                  | Example                                    |
+|----------|-----------------------------------------|--------------------------------------------|
+| 1        | `EXPO_PUBLIC_API_URL` env var           | `http://192.168.1.100:8000`                |
+| 2        | Expo Go Metro host (physical device)    | `http://<computer-ip>:<EXPO_PUBLIC_API_PORT or 8000>` |
+| 3        | Platform fallback (emulator/simulator)  | `http://10.0.2.2:8000` or `http://localhost:8000` |
 
-Uses `Constants.expoConfig.hostUri` to extract the computer's IP from the Metro bundler connection when running in Expo Go.
+**Configuration via `.env`:**
+```bash
+# .env file
+EXPO_PUBLIC_API_URL=http://192.168.1.100:8000  # Override auto-detection
+EXPO_PUBLIC_API_PORT=3000                       # Custom port (default: 8000)
+```
+
+`.env` is gitignored; use `.env.example` as a template.
+
+### Entry Point
+
+**File:** `app/index.tsx`
+
+| Route decision          | Condition              |
+|-------------------------|------------------------|
+| `/(tabs)/` (Dashboard)  | `isAuthenticated` true |
+| `/(auth)/login`         | `isAuthenticated` false |
+
+Since token storage is in-memory (no persistence), the app always starts at Login.
 
 ---
 
@@ -369,27 +392,29 @@ RegisterScreen
 
 All errors are accumulated and displayed simultaneously (matching the API contract behavior of returning all errors at once).
 
-| Error message                                        | Trigger                                        |
-|------------------------------------------------------|------------------------------------------------|
-| "El nombre es obligatorio"                           | Empty `first_name`                             |
-| "El nombre debe tener al menos 2 caracteres"         | `first_name.length < 2`                        |
-| "El nombre no puede exceder 50 caracteres"           | `first_name.length > 50`                       |
-| "El nombre solo puede contener letras"               | `first_name` contains numbers/symbols          |
-| "El apellido es obligatorio"                         | Empty `last_name`                              |
-| "El apellido debe tener al menos 2 caracteres"       | `last_name.length < 2`                         |
-| "El apellido no puede exceder 50 caracteres"         | `last_name.length > 50`                        |
-| "El apellido solo puede contener letras"             | `last_name` contains numbers/symbols           |
-| "El correo electronico es obligatorio"               | Empty `email`                                  |
-| "El correo no puede exceder 150 caracteres"          | `email.length > 150`                           |
-| "Ingresa un correo electronico valido"               | Invalid email format                           |
-| "El telefono debe tener entre 7 y 15 digitos"        | `phone` contains non-digits or wrong length    |
-| "La contrasena es obligatoria"                       | Empty `password`                               |
-| "La contrasena debe tener al menos 8 caracteres"     | `password.length < 8`                          |
-| "La contrasena no puede exceder 255 caracteres"      | `password.length > 255`                        |
-| "La contrasena debe contener al menos una mayuscula" | No uppercase letter in password                |
-| "La contrasena debe contener al menos un numero"     | No digit in password                           |
-| "Confirma tu contrasena"                             | Empty `confirmPassword`                        |
-| "Las contrasenas no coinciden"                       | `password !== confirmPassword`                 |
+| Error message                                                   | Trigger                                            |
+|-----------------------------------------------------------------|----------------------------------------------------|
+| "El nombre es obligatorio"                                      | Empty `first_name`                                 |
+| "El nombre debe tener al menos 2 caracteres"                    | `first_name.length < 2`                            |
+| "El nombre no puede exceder 50 caracteres"                      | `first_name.length > 50`                           |
+| "El nombre solo puede contener letras"                          | `first_name` contains numbers/symbols              |
+| "El apellido es obligatorio"                                    | Empty `last_name`                                  |
+| "El apellido debe tener al menos 2 caracteres"                  | `last_name.length < 2`                             |
+| "El apellido no puede exceder 50 caracteres"                    | `last_name.length > 50`                            |
+| "El apellido solo puede contener letras"                        | `last_name` contains numbers/symbols               |
+| "El correo electronico es obligatorio"                          | Empty `email`                                      |
+| "El correo no puede exceder 150 caracteres"                     | `email.length > 150`                               |
+| "Ingresa un correo electronico valido"                          | Invalid email format                               |
+| "El telefono debe tener exactamente 8 digitos"                  | `phone` length != 8 or contains non-digits         |
+| "La contrasena es obligatoria"                                  | Empty `password`                                   |
+| "La contrasena debe tener al menos 8 caracteres"                | `password.length < 8`                              |
+| "La contrasena no puede exceder 255 caracteres"                 | `password.length > 255`                            |
+| "La contrasena debe contener al menos una mayuscula"            | No uppercase letter in password                    |
+| "La contrasena debe contener al menos una minuscula"            | No lowercase letter in password                    |
+| "La contrasena debe contener al menos un numero"                | No digit in password                               |
+| "La contrasena debe contener al menos un caracter especial"     | No special character in password                   |
+| "Confirma tu contrasena"                                        | Empty `confirmPassword`                            |
+| "Las contrasenas no coinciden"                                  | `password !== confirmPassword`                     |
 
 ### Server-Side Errors
 
@@ -417,17 +442,35 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 
 **Validation unit tests** (`tests/validators.test.ts`):
 
-| # | Category         | Tests |
-|---|------------------|-------|
-| 1 | `first_name`     | Rejects empty, too short, with numbers; accepts accented + spaces |
-| 2 | `last_name`      | Rejects empty, too short, with numbers                    |
-| 3 | `email`          | Rejects empty, invalid format, missing domain             |
-| 4 | `phone`          | Accepts empty; rejects letters, too short                 |
-| 5 | `password`       | Rejects empty, too short, no uppercase, no number         |
-| 6 | `confirmPassword`| Rejects empty, mismatched                                 |
-| 7 | Multiple errors  | Returns 5+ errors at once for fully invalid form          |
+| # | Category         | Tests                                                                     |
+|---|------------------|---------------------------------------------------------------------------|
+| 1 | `first_name`     | Rejects empty, too short, with numbers; accepts accented, hyphens, apostrophes |
+| 2 | `last_name`      | Rejects empty, too short, with numbers                                    |
+| 3 | `email`          | Rejects empty, invalid format, missing domain                             |
+| 4 | `phone`          | Accepts empty; rejects letters, too short, too long                        |
+| 5 | `password`       | Rejects empty, too short, no uppercase, no lowercase, no number, no special char |
+| 6 | `confirmPassword`| Rejects empty, mismatched                                                 |
+| 7 | Multiple errors  | Returns 5+ errors at once for fully invalid form                          |
 
-**Total:** 22 validator unit tests + 7 screen integration tests = **29 tests passing**
+**Total:** 25 validator unit tests + 7 screen integration tests = **32 tests passing**
+
+---
+
+## Environment Configuration
+
+### Required Files
+
+| File            | Purpose                                              | Git Tracked |
+|-----------------|------------------------------------------------------|-------------|
+| `.env`          | Local environment variables (not committed)          | No          |
+| `.env.example`  | Template documenting available variables             | Yes         |
+
+### Available Variables
+
+| Variable                  | Default  | Description                                    |
+|---------------------------|----------|------------------------------------------------|
+| `EXPO_PUBLIC_API_URL`     | auto     | Full API base URL (overrides auto-detection)   |
+| `EXPO_PUBLIC_API_PORT`    | `8000`   | API port (used with auto-detected host)        |
 
 ---
 
@@ -437,40 +480,44 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 
 - **Reusable Input component**: Centralizes label, placeholder, error state (red border + message), password visibility toggle, and disabled state. Avoids duplicating ~20 lines per input across all forms in the app.
 - **Reusable Button component**: Handles loading spinner (`ActivityIndicator`) and disabled state internally via `loading` prop, keeping screen code focused on orchestration.
-- **Two-layer validation (client + server)**: Client validates structure and format immediately for fast feedback. Server validates business rules (DNS, uniqueness) and returns all errors at once. Server errors are merged into the same field-level UI as client errors.
-- **Auto-detect API base URL**: Reads the computer's IP from `Constants.expoConfig.hostUri` when running in Expo Go on a physical device. Eliminates manual IP configuration per developer/per machine. Falls back to `10.0.2.2`/`localhost` for emulators.
+- **Two-layer validation (client + server)**: Client validates structure and format immediately for fast feedback. Server validates business rules (DNS, uniqueness, password strength) and returns all errors at once. Server errors are merged into the same field-level UI as client errors.
+- **Auto-detect API base URL**: Reads the computer's IP from `Constants.expoConfig.hostUri` when running in Expo Go on a physical device. Can be overridden via `EXPO_PUBLIC_API_URL` in `.env`. Port defaults to 8000, configurable via `EXPO_PUBLIC_API_PORT`.
 - **No auto-login on register**: The register endpoint does not return a JWT token. The API contract dictates a separate login step. The screen correctly redirects to Login instead of setting the auth state.
 - **Spanish UI strings**: All labels, placeholders, error messages, and buttons use Spanish to match the target audience.
 - **Accumulated error display**: Both client and server return all errors at once (not one at a time), matching the API contract specification. The `validateRegistrationForm` function returns `FieldError[]` and the API returns `details[]` in the same shape.
+- **Environment-driven config**: API URL and port are configurable via `EXPO_PUBLIC_*` variables in `.env`, following Expo's public env var convention. No secrets or credentials are hardcoded in source files.
 
 ### Known Limitations
 
 - Token storage uses an in-memory map (`storage.ts`), which does not persist across app restarts. When login is implemented, this should be migrated to `expo-secure-store` for encrypted persistence.
 - `ThemedView` and `ThemedText` are currently hardcoded to light theme. Full dark mode support requires wiring the `ThemeContext` into these components.
-- Phone validation on the client side only checks the digit format (7-15 digits). The backend additionally enforces uniqueness and may apply per-country format rules.
 - No password strength meter or visual feedback beyond the error message.
 
 ---
 
 ## Changelog
 
+### v1.1.0 — 2026-06-05
+- Aligned client-side validation with updated API contract:
+  - Phone: changed from 7-15 digits to exactly 8 digits (`^\d{8}$`)
+  - Password: added lowercase and special character requirements
+  - Name: added support for hyphens (`-`) and apostrophes (`'`)
+- Added `role` field to `UserResponse` type
+- Added `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_API_PORT` env var support
+- Created `.env.example` with documented variables
+- Updated tests: 3 new validator tests (lowercase, special char, phone bounds), total 32 tests
+
 ### v1.0.0 — 2026-06-05
 - Initial implementation of User Registration module
-- Created `RegisterScreen` with 6-field form (first_name, last_name, email, phone, password, confirmPassword)
+- Created `RegisterScreen` with 6-field form
 - Implemented `validateRegistrationForm()` with 20+ validation rules
 - Created reusable `Input` component (label, error state, password toggle)
 - Created reusable `Button` component (loading spinner, disabled state, variants)
-- Created reusable `Loader` component (full-screen loading indicator)
-- Implemented `ThemedText` (title, defaultSemiBold, link types)
-- Implemented `ThemedView` (white background container)
-- Built HTTP client (`api.ts`) with Bearer token support and typed error handling
+- Built HTTP client (`api.ts`) with Bearer token support
 - Created `authService.register()` integrating with `POST /api/v1/auth/register`
-- Built `AuthContext` with `register()`, `login()`, and `logout()` methods
-- Configured auto-detect API base URL via `expo-constants`
-- Wrapped root layout with `AuthProvider`
-- Set `app/index.tsx` to redirect to Login as the entry point
-- Added 22 unit tests for validators
-- Added 7 integration tests for the registration screen
+- Built `AuthContext` with `register()`, `login()`, and `logout()`
+- Added 25 unit tests for validators + 7 integration tests (32 total)
+- Created CI workflow (`.github/workflows/ci.yml`)
 
 ---
 
@@ -484,6 +531,7 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 - [x] Test scenarios verified and passing
 - [ ] Screenshots added for each visual state
 - [x] Design decisions explained
+- [x] Environment configuration documented
 - [x] Changelog updated
 
 ---
