@@ -56,19 +56,19 @@ components:
           maxLength: 50
           pattern: "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s\\-']+$"
           description: "Only letters, spaces, hyphens and apostrophes allowed. No numbers."
-          example: "John"
+          example: "Fabian"
         last_name:
           type: string
           minLength: 2
           maxLength: 50
           pattern: "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s\\-']+$"
           description: "Only letters, spaces, hyphens and apostrophes allowed. No numbers."
-          example: "Doe Smith"
+          example: "Sanchez Salinas"
         email:
           type: string
           format: email
           maxLength: 150
-          example: "user@example.com"
+          example: "fs7290423@gmail.com"
         phone:
           type: string
           minLength: 8
