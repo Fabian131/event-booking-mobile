@@ -466,7 +466,7 @@ npx expo lint
 - Fixed iOS compatibility: replaced `@react-native-picker/picker` and
   `DateTimePicker display="spinner"` with pure-JS modal-based pickers.
 - Added Spanish translation for backend schedule-conflict error.
-- Added full test suite: 3 Unit, 3 Feature, 1 Browser test files.
+- Added full test suite: 4 Unit, 6 Feature, 1 Browser test files.
 - **QA review fixes:** Added auth guard to `(admin)` layout, corrected Spanish orthography (tildes/accents), fixed font weight consistency across labels, added success feedback banner, fixed `app.json` plugins (removed invalid `@react-native-community/datetimepicker`, added `expo-image-picker`), unified network error message, removed unused `@react-native-picker/picker` dependency, added category enum validation (`EVENT_CATEGORIES`), added image format validation (png/jpg/webp), typed `eventService.createEvent()` with `EventResponse`, added accessibility labels to all selectors and image preview, added 3 feature tests (NetworkError, GenericServerError, Server422Validation), added 1 unit test (DescriptionValidationUnitTest), changed minute spinner to ±1.
 - **Component extraction:** Moved `UnitSpinner`, `JSDatePicker`, `JSTimePicker`, and `BottomModal` from inline definitions to `src/components/ui/` for reuse by upcoming edit-event screen.
 
