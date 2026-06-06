@@ -39,12 +39,7 @@ function InfoRow({ label, value }: InfoRowProps) {
 
 const infoStyles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  textGroup: {
-    flex: 1,
+    paddingVertical: 12,
   },
   label: {
     fontSize: 11,
@@ -52,7 +47,7 @@ const infoStyles = StyleSheet.create({
     color: '#9BA1A6',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
-    marginBottom: 1,
+    marginBottom: 4,
   },
   value: {
     fontSize: 15,
@@ -113,7 +108,7 @@ export default function EventDetailScreen() {
             </View>
           </View>
 
-          <View style={styles.infoCard}>
+          <View>
             <InfoRow label="Fecha" value={formatDate(event.date)} />
             <View style={styles.divider} />
             <InfoRow label="Hora de inicio" value={formatTime(event.start_time)} />
@@ -127,10 +122,10 @@ export default function EventDetailScreen() {
           </View>
 
           {event.description ? (
-            <View style={styles.descriptionSection}>
-              <ThemedText style={styles.descriptionLabel}>Descripción</ThemedText>
+            <>
+              <View style={styles.divider} />
               <ThemedText style={styles.description}>{event.description}</ThemedText>
-            </View>
+            </>
           ) : null}
         </View>
       </ScrollView>
@@ -174,7 +169,7 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   center: {
     flex: 1,
@@ -219,43 +214,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
   },
-  infoCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
   divider: {
     height: 1,
     backgroundColor: '#f0f0f0',
-    marginVertical: 2,
-  },
-  descriptionSection: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    gap: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  descriptionLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#9BA1A6',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
   },
   description: {
     fontSize: 15,
-    color: '#444',
+    color: '#687076',
     lineHeight: 24,
   },
   footer: {
