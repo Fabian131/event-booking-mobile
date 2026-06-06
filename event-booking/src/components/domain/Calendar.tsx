@@ -41,7 +41,7 @@ export function Calendar({
   const customStyles = {
     ...defaultStyles,
     calendar: { ...defaultStyles.calendar, backgroundColor: '#fff' },
-    header: { ...defaultStyles.header, backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 12 },
+    header: { ...defaultStyles.header, backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 12, color: '#000' },
     header_label: { ...defaultStyles.header_label, color: '#11181c', fontSize: 17, fontWeight: '600' as const },
     month_selector_label: { ...defaultStyles.month_selector_label, color: '#11181c' },
     year_selector_label: { ...defaultStyles.year_selector_label, color: '#11181c' },
@@ -49,8 +49,8 @@ export function Calendar({
     weekday: { ...defaultStyles.weekday, color: '#687076' },
     day: { ...defaultStyles.day, backgroundColor: '#fff' },
     day_label: { ...defaultStyles.day_label, color: '#11181c' },
-    today: { ...defaultStyles.today, borderColor: '#0a7ea4', borderWidth: 2, backgroundColor: '#fff' },
-    today_label: { ...defaultStyles.today_label, color: '#0a7ea4' },
+    today: { ...defaultStyles.today, borderColor: '#b0b8bf', borderWidth: 1, backgroundColor: '#f0f4f8' },
+    today_label: { ...defaultStyles.today_label, color: '#444e57' },
     selected: { ...defaultStyles.selected, backgroundColor: '#0a7ea4' },
     selected_label: { ...defaultStyles.selected_label, color: '#fff', fontWeight: '700' as const },
     placeholder: { ...defaultStyles.placeholder, color: '#d1d5db' },
@@ -60,6 +60,8 @@ export function Calendar({
     year_container: { ...defaultStyles.year_container, backgroundColor: '#fff' },
     year: { ...defaultStyles.year, backgroundColor: '#f5f5f5' },
     year_label: { ...defaultStyles.year_label, color: '#11181c' },
+    button_prev_image: { ...defaultStyles.button_prev_image, tintColor: '#000' },
+    button_next_image: { ...defaultStyles.button_next_image, tintColor: '#000' },
   };
 
   const CustomDay = (day: CalendarDay) => {
@@ -148,11 +150,11 @@ const d = StyleSheet.create({
   dayWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 },
   dayCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   selected: { backgroundColor: '#0a7ea4' },
-  today: { borderWidth: 2, borderColor: '#0a7ea4' },
+  today: { borderWidth: 1, borderColor: '#b0b8bf', backgroundColor: '#f0f4f8' },
   outside: { opacity: 0.3 },
   dayText: { fontSize: 14, color: '#11181c' },
   selectedText: { color: '#fff', fontWeight: '700' },
-  todayText: { color: '#0a7ea4', fontWeight: '700' },
+  todayText: { color: '#444e57' },
   outsideText: { color: '#d1d5db' },
   dotsRow: { flexDirection: 'row', gap: 2, marginTop: 2 },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#0a7ea4' },
