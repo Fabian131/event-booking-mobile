@@ -65,7 +65,7 @@ describe('business login success', () => {
     });
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)');
+      expect(router.replace).toHaveBeenCalledWith('/(admin)');
     });
 
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith('auth_token', 'business-token');

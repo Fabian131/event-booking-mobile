@@ -70,7 +70,7 @@ export default function LoginScreen() {
       });
 
       if (authenticatedUser.role === 'business') {
-        router.replace('/(tabs)');
+        router.replace('/(admin)');
       } else {
         router.replace('/(customer)');
       }

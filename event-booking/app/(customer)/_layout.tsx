@@ -19,7 +19,7 @@ export default function CustomerLayout() {
   }
 
   if (isBusiness) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(admin)" />;
   }
 
   return (
