@@ -21,8 +21,10 @@ export function useEvents() {
     fetchingRef.current = true;
     setError(null);
 
-    if (!reset) {
-      setLoading(true);
+    if (reset) {
+      // Initial load and refresh manage their own loading states externally
+    } else {
+      setLoading(true); // Pagination
     }
 
     try {
