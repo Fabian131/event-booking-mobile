@@ -1,19 +1,12 @@
-import { useEffect, useRef, useMemo } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { useMemo, useState } from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
+import DateTimePicker, {
+  type CalendarDay,
+  useDefaultStyles,
+} from 'react-native-ui-datepicker';
 import { ThemedText } from '@/src/components/ui/themed-text';
-import { ThemedView } from '@/src/components/ui/themed-view';
-import type { CalendarDateItem, DayCell } from '@/src/types/event';
-import {
-  buildMonthGrid,
-  getMonthName,
-  getDayNames,
-  getToday,
-} from '@/src/utils/dateHelpers';
+import type { CalendarDateItem } from '@/src/types/event';
+import { getMonthName } from '@/src/utils/dateHelpers';
 
 interface CalendarProps {
   calendarDates: CalendarDateItem[];
@@ -21,36 +14,12 @@ interface CalendarProps {
   currentYear: number;
   currentMonth: number;
   onDatePress: (date: string) => void;
-  onPreviousMonth: () => void;
-  onNextMonth: () => void;
-  loading?: boolean;
+  onMonthChange: (month: number) => void;
+  onYearChange: (year: number) => void;
+  calendarLoading: boolean;
 }
 
-function Dots({ count }: { count: number }) {
-  if (count === 0) return null;
-  const visible = Math.min(count, 3);
-  return (
-    <View style={dotStyles.row}>
-      {Array.from({ length: visible }).map((_, i) => (
-        <View key={i} style={dotStyles.dot} />
-      ))}
-    </View>
-  );
-}
-
-const dotStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 2,
-    marginTop: 2,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#0a7ea4',
-  },
-});
+type ViewMode = 'day' | 'month' | 'year';
 
 export function Calendar({
   calendarDates,
@@ -58,11 +27,12 @@ export function Calendar({
   currentYear,
   currentMonth,
   onDatePress,
-  onPreviousMonth,
-  onNextMonth,
-  loading = false,
+  onMonthChange,
+  onYearChange,
+  calendarLoading,
 }: CalendarProps) {
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const defaultStyles = useDefaultStyles();
+  const [viewMode, setViewMode] = useState<ViewMode>('day');
 
   const eventMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -72,241 +42,260 @@ export function Calendar({
     return map;
   }, [calendarDates]);
 
-  const monthGrid = useMemo(
-    () => buildMonthGrid(currentYear, currentMonth, eventMap, selectedDate),
-    [currentYear, currentMonth, eventMap, selectedDate],
-  );
+  const customStyles = {
+    ...defaultStyles,
+    calendar: {
+      ...defaultStyles.calendar,
+      backgroundColor: '#fff',
+    },
+    header: {
+      ...defaultStyles.header,
+      backgroundColor: '#fff',
+      paddingHorizontal: 8,
+      paddingVertical: 12,
+    },
+    header_label: {
+      ...defaultStyles.header_label,
+      color: '#11181c',
+      fontSize: 17,
+      fontWeight: '600' as const,
+    },
+    month_selector_label: {
+      ...defaultStyles.month_selector_label,
+      color: '#11181c',
+      fontSize: 17,
+      fontWeight: '600' as const,
+    },
+    year_selector_label: {
+      ...defaultStyles.year_selector_label,
+      color: '#11181c',
+      fontSize: 17,
+      fontWeight: '600' as const,
+    },
+    weekdays: {
+      ...defaultStyles.weekdays,
+      backgroundColor: '#fff',
+    },
+    weekday: {
+      ...defaultStyles.weekday,
+      color: '#687076',
+    },
+    day: {
+      ...defaultStyles.day,
+      backgroundColor: '#fff',
+    },
+    day_label: {
+      ...defaultStyles.day_label,
+      color: '#11181c',
+    },
+    today: {
+      ...defaultStyles.today,
+      borderColor: '#0a7ea4',
+      borderWidth: 2,
+      backgroundColor: '#fff',
+    },
+    today_label: {
+      ...defaultStyles.today_label,
+      color: '#0a7ea4',
+    },
+    selected: {
+      ...defaultStyles.selected,
+      backgroundColor: '#0a7ea4',
+    },
+    selected_label: {
+      ...defaultStyles.selected_label,
+      color: '#fff',
+      fontWeight: '700' as const,
+    },
+    placeholder: {
+      ...defaultStyles.placeholder,
+      color: '#d1d5db',
+    },
+    month_container: {
+      ...defaultStyles.month_container,
+      backgroundColor: '#fff',
+    },
+    month: {
+      ...defaultStyles.month,
+      backgroundColor: '#f5f5f5',
+    },
+    month_label: {
+      ...defaultStyles.month_label,
+      color: '#11181c',
+    },
+    year_container: {
+      ...defaultStyles.year_container,
+      backgroundColor: '#fff',
+    },
+    year: {
+      ...defaultStyles.year,
+      backgroundColor: '#f5f5f5',
+    },
+    year_label: {
+      ...defaultStyles.year_label,
+      color: '#11181c',
+    },
+  };
 
-  const today = getToday();
+  const CustomDay = (day: CalendarDay) => {
+    const count = eventMap.get(day.date) || 0;
+    const hasEvents = count > 0;
 
-  useEffect(() => {
-    fadeAnim.setValue(0);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [currentYear, currentMonth, fadeAnim]);
-
-  const dayNames = getDayNames();
-  const rows: DayCell[][] = [];
-  for (let i = 0; i < monthGrid.length; i += 7) {
-    rows.push(monthGrid.slice(i, i + 7));
-  }
-
-  if (loading) {
     return (
-      <ThemedView style={styles.container}>
-        <CalendarHeader
-          year={currentYear}
-          month={currentMonth}
-          onPrevious={onPreviousMonth}
-          onNext={onNextMonth}
-          loading
-        />
-        <SkeletonGrid />
-      </ThemedView>
-    );
-  }
-
-  return (
-    <ThemedView style={styles.container}>
-      <CalendarHeader
-        year={currentYear}
-        month={currentMonth}
-        onPrevious={onPreviousMonth}
-        onNext={onNextMonth}
-      />
-
-      <View style={styles.dayNameRow}>
-        {dayNames.map((name) => (
-          <View key={name} style={styles.dayNameCell}>
-            <ThemedText style={styles.dayNameText}>{name}</ThemedText>
-          </View>
-        ))}
-      </View>
-
-      <Animated.View style={{ opacity: fadeAnim }}>
-        {rows.map((row, rowIdx) => (
-          <View key={rowIdx} style={styles.weekRow}>
-            {row.map((cell) => {
-              const isSelected = cell.date === selectedDate;
-              const isToday = cell.date === today;
-              const isCurrent = cell.isCurrentMonth;
-              const hasEvents = cell.eventCount > 0;
-
-              return (
-                <Pressable
-                  key={cell.date}
-                  style={styles.dayCell}
-                  onPress={() => onDatePress(cell.date)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${cell.day} ${isSelected ? 'seleccionado' : ''} ${hasEvents ? `${cell.eventCount} eventos` : 'sin eventos'}`}
-                >
-                  <View
-                    style={[
-                      cellStyles.dayCircle,
-                      isSelected && cellStyles.selectedCircle,
-                      isToday && !isSelected && cellStyles.todayCircle,
-                    ]}
-                  >
-                    <ThemedText
-                      style={[
-                        cellStyles.dayText,
-                        !isCurrent && cellStyles.otherMonthText,
-                        isSelected && cellStyles.selectedText,
-                        isToday && !isSelected && cellStyles.todayText,
-                      ]}
-                    >
-                      {cell.day}
-                    </ThemedText>
-                  </View>
-                  <Dots count={cell.eventCount} />
-                </Pressable>
-              );
-            })}
-          </View>
-        ))}
-      </Animated.View>
-    </ThemedView>
-  );
-}
-
-function CalendarHeader({
-  year,
-  month,
-  onPrevious,
-  onNext,
-  loading,
-}: {
-  year: number;
-  month: number;
-  onPrevious: () => void;
-  onNext: () => void;
-  loading?: boolean;
-}) {
-  return (
-    <View style={styles.header}>
-      <Pressable
-        onPress={onPrevious}
-        disabled={loading}
-        style={styles.arrowButton}
-        accessibilityRole="button"
-        accessibilityLabel="Mes anterior"
-      >
-        <ThemedText style={styles.arrowText}>{'<'}</ThemedText>
-      </Pressable>
-      <ThemedText type="defaultSemiBold" style={styles.monthLabel}>
-        {getMonthName(month)} {year}
-      </ThemedText>
-      <Pressable
-        onPress={onNext}
-        disabled={loading}
-        style={styles.arrowButton}
-        accessibilityRole="button"
-        accessibilityLabel="Mes siguiente"
-      >
-        <ThemedText style={styles.arrowText}>{'>'}</ThemedText>
-      </Pressable>
-    </View>
-  );
-}
-
-function SkeletonGrid() {
-  const dayNames = getDayNames();
-  return (
-    <View>
-      <View style={styles.dayNameRow}>
-        {dayNames.map((name) => (
-          <View key={name} style={styles.dayNameCell}>
-            <ThemedText style={styles.dayNameText}>{name}</ThemedText>
-          </View>
-        ))}
-      </View>
-      {Array.from({ length: 6 }).map((_, rowIdx) => (
-        <View key={rowIdx} style={styles.weekRow}>
-          {Array.from({ length: 7 }).map((__, colIdx) => (
-            <View key={colIdx} style={styles.dayCell}>
-              <View style={[cellStyles.dayCircle, cellStyles.skeletonCircle]} />
-            </View>
-          ))}
+      <View style={dayStyles.dayWrapper}>
+        <View
+          style={[
+            dayStyles.dayCircle,
+            day.isSelected && dayStyles.selected,
+            day.isToday && !day.isSelected && dayStyles.today,
+            !day.isCurrentMonth && dayStyles.outsideMonth,
+          ]}
+        >
+          <ThemedText
+            style={[
+              dayStyles.dayText,
+              day.isSelected && dayStyles.selectedText,
+              day.isToday && !day.isSelected && dayStyles.todayText,
+              !day.isCurrentMonth && dayStyles.outsideMonthText,
+            ]}
+          >
+            {day.number}
+          </ThemedText>
         </View>
-      ))}
+        {hasEvents && (
+          <View style={dayStyles.dotsRow}>
+            {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+              <View key={i} style={dayStyles.dot} />
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const handleHeaderPress = () => {
+    if (viewMode === 'day') {
+      setViewMode('month');
+    } else if (viewMode === 'month') {
+      setViewMode('year');
+    } else {
+      setViewMode('day');
+    }
+  };
+
+  const handleMonthChange = (month: number) => {
+    onMonthChange(month + 1);
+    setViewMode('day');
+  };
+
+  const handleYearChange = (year: number) => {
+    onYearChange(year);
+    setViewMode('month');
+  };
+
+  return (
+    <View style={styles.container}>
+      <Pressable style={styles.customHeader} onPress={handleHeaderPress}>
+        <ThemedText style={styles.customHeaderText}>
+          {getMonthName(currentMonth)} {currentYear}
+        </ThemedText>
+      </Pressable>
+      <DateTimePicker
+        key={viewMode}
+        mode="single"
+        date={selectedDate || undefined}
+        onChange={({ date }) => {
+          if (date) {
+            const dateStr = typeof date === 'string'
+              ? date.substring(0, 10)
+              : new Date(date as number | Date).toISOString().substring(0, 10);
+            onDatePress(dateStr);
+          }
+        }}
+        month={currentMonth - 1}
+        year={currentYear}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
+        locale="es"
+        firstDayOfWeek={1}
+        weekdaysFormat="min"
+        monthsFormat="short"
+        monthCaptionFormat="full"
+        initialView={viewMode}
+        hideHeader={true}
+        disableMonthPicker={true}
+        disableYearPicker={true}
+        styles={customStyles}
+        components={{
+          Day: CustomDay,
+        }}
+      />
+      {calendarLoading && (
+        <View style={styles.loadingOverlay}>
+          <ThemedText style={styles.loadingText}>Cargando...</ThemedText>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 12,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 8,
+  },
+  customHeader: {
     paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  monthLabel: {
+  customHeaderText: {
     fontSize: 17,
-  },
-  arrowButton: {
-    padding: 8,
-  },
-  arrowText: {
-    fontSize: 18,
-    color: '#0a7ea4',
     fontWeight: '600',
+    color: '#11181c',
   },
-  dayNameRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  dayNameCell: {
-    flex: 1,
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 4,
   },
-  dayNameText: {
-    fontSize: 12,
-    color: '#9ba1a6',
-    fontWeight: '600',
-  },
-  weekRow: {
-    flexDirection: 'row',
-  },
-  dayCell: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 4,
-    minHeight: 42,
+  loadingText: {
+    color: '#687076',
+    fontSize: 13,
   },
 });
 
-const cellStyles = StyleSheet.create({
+const dayStyles = StyleSheet.create({
+  dayWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 2,
+  },
   dayCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  selectedCircle: {
+  selected: {
     backgroundColor: '#0a7ea4',
   },
-  todayCircle: {
+  today: {
     borderWidth: 2,
     borderColor: '#0a7ea4',
   },
-  skeletonCircle: {
-    backgroundColor: '#e8eaed',
+  outsideMonth: {
+    opacity: 0.3,
   },
   dayText: {
     fontSize: 14,
     color: '#11181c',
-  },
-  otherMonthText: {
-    color: '#d1d5db',
   },
   selectedText: {
     color: '#fff',
@@ -315,5 +304,19 @@ const cellStyles = StyleSheet.create({
   todayText: {
     color: '#0a7ea4',
     fontWeight: '700',
+  },
+  outsideMonthText: {
+    color: '#d1d5db',
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 2,
+    marginTop: 2,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#0a7ea4',
   },
 });

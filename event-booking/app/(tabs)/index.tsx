@@ -16,30 +16,19 @@ export default function AdminCalendarScreen() {
     selectedDate,
     currentYear,
     currentMonth,
-    loading,
+    calendarLoading,
+    eventsLoading,
     error,
     selectDate,
-    goToPreviousMonth,
-    goToNextMonth,
+    onMonthChange,
+    onYearChange,
   } = useEvents();
 
   const renderEvent = ({ item }: { item: EventSummary }) => (
-    <EventCard
-      event={item}
-      onPress={() => {}}
-    />
+    <EventCard event={item} onPress={() => {}} />
   );
 
   const renderBottom = () => {
-    if (error && !selectedDate) {
-      return (
-        <EmptyState
-          title="Algo salió mal"
-          message={error}
-        />
-      );
-    }
-
     if (!selectedDate) {
       return (
         <EmptyState
@@ -49,21 +38,23 @@ export default function AdminCalendarScreen() {
       );
     }
 
-    if (loading) {
+    if (eventsLoading) {
       return <LoadingState message="Cargando eventos..." />;
     }
 
     if (error) {
-      return <View style={styles.errorBanner}>
-        <ThemedText style={styles.errorText}>{error}</ThemedText>
-      </View>;
+      return (
+        <View style={styles.errorBanner}>
+          <ThemedText style={styles.errorText}>{error}</ThemedText>
+        </View>
+      );
     }
 
     if (dayEvents.length === 0) {
       return (
         <EmptyState
           title="Sin eventos"
-          message={`No hay eventos programados para esta fecha.`}
+          message="No hay eventos programados para esta fecha."
         />
       );
     }
@@ -92,16 +83,14 @@ export default function AdminCalendarScreen() {
         currentYear={currentYear}
         currentMonth={currentMonth}
         onDatePress={selectDate}
-        onPreviousMonth={goToPreviousMonth}
-        onNextMonth={goToNextMonth}
-        loading={loading}
+        onMonthChange={onMonthChange}
+        onYearChange={onYearChange}
+        calendarLoading={calendarLoading}
       />
 
       <View style={styles.divider} />
 
-      <View style={styles.bottomSection}>
-        {renderBottom()}
-      </View>
+      <View style={styles.bottomSection}>{renderBottom()}</View>
 
       <Pressable
         style={styles.fab}

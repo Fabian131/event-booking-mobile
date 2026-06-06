@@ -9,11 +9,12 @@ interface UseEventsReturn {
   selectedDate: string | null;
   currentYear: number;
   currentMonth: number;
-  loading: boolean;
+  calendarLoading: boolean;
+  eventsLoading: boolean;
   error: string | null;
   selectDate: (date: string) => void;
-  goToPreviousMonth: () => void;
-  goToNextMonth: () => void;
+  onMonthChange: (month: number) => void;
+  onYearChange: (year: number) => void;
 }
 
 export function useEvents(): UseEventsReturn {
@@ -22,10 +23,12 @@ export function useEvents(): UseEventsReturn {
   const [calendarDates, setCalendarDates] = useState<CalendarDateItem[]>([]);
   const [dayEvents, setDayEvents] = useState<EventSummary[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCalendarDates = useCallback(async (year: number, month: number) => {
+    setCalendarLoading(true);
     try {
       const response = await eventService.getCalendarDates(year, month);
       setCalendarDates(response.data);
@@ -33,12 +36,14 @@ export function useEvents(): UseEventsReturn {
     } catch {
       setCalendarDates([]);
       setError('No se pudo cargar el calendario.');
+    } finally {
+      setCalendarLoading(false);
     }
   }, []);
 
   const fetchEventsByDate = useCallback(async (date: string) => {
+    setEventsLoading(true);
     try {
-      setLoading(true);
       const response = await eventService.getEventsByDate(date);
       setDayEvents(response.data);
       setError(null);
@@ -46,7 +51,7 @@ export function useEvents(): UseEventsReturn {
       setDayEvents([]);
       setError('No se pudieron cargar los eventos del día.');
     } finally {
-      setLoading(false);
+      setEventsLoading(false);
     }
   }, []);
 
@@ -59,27 +64,17 @@ export function useEvents(): UseEventsReturn {
     fetchEventsByDate(date);
   }, [fetchEventsByDate]);
 
-  const goToPreviousMonth = useCallback(() => {
+  const onMonthChange = useCallback((month: number) => {
     setSelectedDate(null);
     setDayEvents([]);
-    if (currentMonth === 1) {
-      setCurrentMonth(12);
-      setCurrentYear((y) => y - 1);
-    } else {
-      setCurrentMonth((m) => m - 1);
-    }
-  }, [currentMonth]);
+    setCurrentMonth(month);
+  }, []);
 
-  const goToNextMonth = useCallback(() => {
+  const onYearChange = useCallback((year: number) => {
     setSelectedDate(null);
     setDayEvents([]);
-    if (currentMonth === 12) {
-      setCurrentMonth(1);
-      setCurrentYear((y) => y + 1);
-    } else {
-      setCurrentMonth((m) => m + 1);
-    }
-  }, [currentMonth]);
+    setCurrentYear(year);
+  }, []);
 
   return {
     calendarDates,
@@ -87,10 +82,11 @@ export function useEvents(): UseEventsReturn {
     selectedDate,
     currentYear,
     currentMonth,
-    loading,
+    calendarLoading,
+    eventsLoading,
     error,
     selectDate,
-    goToPreviousMonth,
-    goToNextMonth,
+    onMonthChange,
+    onYearChange,
   };
 }

@@ -8,6 +8,29 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
 }));
 jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('react-native-ui-datepicker', () => {
+  const React = require('react');
+  const { View, Text } = require('react-native');
+
+  const MockDateTimePicker = () => {
+    return React.createElement(View, { testID: 'datetime-picker' },
+      React.createElement(Text, null, 'DateTimePicker'),
+    );
+  };
+
+  const useDefaultStyles = () => ({
+    today: {},
+    selected: {},
+    selected_label: {},
+    header: {},
+  });
+
+  return {
+    __esModule: true,
+    default: MockDateTimePicker,
+    useDefaultStyles,
+  };
+});
 
 describe('dashboard flow', () => {
   jest.setTimeout(15000);
@@ -44,7 +67,7 @@ describe('dashboard flow', () => {
     });
   });
 
-  it('should render calendar header with current month', async () => {
+  it('should render calendar header', async () => {
     (eventService.getCalendarDates as jest.Mock).mockResolvedValueOnce({
       data: [],
       year: 2026,
@@ -54,7 +77,7 @@ describe('dashboard flow', () => {
     render(<AdminCalendarScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Junio 2026/)).toBeTruthy();
+      expect(screen.getByText('Calendario')).toBeTruthy();
     });
   });
 });
