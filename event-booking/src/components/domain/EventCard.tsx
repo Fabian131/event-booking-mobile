@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import type { EventCategory, EventSummary } from '@/src/types/events';
 
-const CATEGORY_COLORS: Record<EventCategory, string> = {
+export const CATEGORY_COLORS: Record<EventCategory, string> = {
   sports: '#2196F3',
   music: '#9C27B0',
   culture: '#FF9800',
@@ -14,7 +14,7 @@ const CATEGORY_COLORS: Record<EventCategory, string> = {
   other: '#607D8B',
 };
 
-const CATEGORY_LABELS: Record<EventCategory, string> = {
+export const CATEGORY_LABELS: Record<EventCategory, string> = {
   sports: 'Deportes',
   music: 'Música',
   culture: 'Cultura',
