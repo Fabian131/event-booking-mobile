@@ -1,5 +1,5 @@
 import type { FieldError } from '@/src/types/auth';
-import { EVENT_CATEGORIES } from '@/src/types/event';
+import { EVENT_CATEGORIES } from '@/src/types/events';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_REGEX = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\-']+$/;

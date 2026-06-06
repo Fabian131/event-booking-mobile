@@ -13,7 +13,7 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEvents } from '@/src/hooks/useEvents';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 
 const SKELETON_COUNT = 5;
 
@@ -34,7 +34,7 @@ export default function CustomerEventsScreen() {
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
   const renderItem = useCallback(
-    ({ item }: { item: EventSummary }) => (
+    ({ item }: { item: Event }) => (
       <EventCard
         event={item}
         onPress={() => router.push({ pathname: '/(customer)/events/[id]', params: { id: item.id } })}

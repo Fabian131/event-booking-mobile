@@ -10,7 +10,7 @@ export const EVENT_CATEGORIES = [
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
 
-export interface EventSummary {
+export interface Event {
   id: string;
   title: string;
   description: string | null;
@@ -35,7 +35,7 @@ export interface PaginationMeta {
 }
 
 export interface EventsListResponse {
-  data: EventSummary[];
+  data: Event[];
   pagination: PaginationMeta;
 }
 

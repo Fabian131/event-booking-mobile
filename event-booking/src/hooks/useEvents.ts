@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 import { eventsService } from '@/src/services/events';
 
 const PAGE_LIMIT = 20;
 
 export function useEvents() {
-  const [events, setEvents] = useState<EventSummary[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);

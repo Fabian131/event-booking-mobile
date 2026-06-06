@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
 import CustomerEventsScreen from '@/app/(customer)/events/index';
-import type { EventSummary, PaginationMeta } from '@/src/types/events';
+import type { Event, PaginationMeta } from '@/src/types/events';
 
 jest.mock('@/src/services/events');
 jest.mock('expo-image', () => ({
@@ -13,7 +13,7 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(() => Promise.resolve()),
 }));
 
-function makeEvent(overrides?: Partial<EventSummary>): EventSummary {
+function makeEvent(overrides?: Partial<Event>): Event {
   return {
     id: '1',
     title: 'Summer Festival',

@@ -2,7 +2,7 @@ import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { ThemedText } from '@/src/components/ui/themed-text';
-import type { EventCategory, EventSummary } from '@/src/types/events';
+import type { EventCategory, Event } from '@/src/types/events';
 
 export const CATEGORY_COLORS: Record<EventCategory, string> = {
   sports: '#2196F3',
@@ -25,7 +25,7 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
 };
 
 interface EventCardProps {
-  event: EventSummary;
+  event: Event;
   onPress?: () => void;
 }
 

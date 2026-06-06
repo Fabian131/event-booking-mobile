@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 import { eventsService } from '@/src/services/events';
 
 export function useEventDetail(id: string) {
-  const [event, setEvent] = useState<EventSummary | null>(null);
+  const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

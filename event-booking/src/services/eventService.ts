@@ -1,8 +1,8 @@
-import type { EventResponse } from '@/src/types/event';
+import type { Event } from '@/src/types/events';
 import { api } from './api';
 
 export const eventService = {
-  createEvent(formData: FormData): Promise<EventResponse> {
-    return api.postForm<EventResponse>('/api/v1/events', formData);
+  createEvent(formData: FormData): Promise<Event> {
+    return api.postForm<Event>('/api/v1/events', formData);
   },
 };

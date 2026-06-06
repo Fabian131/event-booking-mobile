@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
 import EventDetailScreen from '@/app/(customer)/events/[id]';
 import { useAuth } from '@/src/context/AuthContext';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 
 jest.mock('@/src/services/events');
 jest.mock('expo-image', () => ({
@@ -21,7 +21,7 @@ jest.mock('@/src/context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
-function makeEvent(overrides?: Partial<EventSummary>): EventSummary {
+function makeEvent(overrides?: Partial<Event>): Event {
   return {
     id: '1',
     title: 'Summer Festival',
