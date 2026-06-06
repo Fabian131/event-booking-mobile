@@ -11,7 +11,6 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
-// Mock validateCreateEventForm to bypass UI filling for this test
 jest.mock('@/src/utils/validators', () => {
   const original = jest.requireActual('@/src/utils/validators');
   return {
@@ -23,11 +22,6 @@ jest.mock('@/src/utils/validators', () => {
 describe('valid form submit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('should call eventService.createEvent, show success banner, and navigate back on success', async () => {
@@ -45,8 +39,8 @@ describe('valid form submit', () => {
       expect(screen.getByText('Evento creado exitosamente.')).toBeTruthy();
     });
 
-    jest.advanceTimersByTime(1200);
-
-    expect(router.back).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(router.back).toHaveBeenCalled();
+    }, { timeout: 2000, interval: 100 });
   });
 });

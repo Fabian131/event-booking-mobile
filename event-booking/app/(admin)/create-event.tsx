@@ -91,7 +91,7 @@ function JSTimePicker({ value, onChange }: { value: Date; onChange: (d: Date) =>
         onUp={() => adj(d => d.setHours((d.getHours()+1)%24))} onDown={() => adj(d => d.setHours((d.getHours()+23)%24))} />
       <View style={pSt.colon}><ThemedText style={pSt.colonTxt}>:</ThemedText></View>
       <UnitSpinner label="Min" value={String(value.getMinutes()).padStart(2,'0')}
-        onUp={() => adj(d => d.setMinutes((d.getMinutes()+5)%60))} onDown={() => adj(d => d.setMinutes((d.getMinutes()+55)%60))} />
+        onUp={() => adj(d => d.setMinutes((d.getMinutes()+1)%60))} onDown={() => adj(d => d.setMinutes((d.getMinutes()+59)%60))} />
     </View>
   );
 }
@@ -174,7 +174,16 @@ export default function CreateEventScreen() {
 
   async function pickImage() {
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8 });
-    if (!r.canceled) setImageUri(r.assets[0].uri);
+    if (!r.canceled) {
+      const asset = r.assets[0];
+      const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+      const assetType = asset.mimeType ?? '';
+      if (assetType && !validTypes.includes(assetType)) {
+        setServerError('La imagen debe estar en formato PNG, JPG o WebP.');
+        return;
+      }
+      setImageUri(asset.uri);
+    }
   }
 
   async function handleSubmit() {
@@ -195,7 +204,12 @@ export default function CreateEventScreen() {
       if (imageUri) {
         const fn = imageUri.split('/').pop() ?? 'image.jpg';
         const m = /\.(\w+)$/.exec(fn);
-        fd.append('image', { uri: imageUri, name: fn, type: m ? `image/${m[1]}` : 'image' } as any);
+        const file = {
+          uri: imageUri,
+          name: fn,
+          type: m ? `image/${m[1]}` : 'application/octet-stream',
+        };
+        fd.append('image', file as unknown as Blob);
       }
       await eventService.createEvent(fd);
       setServerError('');
@@ -249,7 +263,7 @@ export default function CreateEventScreen() {
             {/* Category */}
             <View style={st.field}>
               <ThemedText type="defaultSemiBold" style={st.label}>Categoría</ThemedText>
-              <TouchableOpacity onPress={() => !loading && setCatModal(true)} style={[st.selector, err('category') && st.selectorErr]}>
+              <TouchableOpacity onPress={() => !loading && setCatModal(true)} style={[st.selector, err('category') && st.selectorErr]} accessibilityLabel="Seleccionar categoría" accessibilityRole="button">
                 <ThemedText style={category ? undefined : st.ph}>{catLabel}</ThemedText>
               </TouchableOpacity>
               {err('category') && <ThemedText style={st.fieldErr}>{err('category')}</ThemedText>}
@@ -258,7 +272,7 @@ export default function CreateEventScreen() {
             {/* Date */}
             <View style={st.field}>
               <ThemedText type="defaultSemiBold" style={st.label}>Fecha</ThemedText>
-              <TouchableOpacity onPress={openDate} style={[st.selector, err('date') && st.selectorErr]}>
+              <TouchableOpacity onPress={openDate} style={[st.selector, err('date') && st.selectorErr]} accessibilityLabel="Seleccionar fecha" accessibilityRole="button">
                 <ThemedText style={date ? undefined : st.ph}>{date ? fmtDate(date) : 'Selecciona una fecha'}</ThemedText>
               </TouchableOpacity>
               {err('date') && <ThemedText style={st.fieldErr}>{err('date')}</ThemedText>}
@@ -271,7 +285,7 @@ export default function CreateEventScreen() {
             {/* Start time */}
             <View style={st.field}>
               <ThemedText type="defaultSemiBold" style={st.label}>Hora de Inicio</ThemedText>
-              <TouchableOpacity onPress={openStart} style={[st.selector, err('start_time') && st.selectorErr]}>
+              <TouchableOpacity onPress={openStart} style={[st.selector, err('start_time') && st.selectorErr]} accessibilityLabel="Seleccionar hora de inicio" accessibilityRole="button">
                 <ThemedText style={startTime ? undefined : st.ph}>{startTime ? fmtTime(startTime) : 'Selecciona hora de inicio'}</ThemedText>
               </TouchableOpacity>
               {err('start_time') && <ThemedText style={st.fieldErr}>{err('start_time')}</ThemedText>}
@@ -284,7 +298,7 @@ export default function CreateEventScreen() {
             {/* End time */}
             <View style={st.field}>
               <ThemedText type="defaultSemiBold" style={st.label}>Hora de Fin</ThemedText>
-              <TouchableOpacity onPress={openEnd} style={[st.selector, err('end_time') && st.selectorErr]}>
+              <TouchableOpacity onPress={openEnd} style={[st.selector, err('end_time') && st.selectorErr]} accessibilityLabel="Seleccionar hora de fin" accessibilityRole="button">
                 <ThemedText style={endTime ? undefined : st.ph}>{endTime ? fmtTime(endTime) : 'Selecciona hora de fin'}</ThemedText>
               </TouchableOpacity>
               {err('end_time') && <ThemedText style={st.fieldErr}>{err('end_time')}</ThemedText>}
@@ -297,10 +311,10 @@ export default function CreateEventScreen() {
             {/* Image */}
             <View style={st.imgContainer}>
               <ThemedText type="defaultSemiBold" style={st.label}>Imagen (opcional, máx 5 MB)</ThemedText>
-              <TouchableOpacity onPress={pickImage} style={st.imgBtn} disabled={loading}>
+              <TouchableOpacity onPress={pickImage} style={st.imgBtn} disabled={loading} accessibilityLabel={imageUri ? 'Cambiar imagen del evento' : 'Seleccionar imagen del evento'} accessibilityRole="button">
                 <ThemedText>{imageUri ? 'Cambiar Imagen' : 'Seleccionar Imagen'}</ThemedText>
               </TouchableOpacity>
-              {imageUri && <Image source={{ uri: imageUri }} style={st.preview} />}
+              {imageUri && <Image source={{ uri: imageUri }} style={st.preview} accessibilityLabel="Vista previa de la imagen del evento" />}
             </View>
 
             <Button title="Crear Evento" onPress={handleSubmit} loading={loading} style={st.submit} />

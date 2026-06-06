@@ -38,4 +38,21 @@ describe('date and time validation', () => {
     const errors = validateCreateEventForm({ ...base(), category: '' });
     expect(errors.some((e) => e.field === 'category')).toBe(true);
   });
+
+  it('should accept valid category', () => {
+    const errors = validateCreateEventForm({ ...base(), category: 'sports' });
+    expect(errors.filter((e) => e.field === 'category')).toHaveLength(0);
+  });
+
+  it('should reject invalid category not in enum', () => {
+    const errors = validateCreateEventForm({ ...base(), category: 'invalid-cat' });
+    expect(errors.some((e) => e.field === 'category')).toBe(true);
+  });
+
+  it('should accept today date', () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const errors = validateCreateEventForm({ ...base(), date: today });
+    expect(errors.filter((e) => e.field === 'date')).toHaveLength(0);
+  });
 });

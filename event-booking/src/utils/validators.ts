@@ -1,4 +1,5 @@
 import type { FieldError } from '@/src/types/auth';
+import { EVENT_CATEGORIES } from '@/src/types/event';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_REGEX = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\-']+$/;
@@ -135,6 +136,8 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
 
   if (!values.category) {
     errors.push({ field: 'category', message: 'La categoría es obligatoria' });
+  } else if (!(EVENT_CATEGORIES as readonly string[]).includes(values.category)) {
+    errors.push({ field: 'category', message: 'La categoría seleccionada no es válida' });
   }
 
   if (!values.date) {

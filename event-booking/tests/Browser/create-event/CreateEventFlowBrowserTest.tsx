@@ -26,11 +26,6 @@ describe('create event flow', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('should complete full creation flow: modals, submit, success, and redirect', async () => {
@@ -83,8 +78,9 @@ describe('create event flow', () => {
       expect(screen.getByText('Evento creado exitosamente.')).toBeTruthy();
     });
 
-    jest.advanceTimersByTime(1200);
-
-    expect(router.back).toHaveBeenCalled();
+    // Redirect after 1200ms setTimeout — allow real delay
+    await waitFor(() => {
+      expect(router.back).toHaveBeenCalled();
+    }, { timeout: 2000, interval: 100 });
   });
 });
