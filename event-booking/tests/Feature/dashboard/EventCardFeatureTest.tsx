@@ -33,13 +33,13 @@ describe('EventCard component', () => {
   it('should render category badge', () => {
     render(<EventCard event={baseEvent} />);
 
-    expect(screen.getByText('music')).toBeTruthy();
+    expect(screen.getByText('Música')).toBeTruthy();
   });
 
   it('should render remaining capacity', () => {
     render(<EventCard event={baseEvent} />);
 
-    expect(screen.getByText('342/500')).toBeTruthy();
+    expect(screen.getByText('342 lugares')).toBeTruthy();
   });
 
   it('should handle event without description', () => {

@@ -36,8 +36,6 @@ export function Calendar({
     for (const item of calendarDates) {
       map.set(item.date, item.count);
     }
-    // DEBUG: remove after confirming dots work
-    console.log('[Calendar] eventMap size:', map.size, 'keys:', [...map.keys()]);
     return map;
   }, [calendarDates]);
 
