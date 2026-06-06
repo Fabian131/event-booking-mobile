@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
-import CustomerEventsScreen from '@/app/(customer)/index';
+import CustomerEventsScreen from '@/app/(customer)/events/index';
 
 jest.mock('@/src/services/events');
 jest.mock('expo-image', () => ({
