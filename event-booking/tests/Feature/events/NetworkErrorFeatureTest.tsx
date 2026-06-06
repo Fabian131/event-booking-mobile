@@ -33,7 +33,7 @@ describe('network error', () => {
     await renderFeedScreen();
 
     await waitFor(() => {
-      expect(screen.getByText('Network request failed')).toBeTruthy();
+      expect(screen.getByText('Error al cargar los eventos')).toBeTruthy();
       expect(screen.getByText('Reintentar')).toBeTruthy();
     });
   });
