@@ -84,8 +84,8 @@ describe('create event flow', () => {
     });
 
     // Check loading state (button disabled)
-    const submitBtn = screen.getByText('Crear Evento').parent;
-    expect(submitBtn?.props.accessibilityState?.disabled).toBe(true);
+    const submitBtn = screen.getByRole('button', { name: 'Crear Evento' });
+    expect(submitBtn.props.accessibilityState?.disabled).toBe(true);
 
     // Resolve API
     resolvePromise!({});
