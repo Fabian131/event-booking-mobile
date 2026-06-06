@@ -21,11 +21,11 @@ import { eventService } from '@/src/services/eventService';
 // ---------------------------------------------------------------------------
 const CATEGORIES = [
   { label: 'Deportes', value: 'sports' },
-  { label: 'Musica', value: 'music' },
+  { label: 'Música', value: 'music' },
   { label: 'Cultura', value: 'culture' },
-  { label: 'Gastronomia', value: 'gastronomy' },
+  { label: 'Gastronomía', value: 'gastronomy' },
   { label: 'Bienestar', value: 'wellness' },
-  { label: 'Educacion', value: 'education' },
+  { label: 'Educación', value: 'education' },
   { label: 'Otro', value: 'other' },
 ];
 
@@ -69,11 +69,11 @@ function JSDatePicker({ value, onChange }: { value: Date; onChange: (d: Date) =>
 
   return (
     <View style={pSt.row}>
-      <UnitSpinner label="Dia" value={String(value.getDate()).padStart(2,'0')}
+      <UnitSpinner label="Día" value={String(value.getDate()).padStart(2,'0')}
         onUp={() => adj(d => d.setDate(d.getDate()+1))} onDown={() => adj(d => d.setDate(d.getDate()-1))} />
       <UnitSpinner label="Mes" value={MONTH_NAMES[value.getMonth()]}
         onUp={() => adj(d => d.setMonth(d.getMonth()+1))} onDown={() => adj(d => d.setMonth(d.getMonth()-1))} />
-      <UnitSpinner label="Ano" value={String(value.getFullYear())}
+      <UnitSpinner label="Año" value={String(value.getFullYear())}
         onUp={() => adj(d => d.setFullYear(d.getFullYear()+1))} onDown={() => adj(d => d.setFullYear(d.getFullYear()-1))} />
     </View>
   );
@@ -150,10 +150,11 @@ export default function CreateEventScreen() {
 
   const [errors, setErrors] = useState<FieldError[]>([]);
   const [serverError, setServerError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const err = (f: string) => errors.find(e => e.field === f)?.message;
-  const catLabel = CATEGORIES.find(c => c.value === category)?.label ?? 'Selecciona una categoria';
+  const catLabel = CATEGORIES.find(c => c.value === category)?.label ?? 'Selecciona una categoría';
 
   function openDate() {
     if (loading) return;
@@ -177,7 +178,7 @@ export default function CreateEventScreen() {
   }
 
   async function handleSubmit() {
-    setErrors([]); setServerError('');
+    setErrors([]); setServerError(''); setSuccess(false);
     const vals: CreateEventFormValues = { title, description, max_capacity: maxCapacity, category, date, start_time: startTime, end_time: endTime, image: imageUri };
     const clientErrors = validateCreateEventForm(vals);
     if (clientErrors.length > 0) { setErrors(clientErrors); return; }
@@ -197,7 +198,9 @@ export default function CreateEventScreen() {
         fd.append('image', { uri: imageUri, name: fn, type: m ? `image/${m[1]}` : 'image' } as any);
       }
       await eventService.createEvent(fd);
-      router.back();
+      setServerError('');
+      setSuccess(true);
+      setTimeout(() => router.back(), 1200);
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.details?.length) {
@@ -209,9 +212,9 @@ export default function CreateEventScreen() {
         }
         setServerError(e.message);
       } else if (e instanceof TypeError) {
-        setServerError('No se pudo conectar con el servidor.');
+        setServerError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
       } else {
-        setServerError('Ocurrio un error inesperado. Intenta nuevamente.');
+        setServerError('Ocurrió un error inesperado. Intenta nuevamente.');
       }
     } finally { setLoading(false); }
   }
@@ -226,6 +229,12 @@ export default function CreateEventScreen() {
             <ThemedText>Ingresa los detalles del nuevo evento</ThemedText>
           </ThemedView>
 
+          {success ? (
+            <View style={st.successBanner}>
+              <ThemedText style={st.successBannerTxt}>Evento creado exitosamente.</ThemedText>
+            </View>
+          ) : null}
+
           {serverError ? (
             <View style={st.errBanner}>
               <ThemedText style={st.errBannerTxt}>{serverError}</ThemedText>
@@ -233,13 +242,13 @@ export default function CreateEventScreen() {
           ) : null}
 
           <ThemedView style={st.form}>
-            <Input label="Titulo" placeholder="Nombre del evento" value={title} onChangeText={setTitle} error={err('title')} editable={!loading} />
-            <Input label="Descripcion" placeholder="Breve descripcion del evento" value={description} onChangeText={setDescription} error={err('description')} editable={!loading} />
-            <Input label="Capacidad Maxima" placeholder="Ej. 100" value={maxCapacity} onChangeText={setMaxCapacity} error={err('max_capacity')} editable={!loading} keyboardType="numeric" />
+            <Input label="Título" placeholder="Nombre del evento" value={title} onChangeText={setTitle} error={err('title')} editable={!loading} />
+            <Input label="Descripción" placeholder="Breve descripción del evento" value={description} onChangeText={setDescription} error={err('description')} editable={!loading} />
+            <Input label="Capacidad máxima" placeholder="Ej. 100" value={maxCapacity} onChangeText={setMaxCapacity} error={err('max_capacity')} editable={!loading} keyboardType="numeric" />
 
             {/* Category */}
             <View style={st.field}>
-              <ThemedText style={st.label}>Categoria</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>Categoría</ThemedText>
               <TouchableOpacity onPress={() => !loading && setCatModal(true)} style={[st.selector, err('category') && st.selectorErr]}>
                 <ThemedText style={category ? undefined : st.ph}>{catLabel}</ThemedText>
               </TouchableOpacity>
@@ -248,7 +257,7 @@ export default function CreateEventScreen() {
 
             {/* Date */}
             <View style={st.field}>
-              <ThemedText style={st.label}>Fecha</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>Fecha</ThemedText>
               <TouchableOpacity onPress={openDate} style={[st.selector, err('date') && st.selectorErr]}>
                 <ThemedText style={date ? undefined : st.ph}>{date ? fmtDate(date) : 'Selecciona una fecha'}</ThemedText>
               </TouchableOpacity>
@@ -261,7 +270,7 @@ export default function CreateEventScreen() {
 
             {/* Start time */}
             <View style={st.field}>
-              <ThemedText style={st.label}>Hora de Inicio</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>Hora de Inicio</ThemedText>
               <TouchableOpacity onPress={openStart} style={[st.selector, err('start_time') && st.selectorErr]}>
                 <ThemedText style={startTime ? undefined : st.ph}>{startTime ? fmtTime(startTime) : 'Selecciona hora de inicio'}</ThemedText>
               </TouchableOpacity>
@@ -274,7 +283,7 @@ export default function CreateEventScreen() {
 
             {/* End time */}
             <View style={st.field}>
-              <ThemedText style={st.label}>Hora de Fin</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>Hora de Fin</ThemedText>
               <TouchableOpacity onPress={openEnd} style={[st.selector, err('end_time') && st.selectorErr]}>
                 <ThemedText style={endTime ? undefined : st.ph}>{endTime ? fmtTime(endTime) : 'Selecciona hora de fin'}</ThemedText>
               </TouchableOpacity>
@@ -287,7 +296,7 @@ export default function CreateEventScreen() {
 
             {/* Image */}
             <View style={st.imgContainer}>
-              <ThemedText style={st.label}>Imagen (Opcional, max 5MB)</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>Imagen (opcional, máx 5 MB)</ThemedText>
               <TouchableOpacity onPress={pickImage} style={st.imgBtn} disabled={loading}>
                 <ThemedText>{imageUri ? 'Cambiar Imagen' : 'Seleccionar Imagen'}</ThemedText>
               </TouchableOpacity>
@@ -300,7 +309,7 @@ export default function CreateEventScreen() {
       </KeyboardAvoidingView>
 
       {/* ── Category Modal ─────────────────────────────────────────── */}
-      <BottomModal visible={catModal} title="Categoria" onDone={() => setCatModal(false)}>
+      <BottomModal visible={catModal} title="Categoría" onDone={() => setCatModal(false)}>
         <FlatList
           data={CATEGORIES}
           keyExtractor={i => i.value}
@@ -358,9 +367,11 @@ const st = StyleSheet.create({
   header: { gap: 8, marginBottom: 32, alignItems: 'center' },
   errBanner: { backgroundColor: '#fdecea', borderRadius: 8, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#dc3545' },
   errBannerTxt: { color: '#dc3545', textAlign: 'center' },
+  successBanner: { backgroundColor: '#d4edda', borderRadius: 8, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#28a745' },
+  successBannerTxt: { color: '#155724', textAlign: 'center' },
   form: { gap: 16 },
   submit: { marginTop: 16 },
-  label: { fontSize: 14, marginBottom: 4 },
+  label: { marginBottom: 6 },
   field: { marginBottom: 4 },
   selector: { height: 50, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, justifyContent: 'center', paddingHorizontal: 16 },
   selectorErr: { borderColor: '#dc3545' },

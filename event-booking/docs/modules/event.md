@@ -5,7 +5,7 @@
 ## General Information
 
 - **Module Code**: `EBM-03`
-- **API Contract**: `Contracts/create-event.yaml`
+- **API Contract**: `api-contracts/create-event.yaml`
 - **Responsible**: Luis F Rosales Vargas
 - **Status**: Completed
 - **Version**: `1.0.0`
@@ -29,7 +29,7 @@ On a schedule conflict the backend returns a localized Spanish error banner.
 
 ## API Contract
 
-**File:** `Contracts/create-event.yaml`
+**File:** `api-contracts/create-event.yaml`
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
@@ -183,7 +183,7 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 | Function | Description |
 |----------|-------------|
 | `err(field)` | Returns error message for a given field |
-| `clearErrors()` | Resets all error states before submit |
+| `setErrors([]); setServerError(''); setSuccess(false);` | Resets all error and success states inline before submit |
 | `openDate/Start/End()` | Opens Android native picker or iOS modal based on `Platform.OS` |
 | `pickImage()` | Launches image library picker via `expo-image-picker` |
 | `handleSubmit()` | Validates, builds `FormData`, calls `eventService`, handles response |

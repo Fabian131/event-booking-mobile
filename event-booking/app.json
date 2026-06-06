@@ -40,7 +40,7 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true,

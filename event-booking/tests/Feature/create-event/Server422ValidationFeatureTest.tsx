@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
 import { eventService } from '@/src/services/eventService';
-import { router } from 'expo-router';
+import { ApiError } from '@/src/types/auth';
 
 jest.mock('@/src/services/eventService');
 jest.mock('expo-router', () => ({
@@ -11,7 +11,6 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
-// Mock validateCreateEventForm to bypass UI filling for this test
 jest.mock('@/src/utils/validators', () => {
   const original = jest.requireActual('@/src/utils/validators');
   return {
@@ -20,18 +19,18 @@ jest.mock('@/src/utils/validators', () => {
   };
 });
 
-describe('valid form submit', () => {
+describe('server 422 validation error submit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('should call eventService.createEvent, show success banner, and navigate back on success', async () => {
-    (eventService.createEvent as jest.Mock).mockResolvedValueOnce({});
+  it('should render server-side field validation errors from details[]', async () => {
+    (eventService.createEvent as jest.Mock).mockRejectedValueOnce(
+      new ApiError('Validation error', 422, [
+        { field: 'title', message: 'Title must be at least 3 characters' },
+        { field: 'max_capacity', message: 'Capacity must be a positive integer' },
+      ])
+    );
 
     render(<CreateEventScreen />);
 
@@ -42,11 +41,8 @@ describe('valid form submit', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Evento creado exitosamente.')).toBeTruthy();
+      expect(screen.getByText('Title must be at least 3 characters')).toBeTruthy();
+      expect(screen.getByText('Capacity must be a positive integer')).toBeTruthy();
     });
-
-    jest.advanceTimersByTime(1200);
-
-    expect(router.back).toHaveBeenCalled();
   });
 });

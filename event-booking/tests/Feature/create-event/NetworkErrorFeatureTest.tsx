@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
 import { eventService } from '@/src/services/eventService';
-import { router } from 'expo-router';
 
 jest.mock('@/src/services/eventService');
 jest.mock('expo-router', () => ({
@@ -11,7 +10,6 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
-// Mock validateCreateEventForm to bypass UI filling for this test
 jest.mock('@/src/utils/validators', () => {
   const original = jest.requireActual('@/src/utils/validators');
   return {
@@ -20,18 +18,13 @@ jest.mock('@/src/utils/validators', () => {
   };
 });
 
-describe('valid form submit', () => {
+describe('network error submit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('should call eventService.createEvent, show success banner, and navigate back on success', async () => {
-    (eventService.createEvent as jest.Mock).mockResolvedValueOnce({});
+  it('should display network error banner when TypeError occurs', async () => {
+    (eventService.createEvent as jest.Mock).mockRejectedValueOnce(new TypeError('Network request failed'));
 
     render(<CreateEventScreen />);
 
@@ -42,11 +35,7 @@ describe('valid form submit', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Evento creado exitosamente.')).toBeTruthy();
+      expect(screen.getByText('No se pudo conectar con el servidor. Verifica tu conexión a internet.')).toBeTruthy();
     });
-
-    jest.advanceTimersByTime(1200);
-
-    expect(router.back).toHaveBeenCalled();
   });
 });
