@@ -120,7 +120,7 @@ export default function CreateEventScreen() {
           
           const scheduleError = err.details.find(d => d.field === 'schedule');
           if (scheduleError) {
-            setServerError(scheduleError.message);
+            setServerError('Ya existe un evento programado en esta fecha y horario. Por favor selecciona otro.');
             return;
           }
         }
@@ -218,6 +218,7 @@ export default function CreateEventScreen() {
               {showDatePicker && (
                 <DateTimePicker
                   value={date || new Date()}
+                  minimumDate={new Date()}
                   mode="date"
                   display="default"
                   onChange={(event, selectedDate) => {

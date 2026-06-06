@@ -139,6 +139,14 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
 
   if (!values.date) {
     errors.push({ field: 'date', message: 'La fecha es obligatoria' });
+  } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(values.date);
+    eventDate.setHours(0, 0, 0, 0);
+    if (eventDate < today) {
+      errors.push({ field: 'date', message: 'La fecha no puede ser en el pasado' });
+    }
   }
 
   if (!values.start_time) {
