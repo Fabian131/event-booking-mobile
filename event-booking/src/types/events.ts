@@ -41,4 +41,6 @@ export interface EventsListParams {
   limit?: number;
   search?: string;
   category?: EventCategory;
+  is_active?: boolean;
+  date?: string;
 }
