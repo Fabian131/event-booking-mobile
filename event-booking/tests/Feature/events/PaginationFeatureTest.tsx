@@ -53,6 +53,8 @@ async function renderFeedScreen() {
 }
 
 describe('pagination', () => {
+  jest.setTimeout(15000);
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

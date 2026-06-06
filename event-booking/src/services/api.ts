@@ -24,9 +24,12 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
   const token = await getToken();
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(opts.headers as Record<string, string>),
   };
+
+  if (!(opts.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -47,10 +50,22 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
+    
+    let details = body.details;
+    let message = body.message;
+
+    // Support FastAPI's "detail" structure
+    if (!details && Array.isArray(body.detail)) {
+      details = body.detail;
+      if (!message) message = 'Errores de validación';
+    } else if (!message && typeof body.detail === 'string') {
+      message = body.detail;
+    }
+
     throw new ApiError(
-      body.message || 'Error en la solicitud',
+      message || 'Error en la solicitud',
       response.status,
-      body.details || undefined,
+      details || undefined,
     );
   }
 
@@ -64,6 +79,12 @@ export const api = {
     request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
+    }),
+
+  postForm: <T>(endpoint: string, formData: FormData) =>
+    request<T>(endpoint, {
+      method: 'POST',
+      body: formData,
     }),
 
   put: <T>(endpoint: string, data: unknown) =>

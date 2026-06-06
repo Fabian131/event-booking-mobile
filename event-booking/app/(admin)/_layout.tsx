@@ -22,6 +22,8 @@ export default function AdminLayout() {
         headerTitle: '',
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
-    />
+    >
+      <Stack.Screen name="create-event" options={{ title: 'Nuevo Evento' }} />
+    </Stack>
   );
 }
