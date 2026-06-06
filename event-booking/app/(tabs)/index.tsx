@@ -1,4 +1,5 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 
 import { ThemedText } from '@/src/components/ui/themed-text';
@@ -8,6 +9,31 @@ import { Calendar } from '@/src/components/domain/Calendar';
 import { EventCard } from '@/src/components/domain/EventCard';
 import { useEvents } from '@/src/hooks/useEvents';
 import type { EventSummary } from '@/src/types/event';
+
+function EventList({ events, onPress }: { events: EventSummary[]; onPress: (id: string) => void }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(10)).current;
+
+  useEffect(() => {
+    opacity.setValue(0);
+    translateY.setValue(10);
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 280, useNativeDriver: true }),
+    ]).start();
+  }, [events]);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      <ThemedText style={styles.sectionTitle}>
+        {events.length} {events.length === 1 ? 'evento' : 'eventos'}
+      </ThemedText>
+      {events.map((item) => (
+        <EventCard key={item.id} event={item} onPress={() => onPress(item.id)} />
+      ))}
+    </Animated.View>
+  );
+}
 
 export default function AdminCalendarScreen() {
   const {
@@ -23,10 +49,6 @@ export default function AdminCalendarScreen() {
     onMonthChange,
     onYearChange,
   } = useEvents();
-
-  const renderEvent = ({ item }: { item: EventSummary }) => (
-    <EventCard event={item} onPress={() => {}} />
-  );
 
   const renderBottom = () => {
     if (!selectedDate) {
@@ -60,37 +82,41 @@ export default function AdminCalendarScreen() {
     }
 
     return (
-      <FlatList
-        data={dayEvents}
-        keyExtractor={(item) => item.id}
-        renderItem={renderEvent}
-        contentContainerStyle={styles.listContent}
-        scrollEnabled={false}
+      <EventList
+        events={dayEvents}
+        onPress={() => {}}
       />
     );
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Calendario</ThemedText>
-        <ThemedText>Consulta la disponibilidad de eventos</ThemedText>
-      </ThemedView>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Calendario</ThemedText>
+          <ThemedText>Consulta la disponibilidad de eventos</ThemedText>
+        </ThemedView>
 
-      <Calendar
-        calendarDates={calendarDates}
-        selectedDate={selectedDate}
-        currentYear={currentYear}
-        currentMonth={currentMonth}
-        onDatePress={selectDate}
-        onMonthChange={onMonthChange}
-        onYearChange={onYearChange}
-        calendarLoading={calendarLoading}
-      />
+        <Calendar
+          calendarDates={calendarDates}
+          selectedDate={selectedDate}
+          currentYear={currentYear}
+          currentMonth={currentMonth}
+          onDatePress={selectDate}
+          onMonthChange={onMonthChange}
+          onYearChange={onYearChange}
+          calendarLoading={calendarLoading}
+        />
 
-      <View style={styles.divider} />
+        <View style={styles.divider} />
 
-      <View style={styles.bottomSection}>{renderBottom()}</View>
+        <View style={styles.bottomSection}>{renderBottom()}</View>
+      </ScrollView>
 
       <Pressable
         style={styles.fab}
@@ -108,6 +134,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
   header: {
     paddingHorizontal: 24,
     paddingTop: 24,
@@ -118,12 +150,18 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#e8eaed',
     marginHorizontal: 16,
+    marginVertical: 4,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    color: '#687076',
+    fontWeight: '500',
+    marginHorizontal: 16,
+    marginBottom: 4,
+    marginTop: 8,
   },
   bottomSection: {
-    flex: 1,
-  },
-  listContent: {
-    paddingVertical: 8,
+    minHeight: 120,
   },
   errorBanner: {
     backgroundColor: '#fdecea',

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
+import dayjs from 'dayjs';
 import DateTimePicker, {
   type CalendarDay,
   useDefaultStyles,
@@ -35,6 +36,8 @@ export function Calendar({
     for (const item of calendarDates) {
       map.set(item.date, item.count);
     }
+    // DEBUG: remove after confirming dots work
+    console.log('[Calendar] eventMap size:', map.size, 'keys:', [...map.keys()]);
     return map;
   }, [calendarDates]);
 
@@ -65,8 +68,18 @@ export function Calendar({
   };
 
   const CustomDay = (day: CalendarDay) => {
-    const count = eventMap.get(day.date) || 0;
+    // day.date can be a Dayjs object or a string depending on the library version
+    const dateKey =
+      typeof day.date === 'string'
+        ? day.date.substring(0, 10)
+        : dayjs(day.date as any).format('YYYY-MM-DD');
+    const count = eventMap.get(dateKey) ?? 0;
+    // DEBUG: log only day 1 to avoid flooding console
+    if (day.number === 1 && day.isCurrentMonth) {
+      console.log('[Calendar] day.date raw:', day.date, 'typeof:', typeof day.date, 'dateKey:', dateKey, 'count:', count, 'mapHas:', eventMap.has(dateKey));
+    }
     const hasEvents = count > 0;
+    const dotCount = Math.min(count, 3);
 
     return (
       <View style={d.dayWrapper}>
@@ -88,14 +101,21 @@ export function Calendar({
           >
             {day.number}
           </ThemedText>
+          {hasEvents && (
+            <View style={d.dotsContainer}>
+              {Array.from({ length: dotCount }).map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    d.dot,
+                    day.isSelected && d.dotSelected,
+                    !day.isCurrentMonth && d.dotOutside,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
         </View>
-        {hasEvents && (
-          <View style={d.dotsRow}>
-            {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
-              <View key={i} style={d.dot} />
-            ))}
-          </View>
-        )}
       </View>
     );
   };
@@ -147,8 +167,14 @@ const s = StyleSheet.create({
 });
 
 const d = StyleSheet.create({
-  dayWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 },
-  dayCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  dayWrapper: { alignItems: 'center', justifyContent: 'center' },
+  dayCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   selected: { backgroundColor: '#0a7ea4' },
   today: { borderWidth: 1, borderColor: '#b0b8bf', backgroundColor: '#f0f4f8' },
   outside: { opacity: 0.3 },
@@ -156,6 +182,22 @@ const d = StyleSheet.create({
   selectedText: { color: '#fff', fontWeight: '700' },
   todayText: { color: '#444e57' },
   outsideText: { color: '#d1d5db' },
-  dotsRow: { flexDirection: 'row', gap: 2, marginTop: 2 },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#0a7ea4' },
+  // Dots positioned absolutely at the bottom of the circle
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 3,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#0a7ea4',
+  },
+  dotSelected: { backgroundColor: 'rgba(255,255,255,0.9)' },
+  dotOutside: { backgroundColor: '#b0c4ce' },
 });
