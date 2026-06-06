@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ThemedText } from '@/src/components/ui/themed-text';
@@ -29,6 +30,7 @@ function SkeletonList() {
 }
 
 export default function CustomerEventsScreen() {
+  const insets = useSafeAreaInsets();
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
   const renderItem = useCallback(
@@ -60,7 +62,7 @@ export default function CustomerEventsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Eventos</ThemedText>
         <ThemedText>Explora los eventos disponibles</ThemedText>
@@ -76,6 +78,7 @@ export default function CustomerEventsScreen() {
       )}
 
       <FlatList
+        testID="events-list"
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
