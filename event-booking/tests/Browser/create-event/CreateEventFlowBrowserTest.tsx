@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 import { router } from 'expo-router';
 
-jest.mock('@/src/services/eventService');
+jest.mock('@/src/services/events');
 jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
 }));
@@ -29,7 +29,7 @@ describe('create event flow', () => {
   });
 
   it('should complete full creation flow: modals, submit, success, and redirect', async () => {
-    (eventService.createEvent as jest.Mock).mockResolvedValueOnce({});
+    (eventsService.create as jest.Mock).mockResolvedValueOnce({});
 
     render(<CreateEventScreen />);
 
@@ -71,7 +71,7 @@ describe('create event flow', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
-      expect(eventService.createEvent).toHaveBeenCalled();
+      expect(eventsService.create).toHaveBeenCalled();
     });
 
     await waitFor(() => {

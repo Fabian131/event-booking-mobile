@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 import { ApiError } from '@/src/types/auth';
 
-jest.mock('@/src/services/eventService');
+jest.mock('@/src/services/events');
 jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
 }));
@@ -26,7 +26,7 @@ describe('server error submit', () => {
   });
 
   it('should display translated schedule conflict error', async () => {
-    (eventService.createEvent as jest.Mock).mockRejectedValueOnce(
+    (eventsService.create as jest.Mock).mockRejectedValueOnce(
       new ApiError('Error', 409, [{ field: 'schedule', message: 'An event already occupies this date and time slot' }])
     );
 
@@ -36,7 +36,7 @@ describe('server error submit', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
-      expect(eventService.createEvent).toHaveBeenCalled();
+      expect(eventsService.create).toHaveBeenCalled();
     });
 
     await waitFor(() => {

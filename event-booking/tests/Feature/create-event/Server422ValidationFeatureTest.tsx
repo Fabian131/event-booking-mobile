@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 import { ApiError } from '@/src/types/auth';
 
-jest.mock('@/src/services/eventService');
+jest.mock('@/src/services/events');
 jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
 }));
@@ -25,7 +25,7 @@ describe('server 422 validation error submit', () => {
   });
 
   it('should render server-side field validation errors from details[]', async () => {
-    (eventService.createEvent as jest.Mock).mockRejectedValueOnce(
+    (eventsService.create as jest.Mock).mockRejectedValueOnce(
       new ApiError('Validation error', 422, [
         { field: 'title', message: 'Title must be at least 3 characters' },
         { field: 'max_capacity', message: 'Capacity must be a positive integer' },
@@ -37,7 +37,7 @@ describe('server 422 validation error submit', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
-      expect(eventService.createEvent).toHaveBeenCalled();
+      expect(eventsService.create).toHaveBeenCalled();
     });
 
     await waitFor(() => {

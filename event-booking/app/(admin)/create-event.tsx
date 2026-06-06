@@ -17,7 +17,7 @@ import { BottomModal } from '@/src/components/ui/BottomModal';
 import { ApiError } from '@/src/types/auth';
 import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -130,7 +130,7 @@ export default function CreateEventScreen() {
         };
         fd.append('image', file as unknown as Blob);
       }
-      await eventService.createEvent(fd);
+      await eventsService.create(fd);
       setServerError('');
       setSuccess(true);
       setTimeout(() => router.back(), 1200);

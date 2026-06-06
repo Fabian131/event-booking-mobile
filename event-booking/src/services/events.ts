@@ -17,4 +17,8 @@ export const eventsService = {
   getById(id: string): Promise<Event> {
     return api.get<Event>(`/api/v1/events/${id}`);
   },
+
+  create(formData: FormData): Promise<Event> {
+    return api.postForm<Event>('/api/v1/events', formData);
+  },
 };
