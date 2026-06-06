@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react-nativ
 import CreateEventScreen from '@/app/(admin)/create-event';
 import { eventService } from '@/src/services/eventService';
 import { router } from 'expo-router';
-import React from 'react';
 
 jest.mock('@/src/services/eventService');
 jest.mock('expo-router', () => ({
@@ -12,50 +11,16 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 
-jest.mock('@react-native-picker/picker', () => {
-  const { TextInput } = require('react-native');
-  const Picker = (props: any) => (
-    <TextInput
-      testID="category-picker"
-      value={props.selectedValue}
-      onChangeText={props.onValueChange}
-      placeholder="category-placeholder"
-    />
-  );
-  Picker.Item = () => null;
-  return { Picker };
-});
-
-let timePickerCount = 0;
-
-jest.mock('@react-native-community/datetimepicker', () => {
-  const { View } = require('react-native');
-  return function MockDateTimePicker({ onChange, mode }: any) {
-    React.useEffect(() => {
-      const date = new Date();
-      date.setDate(date.getDate() + 1);
-      if (mode === 'time') {
-        if (timePickerCount === 0) {
-          date.setHours(10, 0, 0, 0);
-          timePickerCount++;
-        } else {
-          date.setHours(12, 0, 0, 0);
-        }
-      }
-      setTimeout(() => {
-        onChange({ type: 'set' }, date);
-      }, 0);
-    }, []);
-    return <View testID="date-time-picker" />;
-  };
-});
+// DateTimePicker is only rendered on Android in the new implementation.
+// jest-expo runs as iOS by default so the native picker is never reached.
+// Keep a lightweight mock just in case.
+jest.mock('@react-native-community/datetimepicker', () => 'DateTimePicker');
 
 describe('create event flow', () => {
   jest.setTimeout(15000);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    timePickerCount = 0;
   });
 
   it('should complete full creation flow and show loading states', async () => {
@@ -69,24 +34,43 @@ describe('create event flow', () => {
 
     // 1. Fill text fields
     fireEvent.changeText(screen.getByPlaceholderText('Nombre del evento'), 'Gran Concierto');
-    fireEvent.changeText(screen.getByPlaceholderText('Breve descripción del evento'), 'Un evento espectacular');
+    fireEvent.changeText(screen.getByPlaceholderText('Breve descripcion del evento'), 'Un evento espectacular');
     fireEvent.changeText(screen.getByPlaceholderText('Ej. 100'), '500');
 
-    // 2. Fill category
-    fireEvent.changeText(screen.getByPlaceholderText('category-placeholder'), 'music');
+    // 2. Select category via modal (new pure-JS implementation)
+    fireEvent.press(screen.getByText('Selecciona una categoria'));
+    await waitFor(() => {
+      expect(screen.getByText('Musica')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByText('Musica'));
+    await waitFor(() => {
+      expect(screen.queryByText('Selecciona una categoria')).toBeNull();
+    });
 
-    // 3. Fill dates
+    // 3. Select date via modal — open, press Listo to confirm default value
     fireEvent.press(screen.getByText('Selecciona una fecha'));
+    await waitFor(() => expect(screen.getByText('Fecha del evento')).toBeTruthy());
+    fireEvent.press(screen.getByText('Listo'));
     await waitFor(() => {
       expect(screen.queryByText('Selecciona una fecha')).toBeNull();
     });
 
+    // 4. Select start time via modal
     fireEvent.press(screen.getByText('Selecciona hora de inicio'));
+    await waitFor(() => expect(screen.getByText('Hora de inicio')).toBeTruthy());
+    // Use spinners to set 09:00 (press Hora down once: 12->11->...->9 is complex, just confirm default)
+    fireEvent.press(screen.getAllByText('Listo')[0]);
     await waitFor(() => {
       expect(screen.queryByText('Selecciona hora de inicio')).toBeNull();
     });
 
+    // 5. Select end time via modal (needs to be after start time)
     fireEvent.press(screen.getByText('Selecciona hora de fin'));
+    await waitFor(() => expect(screen.getByText('Hora de fin')).toBeTruthy());
+    // Press Hora up once to ensure end time > start time
+    const upButtons = screen.getAllByText('▲');
+    fireEvent.press(upButtons[0]);
+    fireEvent.press(screen.getAllByText('Listo')[0]);
     await waitFor(() => {
       expect(screen.queryByText('Selecciona hora de fin')).toBeNull();
     });
