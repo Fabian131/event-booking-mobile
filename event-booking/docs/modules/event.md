@@ -104,21 +104,31 @@ app/
 |-- (admin)/
 |   `-- create-event.tsx              # Create event screen (this module)
 src/
+|-- components/ui/
+|   |-- BottomModal.tsx              # Reusable bottom-sheet modal wrapper
+|   |-- JSDatePicker.tsx            # Pure-JS Day/Month/Year spinner
+|   |-- JSTimePicker.tsx            # Pure-JS Hour/Minute spinner
+|   `-- UnitSpinner.tsx             # ▲/▼ increment/decrement control
 |-- services/
 |   `-- eventService.ts              # eventService.createEvent(FormData)
+|-- types/
+|   |-- auth.ts                      # FieldError, ApiError
+|   `-- event.ts                     # EventResponse, EVENT_CATEGORIES, EventCategory
 |-- utils/
 |   `-- validators.ts                # validateCreateEventForm()
-|-- types/
-|   `-- auth.ts                      # FieldError, ApiError
 tests/
 |-- Unit/create-event/
 |   |-- TitleValidationUnitTest.ts
 |   |-- CapacityValidationUnitTest.ts
-|   `-- DateTimeValidationUnitTest.ts
+|   |-- DateTimeValidationUnitTest.ts
+|   `-- DescriptionValidationUnitTest.ts
 |-- Feature/create-event/
 |   |-- EmptySubmitFeatureTest.tsx
 |   |-- ServerErrorFeatureTest.tsx
-|   `-- ValidSubmitFeatureTest.tsx
+|   |-- ValidSubmitFeatureTest.tsx
+|   |-- Server422ValidationFeatureTest.tsx
+|   |-- NetworkErrorFeatureTest.tsx
+|   `-- GenericServerErrorFeatureTest.tsx
 `-- Browser/create-event/
     `-- CreateEventFlowBrowserTest.tsx
 ```
@@ -231,19 +241,19 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 | `title` | Required, min 3, max 64 characters |
 | `description` | Optional, max 255 characters |
 | `max_capacity` | Required, numeric, min 1, max 9,999,999 |
-| `category` | Required, non-empty string |
+| `category` | Required, valid enum: `sports`, `music`, `culture`, `gastronomy`, `wellness`, `education`, `other` |
 | `date` | Required, must not be in the past (compared at midnight) |
 | `start_time` | Required |
 | `end_time` | Required, must be after `start_time` |
 
-### Components (Inline — defined in create-event.tsx)
+### Components
 
-| Component | Description |
-|-----------|-------------|
-| `UnitSpinner` | Single ▲ value ▼ control. Reused by `JSDatePicker` and `JSTimePicker` |
-| `JSDatePicker` | Day / Month / Year spinner using `UnitSpinner`. Enforces `minimumDate = today` |
-| `JSTimePicker` | Hour (±1h) / Minute (±5m) spinner using `UnitSpinner` |
-| `BottomModal` | Reusable bottom sheet wrapper: overlay + header with "Listo" button + children |
+| Component | File | Description |
+|-----------|------|-------------|
+| `UnitSpinner` | `src/components/ui/UnitSpinner.tsx` | Single ▲ value ▼ control. Reused by `JSDatePicker` and `JSTimePicker` |
+| `JSDatePicker` | `src/components/ui/JSDatePicker.tsx` | Day / Month / Year spinner using `UnitSpinner`. Enforces `minimumDate = today` |
+| `JSTimePicker` | `src/components/ui/JSTimePicker.tsx` | Hour / Minute spinner (±1 min) using `UnitSpinner` |
+| `BottomModal` | `src/components/ui/BottomModal.tsx` | Reusable bottom-sheet modal wrapper: overlay + header with "Listo" button + children |
 
 ---
 
@@ -356,9 +366,17 @@ CreateEventScreen
 | Invalid capacity (0, NaN, > 9999999) | Unit | `max_capacity` error returned |
 | Past date | Unit | `date` error returned |
 | `end_time <= start_time` | Unit | `end_time` error returned |
-| Submit empty form | Feature | All 6 field errors shown, API not called |
+| Empty description (optional) | Unit | No error, field is optional |
+| Description > 255 chars | Unit | `description` error returned |
+| Valid category | Unit | No error |
+| Invalid category (not in enum) | Unit | `category` error returned |
+| Today date (happy path) | Unit | No error |
+| Submit empty form | Feature | All field errors shown, API not called |
 | Schedule conflict (409) | Feature | Spanish error banner displayed |
-| Valid data, API succeeds | Feature | `eventService.createEvent` called, `router.back()` invoked |
+| Server 422 validation | Feature | Server-side `details[]` rendered as field errors |
+| Network error (TypeError) | Feature | Connection error banner displayed |
+| Generic server error (500) | Feature | Unexpected error banner displayed |
+| Valid data, API succeeds | Feature | `eventService.createEvent` called, success banner shown, `router.back()` invoked |
 | Complete happy-path flow | Browser | Category modal → date modal → time modals → submit → API call → redirect |
 
 ---
@@ -369,10 +387,14 @@ CreateEventScreen
 |-------|-------|----------|
 | Unit | `tests/Unit/create-event/TitleValidationUnitTest.ts` | Title min/max/required rules |
 | Unit | `tests/Unit/create-event/CapacityValidationUnitTest.ts` | Capacity range and NaN rules |
-| Unit | `tests/Unit/create-event/DateTimeValidationUnitTest.ts` | Past date, end > start, category required |
+| Unit | `tests/Unit/create-event/DateTimeValidationUnitTest.ts` | Past date, end > start, category required, category enum, today date |
+| Unit | `tests/Unit/create-event/DescriptionValidationUnitTest.ts` | Optional field: empty passes, >255 fails |
 | Feature | `tests/Feature/create-event/EmptySubmitFeatureTest.tsx` | All field errors on empty submit, API not called |
 | Feature | `tests/Feature/create-event/ServerErrorFeatureTest.tsx` | Schedule conflict banner in Spanish |
-| Feature | `tests/Feature/create-event/ValidSubmitFeatureTest.tsx` | API called + `router.back()` on success |
+| Feature | `tests/Feature/create-event/ValidSubmitFeatureTest.tsx` | API called + success banner + `router.back()` on success |
+| Feature | `tests/Feature/create-event/Server422ValidationFeatureTest.tsx` | Server-side field validation errors from `details[]` |
+| Feature | `tests/Feature/create-event/NetworkErrorFeatureTest.tsx` | Network error banner on `TypeError` |
+| Feature | `tests/Feature/create-event/GenericServerErrorFeatureTest.tsx` | Generic error banner on unexpected error |
 | Browser | `tests/Browser/create-event/CreateEventFlowBrowserTest.tsx` | Full form fill → modal interactions → API call → redirect |
 
 ### Commands
@@ -426,8 +448,6 @@ npx expo lint
 
 - The image picker is limited to the device gallery (`launchImageLibraryAsync`);
   camera capture is not supported in this version.
-- The pure-JS time spinner increments minutes by 5 only; arbitrary minute values
-  cannot be entered.
 - The iOS modals dismiss by pressing "Listo" or tapping the overlay; there is no
   explicit "Cancelar" button.
 
@@ -447,6 +467,8 @@ npx expo lint
   `DateTimePicker display="spinner"` with pure-JS modal-based pickers.
 - Added Spanish translation for backend schedule-conflict error.
 - Added full test suite: 3 Unit, 3 Feature, 1 Browser test files.
+- **QA review fixes:** Added auth guard to `(admin)` layout, corrected Spanish orthography (tildes/accents), fixed font weight consistency across labels, added success feedback banner, fixed `app.json` plugins (removed invalid `@react-native-community/datetimepicker`, added `expo-image-picker`), unified network error message, removed unused `@react-native-picker/picker` dependency, added category enum validation (`EVENT_CATEGORIES`), added image format validation (png/jpg/webp), typed `eventService.createEvent()` with `EventResponse`, added accessibility labels to all selectors and image preview, added 3 feature tests (NetworkError, GenericServerError, Server422Validation), added 1 unit test (DescriptionValidationUnitTest), changed minute spinner to ±1.
+- **Component extraction:** Moved `UnitSpinner`, `JSDatePicker`, `JSTimePicker`, and `BottomModal` from inline definitions to `src/components/ui/` for reuse by upcoming edit-event screen.
 
 ---
 

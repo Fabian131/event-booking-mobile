@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView,
+  KeyboardAvoidingView, Platform, ScrollView,
   StyleSheet, View, TouchableOpacity, Image, FlatList,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -11,6 +11,9 @@ import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { Input } from '@/src/components/ui/Input';
 import { Button } from '@/src/components/ui/Button';
+import { JSDatePicker } from '@/src/components/ui/JSDatePicker';
+import { JSTimePicker } from '@/src/components/ui/JSTimePicker';
+import { BottomModal } from '@/src/components/ui/BottomModal';
 import { ApiError } from '@/src/types/auth';
 import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
@@ -29,95 +32,11 @@ const CATEGORIES = [
   { label: 'Otro', value: 'other' },
 ];
 
-const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 function fmtDate(d: Date) { return d.toISOString().split('T')[0]; }
 function fmtTime(d: Date) { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-
-// ---------------------------------------------------------------------------
-// Pure-JS UnitSpinner (works everywhere, no native deps)
-// ---------------------------------------------------------------------------
-function UnitSpinner({ label, value, onUp, onDown }: {
-  label: string; value: string; onUp: () => void; onDown: () => void;
-}) {
-  return (
-    <View style={pSt.unit}>
-      <ThemedText style={pSt.unitLabel}>{label}</ThemedText>
-      <TouchableOpacity onPress={onUp} style={pSt.btn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <ThemedText style={pSt.arrow}>{'▲'}</ThemedText>
-      </TouchableOpacity>
-      <View style={pSt.box}>
-        <ThemedText style={pSt.val}>{value}</ThemedText>
-      </View>
-      <TouchableOpacity onPress={onDown} style={pSt.btn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <ThemedText style={pSt.arrow}>{'▼'}</ThemedText>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// JSDatePicker
-// ---------------------------------------------------------------------------
-function JSDatePicker({ value, onChange }: { value: Date; onChange: (d: Date) => void }) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  function clamp(d: Date) { const c = new Date(d); c.setHours(0,0,0,0); return c < today ? new Date(today) : c; }
-  function adj(fn: (d: Date) => void) { const d = new Date(value); fn(d); onChange(clamp(d)); }
-
-  return (
-    <View style={pSt.row}>
-      <UnitSpinner label="Día" value={String(value.getDate()).padStart(2,'0')}
-        onUp={() => adj(d => d.setDate(d.getDate()+1))} onDown={() => adj(d => d.setDate(d.getDate()-1))} />
-      <UnitSpinner label="Mes" value={MONTH_NAMES[value.getMonth()]}
-        onUp={() => adj(d => d.setMonth(d.getMonth()+1))} onDown={() => adj(d => d.setMonth(d.getMonth()-1))} />
-      <UnitSpinner label="Año" value={String(value.getFullYear())}
-        onUp={() => adj(d => d.setFullYear(d.getFullYear()+1))} onDown={() => adj(d => d.setFullYear(d.getFullYear()-1))} />
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// JSTimePicker
-// ---------------------------------------------------------------------------
-function JSTimePicker({ value, onChange }: { value: Date; onChange: (d: Date) => void }) {
-  function adj(fn: (d: Date) => void) { const d = new Date(value); fn(d); onChange(d); }
-
-  return (
-    <View style={pSt.row}>
-      <UnitSpinner label="Hora" value={String(value.getHours()).padStart(2,'0')}
-        onUp={() => adj(d => d.setHours((d.getHours()+1)%24))} onDown={() => adj(d => d.setHours((d.getHours()+23)%24))} />
-      <View style={pSt.colon}><ThemedText style={pSt.colonTxt}>:</ThemedText></View>
-      <UnitSpinner label="Min" value={String(value.getMinutes()).padStart(2,'0')}
-        onUp={() => adj(d => d.setMinutes((d.getMinutes()+1)%60))} onDown={() => adj(d => d.setMinutes((d.getMinutes()+59)%60))} />
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// BottomSheet modal wrapper
-// ---------------------------------------------------------------------------
-function BottomModal({ visible, title, onDone, children }: {
-  visible: boolean; title: string; onDone: () => void; children: React.ReactNode;
-}) {
-  return (
-    <Modal visible={visible} transparent animationType="slide">
-      <Pressable style={st.overlay} onPress={onDone}>
-        <View style={st.sheet}>
-          <View style={st.sheetHeader}>
-            <ThemedText style={st.sheetTitle}>{title}</ThemedText>
-            <TouchableOpacity onPress={onDone}>
-              <ThemedText style={st.doneBtn}>Listo</ThemedText>
-            </TouchableOpacity>
-          </View>
-          {children}
-        </View>
-      </Pressable>
-    </Modal>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Main screen
@@ -357,21 +276,6 @@ export default function CreateEventScreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Picker styles
-// ---------------------------------------------------------------------------
-const pSt = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16, gap: 8 },
-  unit: { alignItems: 'center', flex: 1 },
-  unitLabel: { fontSize: 11, color: '#888', marginBottom: 6 },
-  btn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0F4FF', borderRadius: 8 },
-  arrow: { fontSize: 14, color: '#1A56DB' },
-  box: { width: 70, height: 54, justifyContent: 'center', alignItems: 'center', backgroundColor: '#EEF4FF', borderRadius: 10, marginVertical: 6, borderWidth: 1.5, borderColor: '#C5D8FF' },
-  val: { fontSize: 24, fontWeight: '700', color: '#1A56DB' },
-  colon: { alignItems: 'center', paddingTop: 30 },
-  colonTxt: { fontSize: 26, fontWeight: '700', color: '#555' },
-});
-
-// ---------------------------------------------------------------------------
 // Main styles
 // ---------------------------------------------------------------------------
 const st = StyleSheet.create({
@@ -394,12 +298,6 @@ const st = StyleSheet.create({
   imgContainer: { marginBottom: 16 },
   imgBtn: { height: 50, borderWidth: 1, borderColor: '#ccc', borderStyle: 'dashed', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   preview: { width: '100%', height: 200, borderRadius: 8, resizeMode: 'cover' },
-  // Modal
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingBottom: 32 },
-  sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#ddd' },
-  sheetTitle: { fontSize: 16, fontWeight: '600' },
-  doneBtn: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
   optRow: { paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#eee' },
   optRowSel: { backgroundColor: '#EEF4FF' },
   optTxt: { fontSize: 16 },
