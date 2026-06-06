@@ -74,7 +74,9 @@ describe('pagination', () => {
       expect(screen.getByText('Page 1 Event')).toBeTruthy();
     });
 
-    fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
+    await act(async () => {
+      fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Page 2 Event')).toBeTruthy();
