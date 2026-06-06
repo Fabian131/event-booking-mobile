@@ -7,7 +7,7 @@ import { ThemedView } from '@/src/components/ui/themed-view';
 import { EmptyState, LoadingState } from '@/src/components/ui/EmptyState';
 import { Calendar } from '@/src/components/domain/Calendar';
 import { EventCard } from '@/src/components/domain/EventCard';
-import { useEvents } from '@/src/hooks/useEvents';
+import { useCalendarEvents } from '@/src/hooks/useCalendarEvents';
 import type { EventSummary } from '@/src/types/event';
 
 function EventList({ events, onPress }: { events: EventSummary[]; onPress: (id: string) => void }) {
@@ -48,7 +48,7 @@ export default function AdminCalendarScreen() {
     selectDate,
     onMonthChange,
     onYearChange,
-  } = useEvents();
+  } = useCalendarEvents();
 
   const renderBottom = () => {
     if (!selectedDate) {

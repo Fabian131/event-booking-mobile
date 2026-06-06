@@ -56,7 +56,7 @@ export default function CustomerEventsScreen() {
       <EmptyState
         icon="📅"
         title="Sin eventos por ahora"
-        subtitle="Vuelve pronto para descubrir nuevas actividades."
+        message="Vuelve pronto para descubrir nuevas actividades."
       />
     );
   };

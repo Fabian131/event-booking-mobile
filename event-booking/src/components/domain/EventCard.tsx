@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View, Animated } from 'react-native';
+import { useEffect, useRef } from 'react';
 import { ThemedText } from '../ui/themed-text';
 import type { EventSummary } from '@/src/types/event';
 import { formatTimeRange } from '@/src/utils/dateHelpers';
@@ -156,5 +157,64 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ba1a6',
     marginTop: 1,
+  },
+});
+
+export function EventCardSkeleton() {
+  const opacity = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View style={[skeletonStyles.card, { opacity }]}>
+      <View style={skeletonStyles.colorBar} />
+      <View style={skeletonStyles.content}>
+        <View style={skeletonStyles.block} />
+        <View style={[skeletonStyles.block, skeletonStyles.half]} />
+        <View style={[skeletonStyles.block, skeletonStyles.short]} />
+      </View>
+    </Animated.View>
+  );
+}
+
+const skeletonStyles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+  },
+  colorBar: {
+    width: 4,
+    height: 70,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+  },
+  content: {
+    flex: 1,
+    marginLeft: 12,
+    gap: 8,
+  },
+  block: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    height: 16,
+    width: '100%',
+  },
+  half: {
+    width: '60%',
+  },
+  short: {
+    width: '35%',
+    height: 12,
   },
 });
