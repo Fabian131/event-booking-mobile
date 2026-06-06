@@ -45,6 +45,7 @@ export default function CustomerLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
         }}
       />
+      <Tabs.Screen name="events/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
