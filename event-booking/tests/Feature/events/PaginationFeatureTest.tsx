@@ -74,9 +74,7 @@ describe('pagination', () => {
       expect(screen.getByText('Page 1 Event')).toBeTruthy();
     });
 
-    await act(async () => {
-      fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
-    });
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
 
     await waitFor(() => {
       expect(screen.getByText('Page 2 Event')).toBeTruthy();
@@ -99,9 +97,7 @@ describe('pagination', () => {
       expect(screen.getByText('Only Event')).toBeTruthy();
     });
 
-    await act(async () => {
-      fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
-    });
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'onEndReached');
 
     expect(eventsService.list).toHaveBeenCalledTimes(1);
   });
