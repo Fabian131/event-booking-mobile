@@ -76,7 +76,7 @@ describe('create event flow', () => {
     });
 
     // 4. Submit form
-    fireEvent.press(screen.getByText('Crear Evento'));
+    fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     // Verify API called with everything
     await waitFor(() => {

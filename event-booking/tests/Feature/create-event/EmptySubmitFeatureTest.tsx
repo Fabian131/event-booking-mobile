@@ -21,7 +21,7 @@ describe('empty form submit', () => {
   it('should not call API and should show all validation errors when submitting empty form', async () => {
     render(<CreateEventScreen />);
 
-    fireEvent.press(screen.getByText('Crear Evento'));
+    fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
       // Text field errors (messages come from validators.ts, still have accents)

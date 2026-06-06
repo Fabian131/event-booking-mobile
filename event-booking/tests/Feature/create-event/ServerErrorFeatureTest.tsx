@@ -33,7 +33,7 @@ describe('server error submit', () => {
     render(<CreateEventScreen />);
 
     // Since we mocked validation to return empty, we can just press submit
-    fireEvent.press(screen.getByText('Crear Evento'));
+    fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
       expect(eventService.createEvent).toHaveBeenCalled();
