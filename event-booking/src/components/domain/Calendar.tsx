@@ -43,9 +43,7 @@ export function Calendar({
 
   const customStyles = {
     ...defaultStyles,
-    calendar: { ...defaultStyles.calendar, backgroundColor: '#fff' },
-    header: { ...defaultStyles.header, backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 12, color: '#000' },
-    header_label: { ...defaultStyles.header_label, color: '#11181c', fontSize: 17, fontWeight: '600' as const },
+    header: { ...defaultStyles.header, backgroundColor: '#fff', paddingHorizontal: 8, paddingVertical: 12 },
     month_selector_label: { ...defaultStyles.month_selector_label, color: '#11181c' },
     year_selector_label: { ...defaultStyles.year_selector_label, color: '#11181c' },
     weekdays: { ...defaultStyles.weekdays, backgroundColor: '#fff' },
@@ -56,11 +54,8 @@ export function Calendar({
     today_label: { ...defaultStyles.today_label, color: '#444e57' },
     selected: { ...defaultStyles.selected, backgroundColor: '#0a7ea4' },
     selected_label: { ...defaultStyles.selected_label, color: '#fff', fontWeight: '700' as const },
-    placeholder: { ...defaultStyles.placeholder, color: '#d1d5db' },
-    month_container: { ...defaultStyles.month_container, backgroundColor: '#fff' },
     month: { ...defaultStyles.month, backgroundColor: '#f5f5f5' },
     month_label: { ...defaultStyles.month_label, color: '#11181c' },
-    year_container: { ...defaultStyles.year_container, backgroundColor: '#fff' },
     year: { ...defaultStyles.year, backgroundColor: '#f5f5f5' },
     year_label: { ...defaultStyles.year_label, color: '#11181c' },
     button_prev_image: { ...defaultStyles.button_prev_image, tintColor: '#000' },

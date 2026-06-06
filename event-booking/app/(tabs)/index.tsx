@@ -194,7 +194,10 @@ const styles = StyleSheet.create({
   fabText: {
     color: '#fff',
     fontSize: 28,
-    lineHeight: 30,
+    lineHeight: 28,
     fontWeight: '300',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
 });

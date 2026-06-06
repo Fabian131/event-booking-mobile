@@ -12,12 +12,16 @@ import { validateLoginForm, type LoginFormValues } from '@/src/utils/validators'
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const { registered } = useLocalSearchParams<{ registered?: string }>();
-  const [showSuccess, setShowSuccess] = useState(registered === 'true');
+  const { registered, loggedOut } = useLocalSearchParams<{ registered?: string; loggedOut?: string }>();
+  const [showSuccess, setShowSuccess] = useState(registered === 'true' || loggedOut === 'true');
+  const successMessage =
+    loggedOut === 'true'
+      ? 'Sesión cerrada correctamente.'
+      : 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.';
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (registered !== 'true') return;
+    if (registered !== 'true' && loggedOut !== 'true') return;
 
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
@@ -115,7 +119,7 @@ export default function LoginScreen() {
           {showSuccess && (
             <Animated.View style={[styles.successBanner, { opacity: fadeAnim }]}>
               <ThemedText style={styles.successText}>
-                Cuenta creada exitosamente. Ahora puedes iniciar sesión.
+              {showSuccess ? successMessage : ''}
               </ThemedText>
             </Animated.View>
           )}
