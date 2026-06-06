@@ -8,6 +8,8 @@ export const eventsService = {
       limit: String(params.limit ?? 20),
       ...(params.search ? { search: params.search } : {}),
       ...(params.category ? { category: params.category } : {}),
+      ...(params.is_active !== undefined ? { is_active: String(params.is_active) } : {}),
+      ...(params.date ? { date: params.date } : {}),
     });
     return api.get<EventsListResponse>(`/api/v1/events?${query}`);
   },

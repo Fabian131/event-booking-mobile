@@ -39,6 +39,7 @@ The data layer (types, service, hook) is isolated from the screen so that the `E
 | `search`    | string  | No       | —       | keyword search on title/description |
 | `category`  | string  | No       | —       | enum: see `EventCategory` |
 | `is_active` | boolean | No       | true    | filter by active status   |
+| `date`      | string  | No       | —       | filter by event date (YYYY-MM-DD) |
 
 ### Response (200 OK)
 
@@ -138,7 +139,7 @@ api.get('/api/v1/events?page=1&limit=20')
 ┌──────────────────────────────────────────────────────┐
 │ 200 OK     → setEvents(data), setHasNextPage(...)    │
 │ 500 Error  → setError(ApiError.message)              │
-│ Network    → setError(TypeError.message)             │
+│ Network    → setError('Error al cargar los eventos') │
 └──────────────────────────────────────────────────────┘
     │
     ▼
@@ -264,7 +265,7 @@ refresh() → setRefreshing(true) → loadEvents(1, reset: true)
 | `EventSummary`        | Full event shape returned by the API: id, title, description, image_url, max_capacity, remaining_capacity, category, date, start_time, end_time, is_active, timestamps |
 | `PaginationMeta`      | `{ page, limit, total, total_pages, has_next_page }`                  |
 | `EventsListResponse`  | `{ data: EventSummary[], pagination: PaginationMeta }`                |
-| `EventsListParams`    | `{ page?, limit?, search?, category? }` — query params for the service |
+| `EventsListParams`    | `{ page?, limit?, search?, category?, is_active?, date? }` — query params for the service |
 
 ---
 
@@ -309,7 +310,7 @@ CustomerEventsScreen
 
 | Error          | Trigger                            | UI Feedback                              |
 |----------------|------------------------------------|------------------------------------------|
-| Network error  | `fetch` throws `TypeError`         | Red banner with `TypeError.message` + "Reintentar" |
+| Network error  | `fetch` throws `TypeError`         | Red banner with `'Error al cargar los eventos'` + "Reintentar" |
 | Server 500     | API returns 5xx                    | Red banner with `ApiError.message` + "Reintentar"  |
 | Empty result   | API returns `data: []`             | `EmptyState` component (no banner)       |
 | Retry success  | User taps "Reintentar", API recovers | Error banner disappears, cards render   |

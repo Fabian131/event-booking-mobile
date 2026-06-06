@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -30,9 +31,12 @@ function SkeletonList() {
 export default function CustomerEventsScreen() {
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
-  const renderItem = ({ item }: { item: EventSummary }) => (
-    <EventCard event={item} />
+  const renderItem = useCallback(
+    ({ item }: { item: EventSummary }) => <EventCard event={item} />,
+    [],
   );
+
+  const Separator = useCallback(() => <View style={styles.separator} />, []);
 
   const renderFooter = () => {
     if (!loading || events.length === 0) return null;
@@ -83,7 +87,7 @@ export default function CustomerEventsScreen() {
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={Separator}
         showsVerticalScrollIndicator={false}
         style={styles.list}
       />
