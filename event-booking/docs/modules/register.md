@@ -134,7 +134,7 @@ app/
 │   ├── _layout.tsx                    # Auth group layout: headerless stack navigator
 │   ├── login.tsx                      # Login screen (wireframe, pending implementation)
 │   └── register.tsx                   # Registration screen (this module)
-└── (tabs)/
+└── (admin)/
     └── ...
 tests/
 ├── Unit/
@@ -362,7 +362,7 @@ EXPO_PUBLIC_API_PORT=3000                       # Custom port (default: 8000)
 
 | Route decision          | Condition              |
 |-------------------------|------------------------|
-| `/(tabs)/` (Dashboard)  | `isAuthenticated` true |
+| `/(admin)/` (Dashboard)  | `isAuthenticated` true |
 | `/(auth)/login`         | `isAuthenticated` false |
 
 Since token storage is in-memory (no persistence), the app always starts at Login.

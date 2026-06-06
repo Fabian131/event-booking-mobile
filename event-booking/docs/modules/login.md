@@ -112,13 +112,13 @@ src/
 |       |-- themed-text.tsx            # Theme-aware text component
 |       `-- themed-view.tsx            # Theme-aware view container
 app/
-|-- _layout.tsx                        # Root layout: registers (auth), (tabs), (customer) groups
+|-- _layout.tsx                        # Root layout: registers (auth), (admin), (customer) groups
 |-- index.tsx                          # Entry redirect by restored role
 |-- (auth)/
 |   |-- _layout.tsx                    # Auth group layout (headerless stack)
 |   |-- login.tsx                      # Login screen, bifurcates by role after authentication
 |   `-- register.tsx                   # Registration screen
-|-- (tabs)/
+|-- (admin)/
 |   |-- _layout.tsx                    # Admin stack layout, business-only guard
 |   `-- index.tsx                      # Admin calendar (placeholder)
 `-- (customer)/
@@ -152,7 +152,7 @@ authService.login() -> POST /api/v1/auth/login
     v
 AuthContext stores auth_token and auth_user in SecureStore
     |
-    |-- role business -> router.replace('/(tabs)')     -> Admin Stack (calendario)
+    |-- role business -> router.replace('/(admin)')     -> Admin Stack (calendario)
     |-- role customer -> router.replace('/(customer)') -> Customer Tabs (eventos + reservas)
 ```
 
@@ -164,7 +164,7 @@ SecureStore. A valid stored compact user sets `status` to `business` or
 falls back to `guest`.
 
 The root entry `app/index.tsx` redirects based on restored status:
-- `isBusiness` → `/(tabs)`
+- `isBusiness` → `/(admin)`
 - `isAuthenticated` (customer) → `/(customer)`
 - `isGuest` → `/(auth)/login`
 
@@ -173,7 +173,7 @@ The root entry `app/index.tsx` redirects based on restored status:
 | Level | File | Rule |
 |-------|------|------|
 | Root entry | `app/index.tsx` | Wait restore, then redirect by role |
-| Admin layout | `app/(tabs)/_layout.tsx` | `!isBusiness` → login |
+| Admin layout | `app/(admin)/_layout.tsx` | `!isBusiness` → login |
 | Customer layout | `app/(customer)/_layout.tsx` | `!isAuthenticated` → login, `isBusiness` → admin |
 
 ---
@@ -353,7 +353,7 @@ LoginScreen
 | **Server error** | Red banner and field errors when API returns validation details |
 | **Loading** | Button spinner, disabled inputs, no duplicate submit |
 | **Network error** | Red banner: `No se pudo conectar con el servidor. Verifica tu conexion.` |
-| **Business success** | Redirected to `/(tabs)` (admin calendar stack) |
+| **Business success** | Redirected to `/(admin)` (admin calendar stack) |
 | **Customer success** | Redirected to `/(customer)` (customer tabs with eventos + reservas) |
 | **Logout** | Logout icon in header-right clears session and redirects to login |
 
@@ -388,7 +388,7 @@ LoginScreen
 | Submit empty form | Email and password required errors are displayed |
 | Invalid email format | Email format error is displayed and API is not called |
 | Invalid credentials | API 401 displays invalid credentials banner |
-| Business login success | Calls `authService.login`, stores session, redirects to `/(tabs)` |
+| Business login success | Calls `authService.login`, stores session, redirects to `/(admin)` |
 | Customer login success | Calls `authService.login`, stores session, redirects to `/(customer)` |
 | Network error | API unreachable shows connection error banner |
 | Server 500 error | Generic unexpected error banner is displayed |

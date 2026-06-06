@@ -103,7 +103,7 @@ app/
 │   ├── _layout.tsx                    # Auth group layout (headerless stack)
 │   ├── login.tsx                      # Login screen
 │   └── register.tsx                   # Registration screen (this module)
-└── (tabs)/
+└── (admin)/
     └── ...
 tests/
 └── [module].test.tsx                  # Integration tests for the screen
