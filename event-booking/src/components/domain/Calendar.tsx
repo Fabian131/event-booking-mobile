@@ -32,7 +32,6 @@ export function Calendar({
   calendarLoading,
 }: CalendarProps) {
   const defaultStyles = useDefaultStyles();
-  const [viewMode, setViewMode] = useState<ViewMode>('day');
 
   const eventMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -173,45 +172,29 @@ export function Calendar({
     );
   };
 
-  const handleHeaderPress = () => {
-    if (viewMode === 'day') {
-      setViewMode('month');
-    } else if (viewMode === 'month') {
-      setViewMode('year');
-    } else {
-      setViewMode('day');
-    }
-  };
-
   const handleMonthChange = (month: number) => {
     onMonthChange(month + 1);
-    setViewMode('day');
   };
 
   const handleYearChange = (year: number) => {
     onYearChange(year);
-    setViewMode('month');
+  };
+
+  const onPickerChange = ({ date }: { date?: string | Date }) => {
+    if (date) {
+      const dateStr = typeof date === 'string'
+        ? date.substring(0, 10)
+        : new Date(date as number | Date).toISOString().substring(0, 10);
+      onDatePress(dateStr);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.customHeader} onPress={handleHeaderPress}>
-        <ThemedText style={styles.customHeaderText}>
-          {getMonthName(currentMonth)} {currentYear}
-        </ThemedText>
-      </Pressable>
       <DateTimePicker
-        key={viewMode}
         mode="single"
         date={selectedDate || undefined}
-        onChange={({ date }) => {
-          if (date) {
-            const dateStr = typeof date === 'string'
-              ? date.substring(0, 10)
-              : new Date(date as number | Date).toISOString().substring(0, 10);
-            onDatePress(dateStr);
-          }
-        }}
+        onChange={onPickerChange}
         month={currentMonth - 1}
         year={currentYear}
         onMonthChange={handleMonthChange}
@@ -221,10 +204,6 @@ export function Calendar({
         weekdaysFormat="min"
         monthsFormat="short"
         monthCaptionFormat="full"
-        initialView={viewMode}
-        hideHeader={true}
-        disableMonthPicker={true}
-        disableYearPicker={true}
         styles={customStyles}
         components={{
           Day: CustomDay,
@@ -243,23 +222,12 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 8,
   },
-  customHeader: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  customHeaderText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#11181c',
-  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255,255,255,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
