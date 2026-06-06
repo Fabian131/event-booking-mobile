@@ -1,11 +1,14 @@
-export type EventCategory =
-  | 'sports'
-  | 'music'
-  | 'culture'
-  | 'gastronomy'
-  | 'wellness'
-  | 'education'
-  | 'other';
+export const EVENT_CATEGORIES = [
+  'sports',
+  'music',
+  'culture',
+  'gastronomy',
+  'wellness',
+  'education',
+  'other',
+] as const;
+
+export type EventCategory = (typeof EVENT_CATEGORIES)[number];
 
 export interface EventSummary {
   id: string;
