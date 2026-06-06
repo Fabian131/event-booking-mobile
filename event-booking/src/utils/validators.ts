@@ -1,5 +1,6 @@
 import type { FieldError } from '@/src/types/auth';
 import { EVENT_CATEGORIES } from '@/src/types/events';
+import { VALIDATION } from '@/src/constants/ui';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_REGEX = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s\-']+$/;
@@ -27,13 +28,13 @@ export function validateLoginForm(values: LoginFormValues): FieldError[] {
   const errors: FieldError[] = [];
 
   if (!values.email.trim()) {
-    errors.push({ field: 'email', message: 'El correo electrónico es obligatorio' });
+    errors.push({ field: 'email', message: VALIDATION.EMAIL_REQUIRED });
   } else if (!EMAIL_REGEX.test(values.email.trim())) {
-    errors.push({ field: 'email', message: 'Ingresa un correo electrónico válido' });
+    errors.push({ field: 'email', message: VALIDATION.EMAIL_INVALID });
   }
 
   if (!values.password) {
-    errors.push({ field: 'password', message: 'La contraseña es obligatoria' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_REQUIRED });
   }
 
   return errors;
@@ -43,57 +44,57 @@ export function validateRegistrationForm(values: RegisterFormValues): FieldError
   const errors: FieldError[] = [];
 
   if (!values.first_name.trim()) {
-    errors.push({ field: 'first_name', message: 'El nombre es obligatorio' });
+    errors.push({ field: 'first_name', message: VALIDATION.FIRST_NAME_REQUIRED });
   } else if (values.first_name.trim().length < 2) {
-    errors.push({ field: 'first_name', message: 'El nombre debe tener al menos 2 caracteres' });
+    errors.push({ field: 'first_name', message: VALIDATION.FIRST_NAME_MIN });
   } else if (values.first_name.trim().length > 50) {
-    errors.push({ field: 'first_name', message: 'El nombre no puede exceder 50 caracteres' });
+    errors.push({ field: 'first_name', message: VALIDATION.FIRST_NAME_MAX });
   } else if (!NAME_REGEX.test(values.first_name.trim())) {
-    errors.push({ field: 'first_name', message: 'El nombre solo puede contener letras' });
+    errors.push({ field: 'first_name', message: VALIDATION.FIRST_NAME_LETTERS });
   }
 
   if (!values.last_name.trim()) {
-    errors.push({ field: 'last_name', message: 'El apellido es obligatorio' });
+    errors.push({ field: 'last_name', message: VALIDATION.LAST_NAME_REQUIRED });
   } else if (values.last_name.trim().length < 2) {
-    errors.push({ field: 'last_name', message: 'El apellido debe tener al menos 2 caracteres' });
+    errors.push({ field: 'last_name', message: VALIDATION.LAST_NAME_MIN });
   } else if (values.last_name.trim().length > 50) {
-    errors.push({ field: 'last_name', message: 'El apellido no puede exceder 50 caracteres' });
+    errors.push({ field: 'last_name', message: VALIDATION.LAST_NAME_MAX });
   } else if (!NAME_REGEX.test(values.last_name.trim())) {
-    errors.push({ field: 'last_name', message: 'El apellido solo puede contener letras' });
+    errors.push({ field: 'last_name', message: VALIDATION.LAST_NAME_LETTERS });
   }
 
   if (!values.email.trim()) {
-    errors.push({ field: 'email', message: 'El correo electrónico es obligatorio' });
+    errors.push({ field: 'email', message: VALIDATION.EMAIL_REQUIRED });
   } else if (values.email.trim().length > 150) {
-    errors.push({ field: 'email', message: 'El correo no puede exceder 150 caracteres' });
+    errors.push({ field: 'email', message: VALIDATION.EMAIL_MAX });
   } else if (!EMAIL_REGEX.test(values.email.trim())) {
-    errors.push({ field: 'email', message: 'Ingresa un correo electrónico válido' });
+    errors.push({ field: 'email', message: VALIDATION.EMAIL_INVALID });
   }
 
   if (values.phone.trim() && !PHONE_REGEX.test(values.phone.trim())) {
-    errors.push({ field: 'phone', message: 'El teléfono debe tener exactamente 8 dígitos' });
+    errors.push({ field: 'phone', message: VALIDATION.PHONE_DIGITS });
   }
 
   if (!values.password) {
-    errors.push({ field: 'password', message: 'La contraseña es obligatoria' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_REQUIRED });
   } else if (values.password.length < 8) {
-    errors.push({ field: 'password', message: 'La contraseña debe tener al menos 8 caracteres' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_MIN });
   } else if (values.password.length > 255) {
-    errors.push({ field: 'password', message: 'La contraseña no puede exceder 255 caracteres' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_MAX });
   } else if (!PASSWORD_UPPER.test(values.password)) {
-    errors.push({ field: 'password', message: 'La contraseña debe contener al menos una mayúscula' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_UPPER });
   } else if (!PASSWORD_LOWER.test(values.password)) {
-    errors.push({ field: 'password', message: 'La contraseña debe contener al menos una minúscula' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_LOWER });
   } else if (!PASSWORD_NUMBER.test(values.password)) {
-    errors.push({ field: 'password', message: 'La contraseña debe contener al menos un número' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_NUMBER });
   } else if (!PASSWORD_SPECIAL.test(values.password)) {
-    errors.push({ field: 'password', message: 'La contraseña debe contener al menos un carácter especial' });
+    errors.push({ field: 'password', message: VALIDATION.PASSWORD_SPECIAL });
   }
 
   if (!values.confirmPassword.trim()) {
-    errors.push({ field: 'confirmPassword', message: 'Confirma tu contraseña' });
+    errors.push({ field: 'confirmPassword', message: VALIDATION.CONFIRM_REQUIRED });
   } else if (values.password !== values.confirmPassword) {
-    errors.push({ field: 'confirmPassword', message: 'Las contraseñas no coinciden' });
+    errors.push({ field: 'confirmPassword', message: VALIDATION.CONFIRM_MISMATCH });
   }
 
   return errors;
@@ -114,57 +115,57 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
   const errors: FieldError[] = [];
 
   if (!values.title.trim()) {
-    errors.push({ field: 'title', message: 'El título es obligatorio' });
+    errors.push({ field: 'title', message: VALIDATION.TITLE_REQUIRED });
   } else if (values.title.trim().length < 3) {
-    errors.push({ field: 'title', message: 'El título debe tener al menos 3 caracteres' });
+    errors.push({ field: 'title', message: VALIDATION.TITLE_MIN });
   } else if (values.title.trim().length > 64) {
-    errors.push({ field: 'title', message: 'El título no puede exceder 64 caracteres' });
+    errors.push({ field: 'title', message: VALIDATION.TITLE_MAX });
   }
 
   if (values.description.trim().length > 255) {
-    errors.push({ field: 'description', message: 'La descripción no puede exceder 255 caracteres' });
+    errors.push({ field: 'description', message: VALIDATION.DESCRIPTION_MAX });
   }
 
   const capacity = parseInt(values.max_capacity, 10);
   if (!values.max_capacity.trim()) {
-    errors.push({ field: 'max_capacity', message: 'La capacidad máxima es obligatoria' });
+    errors.push({ field: 'max_capacity', message: VALIDATION.CAPACITY_REQUIRED });
   } else if (isNaN(capacity) || capacity < 1) {
-    errors.push({ field: 'max_capacity', message: 'La capacidad debe ser al menos 1' });
+    errors.push({ field: 'max_capacity', message: VALIDATION.CAPACITY_INVALID });
   } else if (capacity > 9999999) {
-    errors.push({ field: 'max_capacity', message: 'La capacidad no puede exceder 9999999' });
+    errors.push({ field: 'max_capacity', message: VALIDATION.CAPACITY_MAX });
   }
 
   if (!values.category) {
-    errors.push({ field: 'category', message: 'La categoría es obligatoria' });
+    errors.push({ field: 'category', message: VALIDATION.CATEGORY_REQUIRED });
   } else if (!(EVENT_CATEGORIES as readonly string[]).includes(values.category)) {
-    errors.push({ field: 'category', message: 'La categoría seleccionada no es válida' });
+    errors.push({ field: 'category', message: VALIDATION.CATEGORY_INVALID });
   }
 
   if (!values.date) {
-    errors.push({ field: 'date', message: 'La fecha es obligatoria' });
+    errors.push({ field: 'date', message: VALIDATION.DATE_REQUIRED });
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const eventDate = new Date(values.date);
     eventDate.setHours(0, 0, 0, 0);
     if (eventDate < today) {
-      errors.push({ field: 'date', message: 'La fecha no puede ser en el pasado' });
+      errors.push({ field: 'date', message: VALIDATION.DATE_PAST });
     }
   }
 
   if (!values.start_time) {
-    errors.push({ field: 'start_time', message: 'La hora de inicio es obligatoria' });
+    errors.push({ field: 'start_time', message: VALIDATION.START_REQUIRED });
   }
 
   if (!values.end_time) {
-    errors.push({ field: 'end_time', message: 'La hora de fin es obligatoria' });
+    errors.push({ field: 'end_time', message: VALIDATION.END_REQUIRED });
   }
 
   if (values.start_time && values.end_time) {
     const startMins = values.start_time.getHours() * 60 + values.start_time.getMinutes();
     const endMins = values.end_time.getHours() * 60 + values.end_time.getMinutes();
     if (endMins <= startMins) {
-      errors.push({ field: 'end_time', message: 'La hora de fin debe ser posterior a la de inicio' });
+      errors.push({ field: 'end_time', message: VALIDATION.END_BEFORE_START });
     }
   }
 

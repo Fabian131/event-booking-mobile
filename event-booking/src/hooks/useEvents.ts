@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
 import type { Event } from '@/src/types/events';
 import { eventsService } from '@/src/services/events';
+import { ERRORS } from '@/src/constants/ui';
 
 const PAGE_LIMIT = 20;
 
@@ -33,7 +34,7 @@ export function useEvents() {
       setHasNextPage(response.pagination.has_next_page);
       setCurrentPage(response.pagination.page);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar los eventos';
+      const message = err instanceof ApiError ? err.message : ERRORS.EVENTS_LOAD_ERROR;
       setError(message);
     } finally {
       setLoading(false);

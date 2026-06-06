@@ -6,12 +6,13 @@ import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { Loader } from '@/src/components/ui/Loader';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { useAuth } from '@/src/context/AuthContext';
+import { AUTH, CUSTOMER } from '@/src/constants/ui';
 
 export default function CustomerLayout() {
   const { isAuthenticated, isBusiness, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Loader message="Restaurando sesión..." />;
+    return <Loader message={AUTH.SESSION_RESTORE} />;
   }
 
   if (!isAuthenticated) {
@@ -34,14 +35,14 @@ export default function CustomerLayout() {
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Eventos',
+          title: CUSTOMER.EVENTS_TAB,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="reservations"
         options={{
-          title: 'Reservas',
+          title: CUSTOMER.RESERVATIONS_TAB,
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
         }}
       />

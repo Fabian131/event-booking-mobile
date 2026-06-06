@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
 import type { Event } from '@/src/types/events';
 import { eventsService } from '@/src/services/events';
+import { ERRORS } from '@/src/constants/ui';
 
 export function useEventDetail(id: string) {
   const [event, setEvent] = useState<Event | null>(null);
@@ -19,7 +20,7 @@ export function useEventDetail(id: string) {
         if (mounted) setEvent(data);
       } catch (err) {
         if (mounted) {
-          const message = err instanceof ApiError ? err.message : 'Error al cargar el evento';
+          const message = err instanceof ApiError ? err.message : ERRORS.EVENT_LOAD_ERROR;
           setError(message);
         }
       } finally {

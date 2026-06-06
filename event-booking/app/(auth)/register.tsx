@@ -13,6 +13,7 @@ import {
   type RegisterFormValues,
 } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
+import { AUTH, ERRORS } from '@/src/constants/ui';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
@@ -74,11 +75,9 @@ export default function RegisterScreen() {
         }
         setServerError(err.message);
       } else if (err instanceof TypeError) {
-        setServerError(
-          'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
-        );
+        setServerError(ERRORS.NETWORK);
       } else {
-        setServerError('Ocurrió un error inesperado. Intenta nuevamente.');
+        setServerError(ERRORS.GENERIC);
       }
     } finally {
       setLoading(false);
@@ -96,8 +95,8 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <ThemedView style={styles.header}>
-            <ThemedText type="title">Crear Cuenta</ThemedText>
-            <ThemedText>Regístrate para reservar eventos</ThemedText>
+            <ThemedText type="title">{AUTH.REGISTER_TITLE}</ThemedText>
+            <ThemedText>{AUTH.REGISTER_SUBTITLE}</ThemedText>
           </ThemedView>
 
           {serverError ? (
@@ -108,8 +107,8 @@ export default function RegisterScreen() {
 
           <ThemedView style={styles.form}>
             <Input
-              label="Nombre"
-              placeholder="Ingresa tu nombre"
+              label={AUTH.REGISTER_FIRST_NAME_LABEL}
+              placeholder={AUTH.REGISTER_FIRST_NAME_PLACEHOLDER}
               value={firstName}
               onChangeText={setFirstName}
               error={getFieldError('first_name')}
@@ -117,8 +116,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Apellido"
-              placeholder="Ingresa tu apellido"
+              label={AUTH.REGISTER_LAST_NAME_LABEL}
+              placeholder={AUTH.REGISTER_LAST_NAME_PLACEHOLDER}
               value={lastName}
               onChangeText={setLastName}
               error={getFieldError('last_name')}
@@ -126,8 +125,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Correo electrónico"
-              placeholder="Ingresa tu correo"
+              label={AUTH.REGISTER_EMAIL_LABEL}
+              placeholder={AUTH.REGISTER_EMAIL_PLACEHOLDER}
               value={email}
               onChangeText={setEmail}
               error={getFieldError('email')}
@@ -137,8 +136,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Teléfono (opcional)"
-              placeholder="Ingresa tu teléfono"
+              label={AUTH.REGISTER_PHONE_LABEL}
+              placeholder={AUTH.REGISTER_PHONE_PLACEHOLDER}
               value={phone}
               onChangeText={setPhone}
               error={getFieldError('phone')}
@@ -147,8 +146,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Contraseña"
-              placeholder="Crea una contraseña"
+              label={AUTH.REGISTER_PASSWORD_LABEL}
+              placeholder={AUTH.REGISTER_PASSWORD_PLACEHOLDER}
               value={password}
               onChangeText={setPassword}
               error={getFieldError('password')}
@@ -157,8 +156,8 @@ export default function RegisterScreen() {
             />
 
             <Input
-              label="Confirmar contraseña"
-              placeholder="Confirma tu contraseña"
+              label={AUTH.REGISTER_CONFIRM_PASSWORD_LABEL}
+              placeholder={AUTH.REGISTER_CONFIRM_PASSWORD_PLACEHOLDER}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               error={getFieldError('confirmPassword')}
@@ -167,16 +166,16 @@ export default function RegisterScreen() {
             />
 
             <Button
-              title="Registrarse"
+              title={AUTH.REGISTER_BUTTON}
               onPress={handleRegister}
               loading={loading}
               style={styles.submitButton}
             />
 
             <View style={styles.footer}>
-              <ThemedText>¿Ya tienes cuenta? </ThemedText>
+              <ThemedText>{AUTH.REGISTER_HAS_ACCOUNT} </ThemedText>
               <Link href="/(auth)/login" accessibilityRole="link">
-                <ThemedText type="link">Inicia sesión</ThemedText>
+                <ThemedText type="link">{AUTH.REGISTER_LOGIN_LINK}</ThemedText>
               </Link>
             </View>
           </ThemedView>
