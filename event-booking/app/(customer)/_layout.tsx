@@ -24,7 +24,7 @@ export default function CustomerLayout() {
 
   return (
     <Tabs
-      initialRouteName="index"
+      initialRouteName="events"
       screenOptions={{
         headerTitle: '',
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
@@ -32,7 +32,7 @@ export default function CustomerLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="events"
         options={{
           title: 'Eventos',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,

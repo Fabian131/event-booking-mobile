@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ThemedText } from '@/src/components/ui/themed-text';
@@ -30,12 +30,17 @@ function SkeletonList() {
 }
 
 export default function CustomerEventsScreen() {
-  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
   const renderItem = useCallback(
-    ({ item }: { item: EventSummary }) => <EventCard event={item} />,
-    [],
+    ({ item }: { item: EventSummary }) => (
+      <EventCard
+        event={item}
+        onPress={() => router.push({ pathname: '/(customer)/events/[id]', params: { id: item.id } })}
+      />
+    ),
+    [router],
   );
 
   const Separator = useCallback(() => <View style={styles.separator} />, []);
@@ -62,7 +67,7 @@ export default function CustomerEventsScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+    <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Eventos</ThemedText>
         <ThemedText>Explora los eventos disponibles</ThemedText>
@@ -108,10 +113,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    gap: 8,
-    marginBottom: 0,
+    gap: 4,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 8,
   },
   listContent: {
