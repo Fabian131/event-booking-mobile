@@ -4,6 +4,7 @@ import React from 'react';
 import { HapticTab } from '@/src/components/ui/haptic-tab';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { Loader } from '@/src/components/ui/Loader';
+import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { useAuth } from '@/src/context/AuthContext';
 import { AUTH, CUSTOMER } from '@/src/constants/ui';
 
@@ -26,7 +27,8 @@ export default function CustomerLayout() {
     <Tabs
       initialRouteName="events"
       screenOptions={{
-        headerShown: false,
+        headerTitle: '',
+        headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
         tabBarButton: HapticTab,
       }}
     >
