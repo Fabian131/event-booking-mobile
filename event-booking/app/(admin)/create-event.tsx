@@ -19,14 +19,13 @@ import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils
 import type { FieldError } from '@/src/types/auth';
 import { eventsService } from '@/src/services/events';
 import { EVENT_CATEGORIES } from '@/src/types/events';
-import { CATEGORY_LABELS } from '@/src/components/domain/EventCard';
-import { EVENTS, ERRORS, VALIDATION } from '@/src/constants/ui';
+import { EVENTS, ERRORS, VALIDATION, CATEGORY } from '@/src/constants/ui';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 const CATEGORIES = EVENT_CATEGORIES.map((value) => ({
-  label: CATEGORY_LABELS[value],
+  label: CATEGORY.LABELS[value],
   value,
 }));
 
