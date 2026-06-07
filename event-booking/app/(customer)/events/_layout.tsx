@@ -3,11 +3,8 @@ import { BackButton } from '@/src/components/ui/BackButton';
 
 export default function EventosStackLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerTitle: '',
-        headerLeft: () => <BackButton />,
-      }}
-    />
+    <Stack screenOptions={{ headerTitle: '', headerLeft: () => <BackButton /> }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+    </Stack>
   );
 }
