@@ -30,6 +30,27 @@ export const AUTH = {
   REGISTERED_SUCCESS: 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
 } as const;
 
+export const CATEGORY = {
+  COLORS: {
+    sports: '#2196F3',
+    music: '#9C27B0',
+    culture: '#FF9800',
+    gastronomy: '#F44336',
+    wellness: '#4CAF50',
+    education: '#00BCD4',
+    other: '#607D8B',
+  },
+  LABELS: {
+    sports: 'Deportes',
+    music: 'Música',
+    culture: 'Cultura',
+    gastronomy: 'Gastronomía',
+    wellness: 'Bienestar',
+    education: 'Educación',
+    other: 'Otro',
+  },
+} as const;
+
 export const EVENTS = {
   CREATE_TITLE: 'Crear Evento',
   CREATE_SUBTITLE: 'Ingresa los detalles del nuevo evento',
@@ -61,6 +82,17 @@ export const EVENTS = {
   FEED_EMPTY_SUBTITLE: 'No hay eventos disponibles en este momento',
   FEED_ERROR_RETRY: 'Reintentar',
   EVENT_CREATED: 'Evento creado exitosamente.',
+  DETAIL_LOADING: 'Cargando evento...',
+  DETAIL_NOT_FOUND: 'Evento no encontrado',
+  DETAIL_DATE_LABEL: 'Fecha',
+  DETAIL_START_LABEL: 'Hora de inicio',
+  DETAIL_END_LABEL: 'Hora de fin',
+  DETAIL_CAPACITY_LABEL: 'Cupos disponibles',
+  DETAIL_BOOK_BUTTON: 'Reservar',
+  LOGIN_MODAL_TITLE: 'Inicia sesión para continuar',
+  LOGIN_MODAL_BODY: 'Necesitas una cuenta para reservar este evento.',
+  LOGIN_MODAL_BUTTON: 'Iniciar sesión',
+  LOGIN_MODAL_CANCEL: 'Cancelar',
 } as const;
 
 export const VALIDATION = {
@@ -121,4 +153,8 @@ export const ADMIN = {
 export const CUSTOMER = {
   EVENTS_TAB: 'Eventos',
   RESERVATIONS_TAB: 'Reservas',
+  EVENTS_TITLE: 'Eventos',
+  EVENTS_SUBTITLE: 'Explora los eventos disponibles',
+  RESERVATIONS_TITLE: 'Mis Reservas',
+  RESERVATIONS_SUBTITLE: 'Historial y estado de tus reservaciones',
 } as const;
