@@ -65,7 +65,7 @@ describe('customer login success', () => {
     });
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(customer)');
+      expect(router.replace).toHaveBeenCalledWith('/(customer)/events');
     });
 
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith('auth_token', 'customer-token');
