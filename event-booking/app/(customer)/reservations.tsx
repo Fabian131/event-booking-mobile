@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { ThemedText } from '@/src/components/ui/themed-text';
@@ -6,6 +7,7 @@ import { ThemedView } from '@/src/components/ui/themed-view';
 
 export default function CustomerReservationsScreen() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
     <ThemedView style={styles.container}>
@@ -15,7 +17,7 @@ export default function CustomerReservationsScreen() {
             <ThemedText type="title">Mis Reservas</ThemedText>
             <ThemedText>Historial y estado de tus reservaciones</ThemedText>
           </View>
-          <LogoutButton />
+          <LogoutButton color={colors.primary} />
         </View>
       </ThemedView>
     </ThemedView>
