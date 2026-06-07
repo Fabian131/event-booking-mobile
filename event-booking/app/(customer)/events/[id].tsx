@@ -2,7 +2,7 @@ import { Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-nat
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image } from 'expo-image';
-import { CATEGORY_COLORS, CATEGORY_LABELS } from '@/src/components/domain/EventCard';
+import { CATEGORY, EVENTS, ERRORS } from '@/src/constants/ui';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
@@ -11,7 +11,6 @@ import { ThemedView } from '@/src/components/ui/themed-view';
 import { useAuth } from '@/src/context/AuthContext';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
-import { EVENTS, ERRORS } from '@/src/constants/ui';
 
 interface InfoRowProps {
   label: string;
@@ -79,8 +78,8 @@ export default function EventDetailScreen() {
     router.push('/(customer)/reservations');
   }
 
-  const categoryColor = CATEGORY_COLORS[event.category];
-  const categoryLabel = CATEGORY_LABELS[event.category];
+  const categoryColor = CATEGORY.COLORS[event.category];
+  const categoryLabel = CATEGORY.LABELS[event.category];
 
   return (
     <ThemedView style={styles.container}>

@@ -1,3 +1,5 @@
+import type { EventCategory } from '@/src/types/events';
+
 export const AUTH = {
   LOGIN_TITLE: 'Iniciar Sesión',
   LOGIN_SUBTITLE: 'Accede a tu cuenta de Event Booking',
@@ -30,7 +32,10 @@ export const AUTH = {
   REGISTERED_SUCCESS: 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
 } as const;
 
-export const CATEGORY = {
+export const CATEGORY: {
+  COLORS: Record<EventCategory, string>;
+  LABELS: Record<EventCategory, string>;
+} = {
   COLORS: {
     sports: '#2196F3',
     music: '#9C27B0',
@@ -49,7 +54,7 @@ export const CATEGORY = {
     education: 'Educación',
     other: 'Otro',
   },
-} as const;
+};
 
 export const EVENTS = {
   CREATE_TITLE: 'Crear Evento',
