@@ -1,8 +1,9 @@
-import { Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image } from 'expo-image';
-import { CATEGORY, EVENTS, ERRORS } from '@/src/constants/ui';
+import { CATEGORY, EVENTS } from '@/src/constants/ui';
+import { AuthGuardModal } from '@/src/components/domain/AuthGuardModal';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
@@ -122,34 +123,14 @@ export default function EventDetailScreen() {
         <Button title={EVENTS.DETAIL_BOOK_BUTTON} onPress={handleBook} />
       </View>
 
-      <Modal
+      <AuthGuardModal
         visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.backdrop}>
-          <View style={styles.modalCard}>
-            <ThemedText style={styles.modalTitle}>
-              {EVENTS.LOGIN_MODAL_TITLE}
-            </ThemedText>
-            <ThemedText style={styles.modalBody}>
-              {EVENTS.LOGIN_MODAL_BODY}
-            </ThemedText>
-            <Button
-              title={EVENTS.LOGIN_MODAL_BUTTON}
-              onPress={() => {
-                setModalVisible(false);
-                router.push('/(auth)/login');
-              }}
-              style={styles.modalButton}
-            />
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-              <ThemedText style={styles.cancelText}>{EVENTS.LOGIN_MODAL_CANCEL}</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setModalVisible(false)}
+        onLogin={() => {
+          setModalVisible(false);
+          router.push('/(auth)/login');
+        }}
+      />
     </ThemedView>
   );
 }
@@ -218,42 +199,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    gap: 12,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#11181c',
-    textAlign: 'center',
-  },
-  modalBody: {
-    fontSize: 14,
-    color: '#687076',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  modalButton: {
-    marginTop: 4,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  cancelText: {
-    fontSize: 14,
-    color: '#687076',
   },
 });
