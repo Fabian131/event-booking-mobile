@@ -11,6 +11,7 @@ import { ThemedView } from '@/src/components/ui/themed-view';
 import { useAuth } from '@/src/context/AuthContext';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
+import { EVENTS, ERRORS } from '@/src/constants/ui';
 
 interface InfoRowProps {
   label: string;
@@ -58,13 +59,13 @@ export default function EventDetailScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   if (loading) {
-    return <Loader message="Cargando evento..." />;
+    return <Loader message={EVENTS.DETAIL_LOADING} />;
   }
 
   if (error || !event) {
     return (
       <ThemedView style={styles.center}>
-        <EmptyState icon="⚠️" title={error ?? 'Evento no encontrado'} />
+        <EmptyState icon="⚠️" title={error ?? EVENTS.DETAIL_NOT_FOUND} />
       </ThemedView>
     );
   }
@@ -100,13 +101,13 @@ export default function EventDetailScreen() {
           </View>
 
           <View>
-            <InfoRow label="Fecha" value={formatEventDate(event.date)} />
+            <InfoRow label={EVENTS.DETAIL_DATE_LABEL} value={formatEventDate(event.date)} />
             <View style={styles.divider} />
-            <InfoRow label="Hora de inicio" value={formatEventTime(event.start_time)} />
+            <InfoRow label={EVENTS.DETAIL_START_LABEL} value={formatEventTime(event.start_time)} />
             <View style={styles.divider} />
-            <InfoRow label="Hora de fin" value={formatEventTime(event.end_time)} />
+            <InfoRow label={EVENTS.DETAIL_END_LABEL} value={formatEventTime(event.end_time)} />
             <View style={styles.divider} />
-            <InfoRow label="Cupos disponibles" value={String(event.remaining_capacity)} />
+            <InfoRow label={EVENTS.DETAIL_CAPACITY_LABEL} value={String(event.remaining_capacity)} />
           </View>
 
           {event.description ? (
@@ -119,7 +120,7 @@ export default function EventDetailScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Reservar" onPress={handleBook} />
+        <Button title={EVENTS.DETAIL_BOOK_BUTTON} onPress={handleBook} />
       </View>
 
       <Modal
@@ -131,13 +132,13 @@ export default function EventDetailScreen() {
         <View style={styles.backdrop}>
           <View style={styles.modalCard}>
             <ThemedText style={styles.modalTitle}>
-              Inicia sesión para continuar
+              {EVENTS.LOGIN_MODAL_TITLE}
             </ThemedText>
             <ThemedText style={styles.modalBody}>
-              Necesitas una cuenta para reservar este evento.
+              {EVENTS.LOGIN_MODAL_BODY}
             </ThemedText>
             <Button
-              title="Iniciar sesión"
+              title={EVENTS.LOGIN_MODAL_BUTTON}
               onPress={() => {
                 setModalVisible(false);
                 router.push('/(auth)/login');
@@ -145,7 +146,7 @@ export default function EventDetailScreen() {
               style={styles.modalButton}
             />
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-              <ThemedText style={styles.cancelText}>Cancelar</ThemedText>
+              <ThemedText style={styles.cancelText}>{EVENTS.LOGIN_MODAL_CANCEL}</ThemedText>
             </TouchableOpacity>
           </View>
         </View>
