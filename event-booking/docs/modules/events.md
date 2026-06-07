@@ -8,9 +8,9 @@
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event.yaml`
 - **Responsible**: Justin Moreira Matarrita
 - **Status**: Completed
-- **Version**: `1.1.0`
+- **Version**: `1.2.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-06`
+- **Last Updated**: `2026-06-07`
 
 ---
 
@@ -150,26 +150,35 @@ src/
 │   │   ├── Button.tsx                     # Primary/secondary touchable button
 │   │   ├── themed-text.tsx                # Theme-aware text (title, defaultSemiBold, link)
 │   │   └── themed-view.tsx                # Theme-aware view container
-│   └── domain/
-│       └── EventCard.tsx                  # Large event card + EventCardSkeleton (animated pulse)
-│                                          #   onPress prop wired to detail navigation
+│   ├── domain/
+│   │   ├── EventCard.tsx                  # Large event card + EventCardSkeleton (animated pulse)
+│   │   │                                  #   onPress prop wired to detail navigation
+│   │   └── AuthGuardModal.tsx             # Reusable login-intercept modal (visible, onClose, onLogin)
+│   └── ui/
+│       ├── BackButton.tsx                 # Global reusable back-arrow button (chevron.left)
+│       └── ...
+├── utils/
+│   └── dateHelpers.ts                     # formatEventDate(), formatEventTime() — es-CR locale
+└── constants/
+    └── ui.ts                              # AUTH, CATEGORY, EVENTS, VALIDATION, ERRORS, ADMIN, CUSTOMER
 app/
 ├── index.tsx                              # Root redirect → /(customer)/events
 └── (customer)/
     ├── _layout.tsx                        # Tabs layout: eventos + reservations
     └── events/
-        ├── _layout.tsx                    # Stack layout (feed → detail)
+        ├── _layout.tsx                    # Stack layout with BackButton in headerLeft
         ├── index.tsx                      # CustomerEventsScreen — FlatList feed
-        └── [id].tsx                       # EventDetailScreen — full event view + auth guard
+        └── [id].tsx                       # EventDetailScreen — full event view + AuthGuardModal
 tests/
 └── Feature/
     └── events/
-        ├── RenderFeedFeatureTest.tsx      # Header, cards with title/description/category
-        ├── EmptyStateFeatureTest.tsx      # "Sin eventos por ahora" when data is empty
-        ├── NetworkErrorFeatureTest.tsx    # Error banner + retry flow on TypeError
-        ├── ServerErrorFeatureTest.tsx     # Error banner on 500/503, no cards shown
-        ├── EventDetailFeatureTest.tsx     # Detail screen render: fields, capacity, error state
-        └── AuthGuardFeatureTest.tsx       # Auth guard: modal for guests, navigation for authenticated
+        ├── RenderFeedFeatureTest.tsx           # Header, cards with title/description/category
+        ├── EmptyStateFeatureTest.tsx           # "Sin eventos por ahora" when data is empty
+        ├── NetworkErrorFeatureTest.tsx         # Error banner + retry flow on TypeError
+        ├── ServerErrorFeatureTest.tsx          # Error banner on 500/503, no cards shown
+        ├── EventDetailFeatureTest.tsx          # Detail screen render: fields, capacity, error state
+        ├── AuthGuardFeatureTest.tsx            # Auth guard: modal for guests, navigation for authenticated
+        └── EventDetailNetworkErrorFeatureTest  # TypeError on getById → EmptyState with ERRORS.NETWORK
 ```
 
 ### Data Flow — Feed
@@ -286,8 +295,10 @@ User taps "Reservar"
 | `EmptyState`       | `src/components/ui/EmptyState.tsx`        | `icon, title, subtitle`                                    |
 | `Loader`           | `src/components/ui/Loader.tsx`            | `message` — full-screen loading indicator                  |
 | `Button`           | `src/components/ui/Button.tsx`            | `title, onPress, variant` ("primary"/"secondary")          |
+| `BackButton`       | `src/components/ui/BackButton.tsx`        | `color?, onPress?` — defaults to `router.back()`           |
 | `EventCard`        | `src/components/domain/EventCard.tsx`     | `event: EventSummary, onPress?: () => void`                |
 | `EventCardSkeleton`| `src/components/domain/EventCard.tsx`     | Animated pulse placeholder                                 |
+| `AuthGuardModal`   | `src/components/domain/AuthGuardModal.tsx`| `visible, onClose, onLogin` — login-intercept modal        |
 
 ### Services
 
@@ -369,21 +380,15 @@ EventDetailScreen
     │       │   ├── ThemedText (title, fontSize 28)
     │       │   └── View (badge, categoryColor background)
     │       ├── View (infoCard)
-    │       │   ├── InfoRow "Fecha"         → formatted date (dd/mm/yyyy)
-    │       │   ├── InfoRow "Hora de inicio"→ HH:MM
-    │       │   ├── InfoRow "Hora de fin"   → HH:MM
-    │       │   └── InfoRow "Cupos disponibles" → "X de Y (Z%)"
+    │       │   ├── InfoRow "Fecha"             → human-readable (e.g. "Jueves 18 de junio de 2026")
+    │       │   ├── InfoRow "Hora de inicio"    → AM/PM format (e.g. "10:00 a.m.")
+    │       │   ├── InfoRow "Hora de fin"       → AM/PM format
+    │       │   └── InfoRow "Cupos disponibles" → remaining count only (e.g. "342")
     │       └── View (descriptionSection, conditional)
-    │           ├── ThemedText "Descripción"
     │           └── ThemedText (event.description)
     ├── View (footer, sticky)
     │   └── Button title="Reservar" → handleBook()
-    └── Modal (transparent, fade, conditional)
-        └── View (modalCard)
-            ├── ThemedText "Inicia sesión para continuar"
-            ├── ThemedText (body text)
-            ├── Button "Iniciar sesión" → /(auth)/login
-            └── TouchableOpacity "Cancelar" → close modal
+    └── AuthGuardModal (visible=modalVisible, onClose, onLogin → /(auth)/login)
 ```
 
 ### Visual States — Feed
@@ -436,7 +441,7 @@ EventDetailScreen
 ```
 tests/
 └── Feature/
-    └── events/          # 6 files — screen integration tests
+    └── events/          # 7 files — screen integration tests
 ```
 
 ### Naming Convention
@@ -451,14 +456,15 @@ tests/
 
 | File                          | Scenario                                                                 | Tests |
 |-------------------------------|--------------------------------------------------------------------------|-------|
-| `RenderFeedFeatureTest.tsx`   | Header visible; cards show title, description, translated category       | 4     |
-| `EmptyStateFeatureTest.tsx`   | Empty `data: []` → "Sin eventos por ahora" shown, no cards              | 2     |
-| `NetworkErrorFeatureTest.tsx` | `TypeError` → error banner; "Reintentar" fires second fetch and recovers | 2     |
-| `ServerErrorFeatureTest.tsx`  | `ApiError` 500/503 → error banner; no cards rendered                    | 1     |
-| `EventDetailFeatureTest.tsx`  | Renders title, description, category, info labels, capacity, Reservar button, error state, absent description | 8 |
-| `AuthGuardFeatureTest.tsx`    | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to reservations; no modal for authenticated | 6 |
+| `RenderFeedFeatureTest.tsx`              | Header visible; cards show title, description, translated category       | 4     |
+| `EmptyStateFeatureTest.tsx`              | Empty `data: []` → "Sin eventos por ahora" shown, no cards              | 2     |
+| `NetworkErrorFeatureTest.tsx`            | `TypeError` → error banner; "Reintentar" fires second fetch and recovers | 2     |
+| `ServerErrorFeatureTest.tsx`             | `ApiError` 500/503 → error banner; no cards rendered                    | 1     |
+| `EventDetailFeatureTest.tsx`             | Renders title, description, category, info labels, capacity, Reservar button, error state, absent description | 8 |
+| `AuthGuardFeatureTest.tsx`               | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to reservations; no modal for authenticated | 6 |
+| `EventDetailNetworkErrorFeatureTest.tsx` | `TypeError` on `getById` → `EmptyState` with `ERRORS.NETWORK` message   | 1     |
 
-**Total:** 6 Feature files — 23 tests passing
+**Total:** 7 Feature files — 24 tests passing
 
 **Mocks used:**
 
@@ -498,7 +504,7 @@ npx jest --watch tests/Feature/events/
 - **Category badge as absolute overlay**: Placing the badge with `position: absolute` on the image preserves the card's content area for title and description.
 - **`useEventDetail` mounted-flag guard**: Prevents `setState` calls after the component unmounts when the user navigates away before the request completes.
 - **Auth guard via modal, not redirect**: Blocking the booking action with a non-intrusive modal (rather than a full redirect) lets the guest stay on the event detail page and choose to log in or stay browsing.
-- **Static capacity display**: Capacity is fetched once on mount and shown as `remaining / max (%)`. Real-time polling is out of scope for EBM-12.
+- **Static capacity display**: Capacity is fetched once on mount and shown as the remaining seat count only. The `remaining / max (Z%)` format was removed per QA (EBM-12) — only the remaining count is needed. Real-time polling is out of scope.
 - **No auth required on GET**: `GET /api/v1/events` and `GET /api/v1/events/{id}` are public endpoints. The `api.get` wrapper attaches the Bearer token only when available.
 
 ### Known Limitations
@@ -511,6 +517,20 @@ npx jest --watch tests/Feature/events/
 ---
 
 ## Changelog
+
+### v1.2.0 — 2026-06-07 (EBM-12 QA fixes + EBM-REFACTOR-01)
+- Added `BackButton` global component (`src/components/ui/BackButton.tsx`) — `chevron.left` Pressable, mirrors `LogoutButton` pattern
+- Fixed `events/_layout.tsx`: replaced `headerShown: false` with `headerTitle: ''` + `headerLeft: <BackButton />` to restore native back arrow
+- Implemented `formatEventDate` / `formatEventTime` in `src/utils/dateHelpers.ts` (es-CR locale, weekday long, AM/PM)
+- Fixed date display: `dd/mm/yyyy` → human-readable `"Jueves 18 de junio de 2026"`
+- Fixed time display: 24h `HH:MM` → `es-CR` AM/PM (`"10:00 a.m."`)
+- Fixed capacity display: removed `"X de Y (Z%)"` format — shows remaining count only
+- Added `CATEGORY` object to `src/constants/ui.ts` with `COLORS` and `LABELS` records; removed exported consts from `EventCard.tsx`
+- Added `EVENTS.DETAIL_*`, `EVENTS.LOGIN_MODAL_*`, `CUSTOMER.EVENTS_*`, `CUSTOMER.RESERVATIONS_*` constants
+- Replaced 12 hardcoded strings in `[id].tsx` with constants from `src/constants/ui.ts`
+- Extracted `AuthGuardModal` to `src/components/domain/AuthGuardModal.tsx` (props: `visible`, `onClose`, `onLogin`)
+- Added `EventDetailNetworkErrorFeatureTest` — covers `TypeError` path in `useEventDetail`
+- Fixed stale assertion in `EventDetailFeatureTest`: capacity value updated from `'50 de 100 (50%)'` → `'50'`
 
 ### v1.1.0 — 2026-06-06 (EBM-12)
 - Restructured customer route: moved `index.tsx` into `events/` subfolder and added Stack layout to support nested `[id]` route
@@ -548,5 +568,5 @@ npx jest --watch tests/Feature/events/
 
 ---
 
-**Last updated**: `2026-06-06`
+**Last updated**: `2026-06-07`
 **Documented by**: Justin Moreira Matarrita
