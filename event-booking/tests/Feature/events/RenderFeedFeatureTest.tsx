@@ -59,7 +59,7 @@ describe('events feed render', () => {
     jest.clearAllMocks();
   });
 
-  it('should render screen header', async () => {
+  it('should render screen subtitle', async () => {
     (eventsService.list as jest.Mock).mockResolvedValueOnce({
       data: [],
       pagination: makePagination({ total: 0 }),
@@ -67,7 +67,6 @@ describe('events feed render', () => {
 
     await renderFeedScreen();
 
-    expect(screen.getByText('Eventos')).toBeTruthy();
     expect(screen.getByText('Explora los eventos disponibles')).toBeTruthy();
   });
 

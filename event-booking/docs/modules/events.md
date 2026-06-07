@@ -133,7 +133,7 @@ The data layer (types, service, hooks) is isolated from the screens so that comp
 ```
 src/
 ├── types/
-│   └── events.ts                          # EventSummary, PaginationMeta, EventsListResponse,
+│   └── events.ts                          # Event, PaginationMeta, EventsListResponse,
 │                                          #   EventsListParams, EventCategory
 ├── services/
 │   ├── api.ts                             # HTTP client (fetch wrapper, token handling)
@@ -150,13 +150,10 @@ src/
 │   │   ├── Button.tsx                     # Primary/secondary touchable button
 │   │   ├── themed-text.tsx                # Theme-aware text (title, defaultSemiBold, link)
 │   │   └── themed-view.tsx                # Theme-aware view container
-│   ├── domain/
-│   │   ├── EventCard.tsx                  # Large event card + EventCardSkeleton (animated pulse)
-│   │   │                                  #   onPress prop wired to detail navigation
-│   │   └── AuthGuardModal.tsx             # Reusable login-intercept modal (visible, onClose, onLogin)
-│   └── ui/
-│       ├── BackButton.tsx                 # Global reusable back-arrow button (chevron.left)
-│       └── ...
+│   └── domain/
+│       ├── EventCard.tsx                  # Large event card + EventCardSkeleton (animated pulse)
+│       │                                  #   onPress prop wired to detail navigation
+│       └── AuthGuardModal.tsx             # Reusable login-intercept modal (visible, onClose, onLogin)
 ├── utils/
 │   └── dateHelpers.ts                     # formatEventDate(), formatEventTime() — es-CR locale
 └── constants/
@@ -166,19 +163,20 @@ app/
 └── (customer)/
     ├── _layout.tsx                        # Tabs layout: eventos + reservations
     └── events/
-        ├── _layout.tsx                    # Stack layout with BackButton in headerLeft
+        ├── _layout.tsx                    # Stack layout: native back button, LogoutButton in headerRight
         ├── index.tsx                      # CustomerEventsScreen — FlatList feed
         └── [id].tsx                       # EventDetailScreen — full event view + AuthGuardModal
 tests/
 └── Feature/
     └── events/
-        ├── RenderFeedFeatureTest.tsx           # Header, cards with title/description/category
-        ├── EmptyStateFeatureTest.tsx           # "Sin eventos por ahora" when data is empty
-        ├── NetworkErrorFeatureTest.tsx         # Error banner + retry flow on TypeError
-        ├── ServerErrorFeatureTest.tsx          # Error banner on 500/503, no cards shown
-        ├── EventDetailFeatureTest.tsx          # Detail screen render: fields, capacity, error state
-        ├── AuthGuardFeatureTest.tsx            # Auth guard: modal for guests, navigation for authenticated
-        └── EventDetailNetworkErrorFeatureTest  # TypeError on getById → EmptyState with ERRORS.NETWORK
+        ├── RenderFeedFeatureTest.tsx               # Header, cards with title/description/category
+        ├── EmptyStateFeatureTest.tsx               # "Sin eventos por ahora" when data is empty
+        ├── NetworkErrorFeatureTest.tsx             # Error banner + retry flow on TypeError
+        ├── ServerErrorFeatureTest.tsx              # Error banner on 500/503, no cards shown
+        ├── PaginationFeatureTest.tsx               # Infinite scroll: page append, has_next_page guard, dedup
+        ├── EventDetailFeatureTest.tsx              # Detail screen render: fields, capacity, error state
+        ├── AuthGuardFeatureTest.tsx                # Auth guard: modal for guests, navigation for authenticated
+        └── EventDetailNetworkErrorFeatureTest.tsx  # TypeError on getById → EmptyState with ERRORS.NETWORK
 ```
 
 ### Data Flow — Feed
@@ -256,7 +254,7 @@ User taps "Reservar"
 
 | State        | Type             | Description                                          |
 |--------------|------------------|------------------------------------------------------|
-| `events`     | `EventSummary[]` | Accumulated list of all loaded pages                 |
+| `events`     | `Event[]` | Accumulated list of all loaded pages                 |
 | `loading`    | `boolean`        | True during any active fetch (initial or paginated)  |
 | `refreshing` | `boolean`        | True during pull-to-refresh                          |
 | `error`      | `string \| null` | Error message shown in the inline error banner       |
@@ -273,7 +271,7 @@ User taps "Reservar"
 
 | State          | Type                | Description                                    |
 |----------------|---------------------|------------------------------------------------|
-| `event`        | `EventSummary\|null`| Loaded event data                              |
+| `event`        | `Event\|null`| Loaded event data                              |
 | `loading`      | `boolean`           | True while fetching from API                   |
 | `error`        | `string\|null`      | Error message on failed fetch                  |
 | `modalVisible` | `boolean`           | Controls auth guard modal visibility           |
@@ -295,8 +293,7 @@ User taps "Reservar"
 | `EmptyState`       | `src/components/ui/EmptyState.tsx`        | `icon, title, subtitle`                                    |
 | `Loader`           | `src/components/ui/Loader.tsx`            | `message` — full-screen loading indicator                  |
 | `Button`           | `src/components/ui/Button.tsx`            | `title, onPress, variant` ("primary"/"secondary")          |
-| `BackButton`       | `src/components/ui/BackButton.tsx`        | `color?, onPress?` — defaults to `router.back()`           |
-| `EventCard`        | `src/components/domain/EventCard.tsx`     | `event: EventSummary, onPress?: () => void`                |
+| `EventCard`        | `src/components/domain/EventCard.tsx`     | `event: Event, onPress?: () => void`                |
 | `EventCardSkeleton`| `src/components/domain/EventCard.tsx`     | Animated pulse placeholder                                 |
 | `AuthGuardModal`   | `src/components/domain/AuthGuardModal.tsx`| `visible, onClose, onLogin` — login-intercept modal        |
 
@@ -305,7 +302,7 @@ User taps "Reservar"
 | Method                        | Endpoint                        | Returns              | Description                 |
 |-------------------------------|---------------------------------|----------------------|-----------------------------|
 | `eventsService.list(params)`  | `GET /api/v1/events?...`        | `EventsListResponse` | Paginated list of events    |
-| `eventsService.getById(id)`   | `GET /api/v1/events/{id}`       | `EventSummary`       | Single event by ID          |
+| `eventsService.getById(id)`   | `GET /api/v1/events/{id}`       | `Event`       | Single event by ID          |
 
 ### Hooks
 
@@ -313,7 +310,7 @@ User taps "Reservar"
 
 | Field         | Type             | Description                                    |
 |---------------|------------------|------------------------------------------------|
-| `events`      | `EventSummary[]` | Accumulated results across all loaded pages    |
+| `events`      | `Event[]` | Accumulated results across all loaded pages    |
 | `loading`     | `boolean`        | Active during initial load and paginated loads |
 | `refreshing`  | `boolean`        | Active during pull-to-refresh                  |
 | `error`       | `string \| null` | Last error message, reset on successful fetch  |
@@ -324,7 +321,7 @@ User taps "Reservar"
 
 | Field     | Type                 | Description                          |
 |-----------|----------------------|--------------------------------------|
-| `event`   | `EventSummary\|null` | Fetched event, null until resolved   |
+| `event`   | `Event\|null` | Fetched event, null until resolved   |
 | `loading` | `boolean`            | True while request is in flight      |
 | `error`   | `string\|null`       | Error message on failed fetch        |
 
@@ -337,9 +334,9 @@ Accepts `id: string`. Calls `eventsService.getById(id)` on mount. Includes mount
 | Type                 | Description                                                                                                                      |
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | `EventCategory`      | `'sports' \| 'music' \| 'culture' \| 'gastronomy' \| 'wellness' \| 'education' \| 'other'`                                      |
-| `EventSummary`       | Full event shape: id, title, description, image_url, max_capacity, remaining_capacity, category, date, start_time, end_time, is_active, timestamps |
+| `Event`       | Full event shape: id, title, description, image_url, max_capacity, remaining_capacity, category, date, start_time, end_time, is_active, timestamps |
 | `PaginationMeta`     | `{ page, limit, total, total_pages, has_next_page }`                                                                             |
-| `EventsListResponse` | `{ data: EventSummary[], pagination: PaginationMeta }`                                                                           |
+| `EventsListResponse` | `{ data: Event[], pagination: PaginationMeta }`                                                                           |
 | `EventsListParams`   | `{ page?, limit?, search?, category?, is_active?, date? }`                                                                       |
 
 ---
@@ -460,11 +457,12 @@ tests/
 | `EmptyStateFeatureTest.tsx`              | Empty `data: []` → "Sin eventos por ahora" shown, no cards              | 2     |
 | `NetworkErrorFeatureTest.tsx`            | `TypeError` → error banner; "Reintentar" fires second fetch and recovers | 2     |
 | `ServerErrorFeatureTest.tsx`             | `ApiError` 500/503 → error banner; no cards rendered                    | 1     |
+| `PaginationFeatureTest.tsx`              | Page append on scroll; dedup guard; `has_next_page: false` stops fetch  | 3     |
 | `EventDetailFeatureTest.tsx`             | Renders title, description, category, info labels, capacity, Reservar button, error state, absent description | 8 |
 | `AuthGuardFeatureTest.tsx`               | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to reservations; no modal for authenticated | 6 |
 | `EventDetailNetworkErrorFeatureTest.tsx` | `TypeError` on `getById` → `EmptyState` with `ERRORS.NETWORK` message   | 1     |
 
-**Total:** 7 Feature files — 24 tests passing
+**Total:** 8 Feature files — 27 tests passing
 
 **Mocks used:**
 
@@ -519,8 +517,10 @@ npx jest --watch tests/Feature/events/
 ## Changelog
 
 ### v1.2.0 — 2026-06-07 (EBM-12 QA fixes + EBM-REFACTOR-01)
-- Added `BackButton` global component (`src/components/ui/BackButton.tsx`) — `chevron.left` Pressable, mirrors `LogoutButton` pattern
-- Fixed `events/_layout.tsx`: replaced `headerShown: false` with `headerTitle: ''` + `headerLeft: <BackButton />` to restore native back arrow
+- Fixed `events/_layout.tsx`: native Stack back button (matching admin pattern); `LogoutButton` moved to `headerRight` with `tintColor`
+- Fixed `app/_layout.tsx`: added `SafeAreaProvider` so `useSafeAreaInsets` returns correct insets on device
+- Removed extraneous `Tabs.Screen name="events/[id]"` registration from `(customer)/_layout.tsx`
+- Added `chevron.left → chevron-left` MaterialIcons mapping to `icon-symbol.tsx` for Android back button
 - Implemented `formatEventDate` / `formatEventTime` in `src/utils/dateHelpers.ts` (es-CR locale, weekday long, AM/PM)
 - Fixed date display: `dd/mm/yyyy` → human-readable `"Jueves 18 de junio de 2026"`
 - Fixed time display: 24h `HH:MM` → `es-CR` AM/PM (`"10:00 a.m."`)
@@ -543,7 +543,7 @@ npx jest --watch tests/Feature/events/
 
 ### v1.0.0 — 2026-06-05 (EBM-10)
 - Initial implementation of Events Feed module
-- Created `EventSummary`, `PaginationMeta`, `EventsListResponse`, `EventsListParams`, `EventCategory` types
+- Created `Event`, `PaginationMeta`, `EventsListResponse`, `EventsListParams`, `EventCategory` types
 - Created `eventsService.list()` wrapping `api.get` with query string builder
 - Implemented `useEvents` hook with pagination, refresh, concurrent-fetch guard
 - Created `EventCard` component with absolute category badge and animated `EventCardSkeleton`
