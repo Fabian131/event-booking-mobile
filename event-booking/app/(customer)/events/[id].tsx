@@ -80,9 +80,6 @@ export default function EventDetailScreen() {
 
   const categoryColor = CATEGORY_COLORS[event.category];
   const categoryLabel = CATEGORY_LABELS[event.category];
-  const capacityPct = event.max_capacity > 0
-    ? Math.round((event.remaining_capacity / event.max_capacity) * 100)
-    : 0;
 
   return (
     <ThemedView style={styles.container}>
@@ -109,10 +106,7 @@ export default function EventDetailScreen() {
             <View style={styles.divider} />
             <InfoRow label="Hora de fin" value={formatEventTime(event.end_time)} />
             <View style={styles.divider} />
-            <InfoRow
-              label="Cupos disponibles"
-              value={`${event.remaining_capacity} de ${event.max_capacity} (${capacityPct}%)`}
-            />
+            <InfoRow label="Cupos disponibles" value={String(event.remaining_capacity)} />
           </View>
 
           {event.description ? (
