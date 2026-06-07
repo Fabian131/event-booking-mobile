@@ -8,8 +8,10 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEvents } from '@/src/hooks/useEvents';
@@ -31,6 +33,7 @@ function SkeletonList() {
 
 export default function CustomerEventsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
   const renderItem = useCallback(
@@ -68,9 +71,14 @@ export default function CustomerEventsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Eventos</ThemedText>
-        <ThemedText>Explora los eventos disponibles</ThemedText>
+      <ThemedView style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <ThemedText type="title">Eventos</ThemedText>
+            <ThemedText>Explora los eventos disponibles</ThemedText>
+          </View>
+          <LogoutButton />
+        </View>
       </ThemedView>
 
       {error && (
@@ -113,10 +121,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    gap: 4,
     paddingHorizontal: 24,
-    paddingTop: 16,
     paddingBottom: 8,
+    backgroundColor: '#fff',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerText: {
+    flex: 1,
+    gap: 4,
   },
   listContent: {
     paddingHorizontal: 24,
