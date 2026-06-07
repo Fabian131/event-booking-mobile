@@ -66,7 +66,7 @@ describe('login flow', () => {
     });
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)');
+      expect(router.replace).toHaveBeenCalledWith('/(admin)');
     });
   });
 
@@ -103,7 +103,7 @@ describe('login flow', () => {
     });
 
     await waitFor(() => {
-      expect(router.replace).toHaveBeenCalledWith('/(tabs)');
+      expect(router.replace).toHaveBeenCalledWith('/(admin)');
     });
   });
 });

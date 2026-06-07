@@ -9,6 +9,7 @@ import { Button } from '@/src/components/ui/Button';
 import { useAuth } from '@/src/context/AuthContext';
 import { ApiError, type FieldError } from '@/src/types/auth';
 import { validateLoginForm, type LoginFormValues } from '@/src/utils/validators';
+import { AUTH, ERRORS } from '@/src/constants/ui';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -70,9 +71,9 @@ export default function LoginScreen() {
       });
 
       if (authenticatedUser.role === 'business') {
-        router.replace('/(tabs)');
+        router.replace('/(admin)');
       } else {
-        router.replace('/(customer)');
+        router.replace('/(customer)/events');
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -81,16 +82,16 @@ export default function LoginScreen() {
         }
 
         if (err.status === 401) {
-          setServerError('Credenciales inválidas. Verifica tu correo y contraseña.');
+          setServerError(ERRORS.INVALID_CREDENTIALS);
         } else if (err.status === 422) {
-          setServerError('Revisa los campos ingresados e intenta nuevamente.');
+          setServerError(ERRORS.VALIDATION_BANNER);
         } else {
-          setServerError('Ocurrió un error inesperado. Intenta nuevamente.');
+          setServerError(ERRORS.GENERIC);
         }
       } else if (err instanceof TypeError) {
-        setServerError('No se pudo conectar con el servidor. Verifica tu conexión.');
+        setServerError(ERRORS.NETWORK);
       } else {
-        setServerError('Ocurrió un error inesperado. Intenta nuevamente.');
+        setServerError(ERRORS.GENERIC);
       }
     } finally {
       setLoading(false);
@@ -108,14 +109,14 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <ThemedView style={styles.header}>
-            <ThemedText type="title">Iniciar Sesión</ThemedText>
-            <ThemedText>Accede a tu cuenta de Event Booking</ThemedText>
+            <ThemedText type="title">{AUTH.LOGIN_TITLE}</ThemedText>
+            <ThemedText>{AUTH.LOGIN_SUBTITLE}</ThemedText>
           </ThemedView>
 
           {showSuccess && (
             <Animated.View style={[styles.successBanner, { opacity: fadeAnim }]}>
               <ThemedText style={styles.successText}>
-                Cuenta creada exitosamente. Ahora puedes iniciar sesión.
+                {AUTH.REGISTERED_SUCCESS}
               </ThemedText>
             </Animated.View>
           )}
@@ -128,8 +129,8 @@ export default function LoginScreen() {
 
           <ThemedView style={styles.form}>
             <Input
-              label="Correo electrónico"
-              placeholder="Ingresa tu correo"
+              label={AUTH.LOGIN_EMAIL_LABEL}
+              placeholder={AUTH.LOGIN_EMAIL_PLACEHOLDER}
               value={email}
               onChangeText={setEmail}
               error={getFieldError('email')}
@@ -140,8 +141,8 @@ export default function LoginScreen() {
             />
 
             <Input
-              label="Contraseña"
-              placeholder="Ingresa tu contraseña"
+              label={AUTH.LOGIN_PASSWORD_LABEL}
+              placeholder={AUTH.LOGIN_PASSWORD_PLACEHOLDER}
               value={password}
               onChangeText={setPassword}
               error={getFieldError('password')}
@@ -150,16 +151,16 @@ export default function LoginScreen() {
             />
 
             <Button
-              title="Ingresar"
+              title={AUTH.LOGIN_BUTTON}
               onPress={handleLogin}
               loading={loading}
               style={styles.submitButton}
             />
 
             <View style={styles.footer}>
-              <ThemedText>¿No tienes cuenta? </ThemedText>
+              <ThemedText>{AUTH.LOGIN_NO_ACCOUNT} </ThemedText>
               <Link href="/(auth)/register" accessibilityRole="link">
-                <ThemedText type="link">Regístrate</ThemedText>
+                <ThemedText type="link">{AUTH.LOGIN_REGISTER_LINK}</ThemedText>
               </Link>
             </View>
           </ThemedView>

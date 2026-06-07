@@ -7,15 +7,23 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEvents } from '@/src/hooks/useEvents';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 
 const SKELETON_COUNT = 5;
+
+function ListHeader() {
+  return (
+    <ThemedView style={styles.listHeader}>
+      <ThemedText>Explora los eventos disponibles</ThemedText>
+    </ThemedView>
+  );
+}
 
 function SkeletonList() {
   return (
@@ -30,12 +38,17 @@ function SkeletonList() {
 }
 
 export default function CustomerEventsScreen() {
-  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { events, loading, refreshing, error, loadMore, refresh } = useEvents();
 
   const renderItem = useCallback(
-    ({ item }: { item: EventSummary }) => <EventCard event={item} />,
-    [],
+    ({ item }: { item: Event }) => (
+      <EventCard
+        event={item}
+        onPress={() => router.push({ pathname: '/(customer)/events/[id]', params: { id: item.id } })}
+      />
+    ),
+    [router],
   );
 
   const Separator = useCallback(() => <View style={styles.separator} />, []);
@@ -62,12 +75,7 @@ export default function CustomerEventsScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Eventos</ThemedText>
-        <ThemedText>Explora los eventos disponibles</ThemedText>
-      </ThemedView>
-
+    <ThemedView style={styles.container}>
       {error && (
         <View style={styles.errorBanner}>
           <ThemedText style={styles.errorText}>{error}</ThemedText>
@@ -87,6 +95,7 @@ export default function CustomerEventsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#0a7ea4" />
         }
+        ListHeaderComponent={ListHeader}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
@@ -107,12 +116,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  header: {
-    gap: 8,
-    marginBottom: 0,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+  listHeader: {
     paddingBottom: 8,
+    paddingTop: 4,
+    backgroundColor: '#f5f5f5',
   },
   listContent: {
     paddingHorizontal: 24,

@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 
-jest.mock('@/src/services/eventService');
+jest.mock('@/src/services/events');
 jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
 }));
@@ -24,14 +24,14 @@ describe('network error submit', () => {
   });
 
   it('should display network error banner when TypeError occurs', async () => {
-    (eventService.createEvent as jest.Mock).mockRejectedValueOnce(new TypeError('Network request failed'));
+    (eventsService.create as jest.Mock).mockRejectedValueOnce(new TypeError('Network request failed'));
 
     render(<CreateEventScreen />);
 
     fireEvent.press(screen.getByRole('button', { name: 'Crear Evento' }));
 
     await waitFor(() => {
-      expect(eventService.createEvent).toHaveBeenCalled();
+      expect(eventsService.create).toHaveBeenCalled();
     });
 
     await waitFor(() => {

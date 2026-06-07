@@ -1,13 +1,16 @@
-export type EventCategory =
-  | 'sports'
-  | 'music'
-  | 'culture'
-  | 'gastronomy'
-  | 'wellness'
-  | 'education'
-  | 'other';
+export const EVENT_CATEGORIES = [
+  'sports',
+  'music',
+  'culture',
+  'gastronomy',
+  'wellness',
+  'education',
+  'other',
+] as const;
 
-export interface EventSummary {
+export type EventCategory = (typeof EVENT_CATEGORIES)[number];
+
+export interface Event {
   id: string;
   title: string;
   description: string | null;
@@ -32,7 +35,7 @@ export interface PaginationMeta {
 }
 
 export interface EventsListResponse {
-  data: EventSummary[];
+  data: Event[];
   pagination: PaginationMeta;
 }
 

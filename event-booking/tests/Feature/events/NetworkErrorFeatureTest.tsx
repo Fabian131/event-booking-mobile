@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
-import CustomerEventsScreen from '@/app/(customer)/index';
+import CustomerEventsScreen from '@/app/(customer)/events/index';
 
 jest.mock('@/src/services/events');
 jest.mock('expo-image', () => ({
@@ -10,6 +10,9 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(() => Promise.resolve()),
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
+}));
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: jest.fn(() => ({ logout: jest.fn() })),
 }));
 
 async function renderFeedScreen() {

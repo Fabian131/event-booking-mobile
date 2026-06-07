@@ -48,7 +48,7 @@ describe('network error', () => {
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('No se pudo conectar con el servidor. Verifica tu conexión.')).toBeTruthy();
+      expect(screen.getByText('No se pudo conectar con el servidor. Verifica tu conexión a internet.')).toBeTruthy();
     });
 
     expect(router.replace).not.toHaveBeenCalled();

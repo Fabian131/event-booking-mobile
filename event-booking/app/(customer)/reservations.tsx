@@ -1,14 +1,24 @@
-import { StyleSheet } from 'react-native';
-
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 
 export default function CustomerReservationsScreen() {
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">Mis Reservas</ThemedText>
-        <ThemedText>Historial y estado de tus reservaciones</ThemedText>
+      <ThemedView style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <ThemedText type="title">Mis Reservas</ThemedText>
+            <ThemedText>Historial y estado de tus reservaciones</ThemedText>
+          </View>
+          <LogoutButton color={colors.primary} />
+        </View>
       </ThemedView>
     </ThemedView>
   );
@@ -17,10 +27,18 @@ export default function CustomerReservationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
   },
   header: {
-    gap: 8,
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerText: {
+    flex: 1,
+    gap: 4,
   },
 });

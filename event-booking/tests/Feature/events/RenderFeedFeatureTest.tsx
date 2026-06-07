@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
-import CustomerEventsScreen from '@/app/(customer)/index';
-import type { EventSummary, PaginationMeta } from '@/src/types/events';
+import CustomerEventsScreen from '@/app/(customer)/events/index';
+import type { Event, PaginationMeta } from '@/src/types/events';
 
 jest.mock('@/src/services/events');
 jest.mock('expo-image', () => ({
@@ -12,8 +12,11 @@ jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
 }));
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: jest.fn(() => ({ logout: jest.fn() })),
+}));
 
-function makeEvent(overrides?: Partial<EventSummary>): EventSummary {
+function makeEvent(overrides?: Partial<Event>): Event {
   return {
     id: '1',
     title: 'Summer Festival',
@@ -56,7 +59,7 @@ describe('events feed render', () => {
     jest.clearAllMocks();
   });
 
-  it('should render screen header', async () => {
+  it('should render screen subtitle', async () => {
     (eventsService.list as jest.Mock).mockResolvedValueOnce({
       data: [],
       pagination: makePagination({ total: 0 }),
@@ -64,7 +67,6 @@ describe('events feed render', () => {
 
     await renderFeedScreen();
 
-    expect(screen.getByText('Eventos')).toBeTruthy();
     expect(screen.getByText('Explora los eventos disponibles')).toBeTruthy();
   });
 

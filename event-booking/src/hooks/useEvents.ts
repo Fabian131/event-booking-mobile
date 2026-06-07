@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
-import type { EventSummary } from '@/src/types/events';
+import type { Event } from '@/src/types/events';
 import { eventsService } from '@/src/services/events';
+import { ERRORS } from '@/src/constants/ui';
 
 const PAGE_LIMIT = 20;
 
 export function useEvents() {
-  const [events, setEvents] = useState<EventSummary[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export function useEvents() {
       setHasNextPage(response.pagination.has_next_page);
       setCurrentPage(response.pagination.page);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Error al cargar los eventos';
+      const message = err instanceof ApiError ? err.message : ERRORS.EVENTS_LOAD_ERROR;
       setError(message);
     } finally {
       setLoading(false);

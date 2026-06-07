@@ -17,20 +17,17 @@ import { BottomModal } from '@/src/components/ui/BottomModal';
 import { ApiError } from '@/src/types/auth';
 import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
+import { EVENT_CATEGORIES } from '@/src/types/events';
+import { EVENTS, ERRORS, VALIDATION, CATEGORY } from '@/src/constants/ui';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-const CATEGORIES = [
-  { label: 'Deportes', value: 'sports' },
-  { label: 'Música', value: 'music' },
-  { label: 'Cultura', value: 'culture' },
-  { label: 'Gastronomía', value: 'gastronomy' },
-  { label: 'Bienestar', value: 'wellness' },
-  { label: 'Educación', value: 'education' },
-  { label: 'Otro', value: 'other' },
-];
+const CATEGORIES = EVENT_CATEGORIES.map((value) => ({
+  label: CATEGORY.LABELS[value],
+  value,
+}));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -98,7 +95,7 @@ export default function CreateEventScreen() {
       const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
       const assetType = asset.mimeType ?? '';
       if (assetType && !validTypes.includes(assetType)) {
-        setServerError('La imagen debe estar en formato PNG, JPG o WebP.');
+        setServerError(VALIDATION.IMAGE_FORMAT);
         return;
       }
       setImageUri(asset.uri);
@@ -130,7 +127,7 @@ export default function CreateEventScreen() {
         };
         fd.append('image', file as unknown as Blob);
       }
-      await eventService.createEvent(fd);
+      await eventsService.create(fd);
       setServerError('');
       setSuccess(true);
       setTimeout(() => router.back(), 1200);
@@ -139,15 +136,15 @@ export default function CreateEventScreen() {
         if (e.details?.length) {
           setErrors(e.details);
           if (e.details.find(d => d.field === 'schedule')) {
-            setServerError('Ya existe un evento programado en esta fecha y horario. Por favor selecciona otro.');
+            setServerError(ERRORS.SCHEDULE_CONFLICT);
             return;
           }
         }
         setServerError(e.message);
       } else if (e instanceof TypeError) {
-        setServerError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+        setServerError(ERRORS.NETWORK);
       } else {
-        setServerError('Ocurrió un error inesperado. Intenta nuevamente.');
+        setServerError(ERRORS.GENERIC);
       }
     } finally { setLoading(false); }
   }
@@ -158,13 +155,13 @@ export default function CreateEventScreen() {
         <ScrollView contentContainerStyle={st.scroll} keyboardShouldPersistTaps="handled">
 
           <ThemedView style={st.header}>
-            <ThemedText type="title">Crear Evento</ThemedText>
-            <ThemedText>Ingresa los detalles del nuevo evento</ThemedText>
+            <ThemedText type="title">{EVENTS.CREATE_TITLE}</ThemedText>
+            <ThemedText>{EVENTS.CREATE_SUBTITLE}</ThemedText>
           </ThemedView>
 
           {success ? (
             <View style={st.successBanner}>
-              <ThemedText style={st.successBannerTxt}>Evento creado exitosamente.</ThemedText>
+              <ThemedText style={st.successBannerTxt}>{EVENTS.EVENT_CREATED}</ThemedText>
             </View>
           ) : null}
 
@@ -175,13 +172,13 @@ export default function CreateEventScreen() {
           ) : null}
 
           <ThemedView style={st.form}>
-            <Input label="Título" placeholder="Nombre del evento" value={title} onChangeText={setTitle} error={err('title')} editable={!loading} />
-            <Input label="Descripción" placeholder="Breve descripción del evento" value={description} onChangeText={setDescription} error={err('description')} editable={!loading} />
-            <Input label="Capacidad máxima" placeholder="Ej. 100" value={maxCapacity} onChangeText={setMaxCapacity} error={err('max_capacity')} editable={!loading} keyboardType="numeric" />
+            <Input label={EVENTS.CREATE_TITLE_LABEL} placeholder={EVENTS.CREATE_TITLE_PLACEHOLDER} value={title} onChangeText={setTitle} error={err('title')} editable={!loading} />
+            <Input label={EVENTS.CREATE_DESCRIPTION_LABEL} placeholder={EVENTS.CREATE_DESCRIPTION_PLACEHOLDER} value={description} onChangeText={setDescription} error={err('description')} editable={!loading} />
+            <Input label={EVENTS.CREATE_CAPACITY_LABEL} placeholder={EVENTS.CREATE_CAPACITY_PLACEHOLDER} value={maxCapacity} onChangeText={setMaxCapacity} error={err('max_capacity')} editable={!loading} keyboardType="numeric" />
 
             {/* Category */}
             <View style={st.field}>
-              <ThemedText type="defaultSemiBold" style={st.label}>Categoría</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>{EVENTS.CREATE_CATEGORY_LABEL}</ThemedText>
               <TouchableOpacity onPress={() => !loading && setCatModal(true)} style={[st.selector, err('category') && st.selectorErr]} accessibilityLabel="Seleccionar categoría" accessibilityRole="button">
                 <ThemedText style={category ? undefined : st.ph}>{catLabel}</ThemedText>
               </TouchableOpacity>
@@ -190,9 +187,9 @@ export default function CreateEventScreen() {
 
             {/* Date */}
             <View style={st.field}>
-              <ThemedText type="defaultSemiBold" style={st.label}>Fecha</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>{EVENTS.CREATE_DATE_LABEL}</ThemedText>
               <TouchableOpacity onPress={openDate} style={[st.selector, err('date') && st.selectorErr]} accessibilityLabel="Seleccionar fecha" accessibilityRole="button">
-                <ThemedText style={date ? undefined : st.ph}>{date ? fmtDate(date) : 'Selecciona una fecha'}</ThemedText>
+                <ThemedText style={date ? undefined : st.ph}>{date ? fmtDate(date) : EVENTS.CREATE_DATE_PLACEHOLDER}</ThemedText>
               </TouchableOpacity>
               {err('date') && <ThemedText style={st.fieldErr}>{err('date')}</ThemedText>}
               {showAndroidDate && (
@@ -203,9 +200,9 @@ export default function CreateEventScreen() {
 
             {/* Start time */}
             <View style={st.field}>
-              <ThemedText type="defaultSemiBold" style={st.label}>Hora de Inicio</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>{EVENTS.CREATE_START_LABEL}</ThemedText>
               <TouchableOpacity onPress={openStart} style={[st.selector, err('start_time') && st.selectorErr]} accessibilityLabel="Seleccionar hora de inicio" accessibilityRole="button">
-                <ThemedText style={startTime ? undefined : st.ph}>{startTime ? fmtTime(startTime) : 'Selecciona hora de inicio'}</ThemedText>
+                <ThemedText style={startTime ? undefined : st.ph}>{startTime ? fmtTime(startTime) : EVENTS.CREATE_START_PLACEHOLDER}</ThemedText>
               </TouchableOpacity>
               {err('start_time') && <ThemedText style={st.fieldErr}>{err('start_time')}</ThemedText>}
               {showAndroidStart && (
@@ -216,9 +213,9 @@ export default function CreateEventScreen() {
 
             {/* End time */}
             <View style={st.field}>
-              <ThemedText type="defaultSemiBold" style={st.label}>Hora de Fin</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>{EVENTS.CREATE_END_LABEL}</ThemedText>
               <TouchableOpacity onPress={openEnd} style={[st.selector, err('end_time') && st.selectorErr]} accessibilityLabel="Seleccionar hora de fin" accessibilityRole="button">
-                <ThemedText style={endTime ? undefined : st.ph}>{endTime ? fmtTime(endTime) : 'Selecciona hora de fin'}</ThemedText>
+                <ThemedText style={endTime ? undefined : st.ph}>{endTime ? fmtTime(endTime) : EVENTS.CREATE_END_PLACEHOLDER}</ThemedText>
               </TouchableOpacity>
               {err('end_time') && <ThemedText style={st.fieldErr}>{err('end_time')}</ThemedText>}
               {showAndroidEnd && (
@@ -229,20 +226,20 @@ export default function CreateEventScreen() {
 
             {/* Image */}
             <View style={st.imgContainer}>
-              <ThemedText type="defaultSemiBold" style={st.label}>Imagen (opcional, máx 5 MB)</ThemedText>
+              <ThemedText type="defaultSemiBold" style={st.label}>{EVENTS.CREATE_IMAGE_LABEL}</ThemedText>
               <TouchableOpacity onPress={pickImage} style={st.imgBtn} disabled={loading} accessibilityLabel={imageUri ? 'Cambiar imagen del evento' : 'Seleccionar imagen del evento'} accessibilityRole="button">
-                <ThemedText>{imageUri ? 'Cambiar Imagen' : 'Seleccionar Imagen'}</ThemedText>
+                <ThemedText>{imageUri ? EVENTS.CREATE_IMAGE_CHANGE : EVENTS.CREATE_IMAGE_SELECT}</ThemedText>
               </TouchableOpacity>
               {imageUri && <Image source={{ uri: imageUri }} style={st.preview} accessibilityLabel="Vista previa de la imagen del evento" />}
             </View>
 
-            <Button title="Crear Evento" onPress={handleSubmit} loading={loading} style={st.submit} />
+            <Button title={EVENTS.CREATE_BUTTON} onPress={handleSubmit} loading={loading} style={st.submit} />
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
 
       {/* ── Category Modal ─────────────────────────────────────────── */}
-      <BottomModal visible={catModal} title="Categoría" onDone={() => setCatModal(false)}>
+      <BottomModal visible={catModal} title={EVENTS.CREATE_MODAL_CATEGORY_TITLE} onDone={() => setCatModal(false)}>
         <FlatList
           data={CATEGORIES}
           keyExtractor={i => i.value}
@@ -258,17 +255,17 @@ export default function CreateEventScreen() {
       </BottomModal>
 
       {/* ── Date Modal ─────────────────────────────────────────────── */}
-      <BottomModal visible={dateModal} title="Fecha del evento" onDone={() => { setDate(tmpDate); setDateModal(false); }}>
+      <BottomModal visible={dateModal} title={EVENTS.CREATE_MODAL_DATE_TITLE} onDone={() => { setDate(tmpDate); setDateModal(false); }}>
         <JSDatePicker value={tmpDate} onChange={setTmpDate} />
       </BottomModal>
 
       {/* ── Start Time Modal ───────────────────────────────────────── */}
-      <BottomModal visible={startModal} title="Hora de inicio" onDone={() => { setStartTime(tmpStart); setStartModal(false); }}>
+      <BottomModal visible={startModal} title={EVENTS.CREATE_MODAL_START_TITLE} onDone={() => { setStartTime(tmpStart); setStartModal(false); }}>
         <JSTimePicker value={tmpStart} onChange={setTmpStart} />
       </BottomModal>
 
       {/* ── End Time Modal ─────────────────────────────────────────── */}
-      <BottomModal visible={endModal} title="Hora de fin" onDone={() => { setEndTime(tmpEnd); setEndModal(false); }}>
+      <BottomModal visible={endModal} title={EVENTS.CREATE_MODAL_END_TITLE} onDone={() => { setEndTime(tmpEnd); setEndModal(false); }}>
         <JSTimePicker value={tmpEnd} onChange={setTmpEnd} />
       </BottomModal>
     </ThemedView>

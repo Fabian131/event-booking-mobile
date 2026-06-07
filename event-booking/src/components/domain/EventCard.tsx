@@ -2,35 +2,16 @@ import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { ThemedText } from '@/src/components/ui/themed-text';
-import type { EventCategory, EventSummary } from '@/src/types/events';
-
-const CATEGORY_COLORS: Record<EventCategory, string> = {
-  sports: '#2196F3',
-  music: '#9C27B0',
-  culture: '#FF9800',
-  gastronomy: '#F44336',
-  wellness: '#4CAF50',
-  education: '#00BCD4',
-  other: '#607D8B',
-};
-
-const CATEGORY_LABELS: Record<EventCategory, string> = {
-  sports: 'Deportes',
-  music: 'Música',
-  culture: 'Cultura',
-  gastronomy: 'Gastronomía',
-  wellness: 'Bienestar',
-  education: 'Educación',
-  other: 'Otro',
-};
+import type { Event } from '@/src/types/events';
+import { CATEGORY } from '@/src/constants/ui';
 
 interface EventCardProps {
-  event: EventSummary;
+  event: Event;
   onPress?: () => void;
 }
 
 export function EventCard({ event, onPress }: EventCardProps) {
-  const categoryColor = CATEGORY_COLORS[event.category];
+  const categoryColor = CATEGORY.COLORS[event.category];
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
@@ -42,7 +23,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
           transition={200}
         />
         <View style={[styles.badge, { backgroundColor: categoryColor }]}>
-          <ThemedText style={styles.badgeText}>{CATEGORY_LABELS[event.category]}</ThemedText>
+          <ThemedText style={styles.badgeText}>{CATEGORY.LABELS[event.category]}</ThemedText>
         </View>
       </View>
       <View style={styles.body}>

@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { EventsListParams, EventsListResponse } from '@/src/types/events';
+import type { Event, EventsListParams, EventsListResponse } from '@/src/types/events';
 
 export const eventsService = {
   list(params: EventsListParams = {}): Promise<EventsListResponse> {
@@ -12,5 +12,13 @@ export const eventsService = {
       ...(params.date ? { date: params.date } : {}),
     });
     return api.get<EventsListResponse>(`/api/v1/events?${query}`);
+  },
+
+  getById(id: string): Promise<Event> {
+    return api.get<Event>(`/api/v1/events/${id}`);
+  },
+
+  create(formData: FormData): Promise<Event> {
+    return api.postForm<Event>('/api/v1/events', formData);
   },
 };

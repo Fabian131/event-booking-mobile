@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateEventScreen from '@/app/(admin)/create-event';
-import { eventService } from '@/src/services/eventService';
+import { eventsService } from '@/src/services/events';
 
-jest.mock('@/src/services/eventService');
+jest.mock('@/src/services/events');
 jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
 }));
@@ -35,6 +35,6 @@ describe('empty form submit', () => {
       expect(screen.getByText('La hora de fin es obligatoria')).toBeTruthy();
     });
 
-    expect(eventService.createEvent).not.toHaveBeenCalled();
+    expect(eventsService.create).not.toHaveBeenCalled();
   });
 });

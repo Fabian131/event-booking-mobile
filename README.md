@@ -37,12 +37,17 @@ event-booking-mobile/
     │   │   ├── _layout.tsx
     │   │   ├── login.tsx
     │   │   └── register.tsx
-    │   └── (tabs)/               # ROUTE GROUP: Main navigation (Bottom Tabs)
-    │       ├── _layout.tsx       # Bottom tab bar configuration
-    │       ├── index.tsx         # Dashboard / Available events
-    │       ├── calendar.tsx      # Availability calendar
-    │       ├── reservations.tsx  # Reservation history and status
-    │       └── profile.tsx       # User profile
+    │   ├── (admin)/              # ROUTE GROUP: Business admin (Stack)
+    │   │   ├── _layout.tsx       # Auth guard + logout button + screen registration
+    │   │   ├── index.tsx         # Calendar dashboard
+    │   │   └── create-event.tsx  # Event creation form
+    │   └── (customer)/           # ROUTE GROUP: Customer (Tabs)
+    │       ├── _layout.tsx       # Auth guard + tab bar
+    │       ├── reservations.tsx  # Reservation history
+    │       └── events/           # Events tab (nested stack)
+    │           ├── _layout.tsx
+    │           ├── index.tsx     # Events feed
+    │           └── [id].tsx      # Event detail
     │
     └── /src/                     # BUSINESS LOGIC AND COMPONENTS
         ├── /components/          # Reusable UI
@@ -51,13 +56,17 @@ event-booking-mobile/
         ├── /context/             # Global state management (Auth, Theme)
         ├── /hooks/               # Logic extracted from screens
         │   ├── useEvents.ts
-        │   ├── useReservations.ts
-        │   └── usePushNotifications.ts
+        │   ├── useEventDetail.ts
+        │   └── useReservations.ts
         ├── /services/            # External integrations
         │   ├── api.ts
+        │   ├── auth.ts
+        │   ├── events.ts
         │   └── storage.ts
+        ├── /types/               # TypeScript types
+        │   ├── auth.ts
+        │   └── events.ts
         └── /utils/               # Pure helpers
-            ├── dateHelpers.ts
             └── validators.ts
 ```
 
