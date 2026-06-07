@@ -73,7 +73,7 @@ export default function LoginScreen() {
       if (authenticatedUser.role === 'business') {
         router.replace('/(admin)');
       } else {
-        router.replace('/(customer)');
+        router.replace('/(customer)/events');
       }
     } catch (err) {
       if (err instanceof ApiError) {
