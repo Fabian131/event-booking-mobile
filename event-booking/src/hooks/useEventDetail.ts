@@ -20,7 +20,11 @@ export function useEventDetail(id: string) {
         if (mounted) setEvent(data);
       } catch (err) {
         if (mounted) {
-          const message = err instanceof ApiError ? err.message : ERRORS.EVENT_LOAD_ERROR;
+          const message = err instanceof ApiError
+            ? err.message
+            : err instanceof TypeError
+              ? ERRORS.NETWORK
+              : ERRORS.EVENT_LOAD_ERROR;
           setError(message);
         }
       } finally {
