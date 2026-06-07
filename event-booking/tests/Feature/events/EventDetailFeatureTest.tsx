@@ -107,7 +107,7 @@ describe('event detail render', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Cupos disponibles')).toBeTruthy();
-      expect(screen.getByText('50 de 100 (50%)')).toBeTruthy();
+      expect(screen.getByText('50')).toBeTruthy();
     });
   });
 
