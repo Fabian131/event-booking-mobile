@@ -10,16 +10,7 @@ import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useAuth } from '@/src/context/AuthContext';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
-
-function formatDate(d: string): string {
-  const [year, month, day] = d.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function formatTime(t: string): string {
-  return t.slice(0, 5);
-}
+import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
 
 interface InfoRowProps {
   label: string;
@@ -112,11 +103,11 @@ export default function EventDetailScreen() {
           </View>
 
           <View>
-            <InfoRow label="Fecha" value={formatDate(event.date)} />
+            <InfoRow label="Fecha" value={formatEventDate(event.date)} />
             <View style={styles.divider} />
-            <InfoRow label="Hora de inicio" value={formatTime(event.start_time)} />
+            <InfoRow label="Hora de inicio" value={formatEventTime(event.start_time)} />
             <View style={styles.divider} />
-            <InfoRow label="Hora de fin" value={formatTime(event.end_time)} />
+            <InfoRow label="Hora de fin" value={formatEventTime(event.end_time)} />
             <View style={styles.divider} />
             <InfoRow
               label="Cupos disponibles"
