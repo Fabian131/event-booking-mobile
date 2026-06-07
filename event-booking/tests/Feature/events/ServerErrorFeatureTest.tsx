@@ -12,6 +12,9 @@ jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
 }));
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: jest.fn(() => ({ logout: jest.fn() })),
+}));
 
 async function renderFeedScreen() {
   const view = render(<CustomerEventsScreen />);
