@@ -41,6 +41,9 @@ const infoStyles = StyleSheet.create({
   row: {
     paddingVertical: 12,
   },
+  textGroup: {
+    flex: 1,
+  },
   label: {
     fontSize: 11,
     fontWeight: '600',
