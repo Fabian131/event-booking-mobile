@@ -26,6 +26,7 @@ export default function AdminLayout() {
     >
       <Stack.Screen name="index" options={{ title: 'Calendario' }} />
       <Stack.Screen name="create-event" options={{ title: 'Nuevo Evento' }} />
+      <Stack.Screen name="edit-event/[id]" options={{ title: 'Editar Evento' }} />
     </Stack>
   );
 }
