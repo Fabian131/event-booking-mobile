@@ -163,6 +163,10 @@ export const ADMIN = {
   CALENDAR_TITLE: 'Calendario',
   CALENDAR_SUBTITLE: 'Consulta la disponibilidad de eventos',
   CREATE_EVENT_NAV: 'Prueba temporal: Crear Evento',
+  EDIT_EVENT_NAV: 'Prueba temporal: Editar Evento',
+  EDIT_EVENT_PLACEHOLDER: 'Selecciona un evento',
+  EDIT_EVENT_MODAL_TITLE: 'Eventos disponibles',
+  EDIT_EVENT_LOADING: 'Cargando eventos...',
 } as const;
 
 export const CUSTOMER = {
