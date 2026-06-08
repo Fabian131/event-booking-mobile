@@ -87,6 +87,15 @@ export const EVENTS = {
   FEED_EMPTY_SUBTITLE: 'No hay eventos disponibles en este momento',
   FEED_ERROR_RETRY: 'Reintentar',
   EVENT_CREATED: 'Evento creado exitosamente.',
+  EDIT_TITLE: 'Editar Evento',
+  EDIT_SUBTITLE: 'Modifica los detalles del evento',
+  EDIT_BUTTON: 'Guardar Cambios',
+  EDIT_LOADING: 'Cargando evento...',
+  EDIT_CONFIRM_TITLE: '¿Confirmar cambios?',
+  EDIT_CONFIRM_MESSAGE: 'Esta acción es irreversible. Los cambios se reflejarán inmediatamente para todos los usuarios. ¿Deseas continuar?',
+  EDIT_CONFIRM_CANCEL: 'Cancelar',
+  EDIT_CONFIRM_OK: 'Sí, guardar cambios',
+  EDIT_SUCCESS: 'Evento actualizado exitosamente.',
   DETAIL_LOADING: 'Cargando evento...',
   DETAIL_NOT_FOUND: 'Evento no encontrado',
   DETAIL_DATE_LABEL: 'Fecha',
@@ -147,6 +156,7 @@ export const ERRORS = {
   SCHEDULE_CONFLICT: 'Ya existe un evento programado en esta fecha y horario. Por favor selecciona otro.',
   EVENTS_LOAD_ERROR: 'Error al cargar los eventos',
   EVENT_LOAD_ERROR: 'Error al cargar el evento',
+  EVENT_UPDATE_ERROR: 'Error al actualizar el evento',
 } as const;
 
 export const ADMIN = {
