@@ -87,6 +87,12 @@ export const api = {
       body: formData,
     }),
 
+  putForm: <T>(endpoint: string, formData: FormData) =>
+    request<T>(endpoint, {
+      method: 'PUT',
+      body: formData,
+    }),
+
   put: <T>(endpoint: string, data: unknown) =>
     request<T>(endpoint, {
       method: 'PUT',
