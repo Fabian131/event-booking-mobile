@@ -1,33 +1,41 @@
-# Module: Create Event (Admin)
+# Module: Create/Edit Event (Admin)
 
 ---
 
 ## General Information
 
-- **Module Code**: `EBM-03`
-- **API Contract**: `api-contracts/create-event.yaml`
-- **Responsible**: Luis F Rosales Vargas
+- **Module Code**: `EBM-03` (create) · `EBM-05` (edit)
+- **API Contracts**: `api-contracts/create-event.yaml` · `api-contracts/update-event.yaml`
+- **Responsible**: Luis F Rosales Vargas, Abigail Ramírez Chavarría
 - **Status**: Completed
-- **Version**: `1.0.0`
+- **Version**: `1.1.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-06`
+- **Last Updated**: `2026-06-09`
 
 ---
 
 ## Description
 
-Screen accessible only to authenticated users with the `business` role that
-allows admins to create a new event in the system. The form collects all
-required event information, validates it client-side, uploads an optional
-image, and sends the payload to `POST /api/v1/events` as a `multipart/form-data`
-request.
+Screens accessible only to authenticated users with the `business` role that
+allow admins to create and update event information. The create screen collects
+all required event information, validates it client-side, uploads an optional
+image, and sends the payload to `POST /api/v1/events` as a
+`multipart/form-data` request.
 
-On success the screen navigates back to the previous admin screen.
+The edit screen receives an event ID from the route, fetches the existing entity
+with `GET /api/v1/events/{event_id}`, pre-populates the same form structure,
+reuses the creation validation constraints, requires an irreversible-action
+native confirmation dialog, and sends changes to `PUT /api/v1/events/{event_id}`
+as `multipart/form-data`.
+
+On success each screen navigates back to the previous admin screen.
 On a schedule conflict the backend returns a localized Spanish error banner.
 
 ---
 
-## API Contract
+## API Contracts
+
+### Create Event
 
 **File:** `api-contracts/create-event.yaml`
 
@@ -47,6 +55,34 @@ On a schedule conflict the backend returns a localized Spanish error banner.
 | `start_time` | string (HH:MM:SS) | Yes | |
 | `end_time` | string (HH:MM:SS) | Yes | Must be after `start_time` |
 | `image` | file | No | max: 5 MB, image/* MIME type |
+
+### Update Event
+
+**File:** `api-contracts/update-event.yaml`
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| PUT | `/api/v1/events/{event_id}` | Bearer (business) | Partially updates an existing event with optional image replacement |
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `event_id` | string (UUID) | Yes | Event identifier read from the route segment `[id]` |
+
+#### Request Body (`multipart/form-data`)
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| `title` | string | No | min: 3, max: 64 characters |
+| `description` | string | No | max: 255 characters |
+| `max_capacity` | integer | No | min: 1, max: 9,999,999 |
+| `category` | string | No | Enum: `sports`, `music`, `culture`, `gastronomy`, `wellness`, `education`, `other` |
+| `date` | string (YYYY-MM-DD) | No | Must not be in the past when provided |
+| `start_time` | string (HH:MM:SS) | No | Used with `end_time` for schedule validation |
+| `end_time` | string (HH:MM:SS) | No | Must be after `start_time` when both are provided |
+| `image` | file | No | New event banner image; omitted when the existing remote URL is kept |
+| `is_active` | boolean | No | Not exposed by the current mobile edit form |
 
 ### Response (201 Created)
 
@@ -102,18 +138,34 @@ On a schedule conflict the backend returns a localized Spanish error banner.
 ```text
 app/
 |-- (admin)/
-|   `-- create-event.tsx              # Create event screen (this module)
+|   |-- _layout.tsx                   # Admin Stack guard + create/edit route registration
+|   |-- index.tsx                     # Temporary create/edit navigation entry points
+|   |-- create-event.tsx              # Create event screen
+|   `-- edit-event/
+|       `-- [id].tsx                  # Edit event screen (route ID pre-population)
 src/
-|-- components/ui/
-|   |-- BottomModal.tsx              # Reusable bottom-sheet modal wrapper
-|   |-- JSDatePicker.tsx            # Pure-JS Day/Month/Year spinner
-|   |-- JSTimePicker.tsx            # Pure-JS Hour/Minute spinner
-|   `-- UnitSpinner.tsx             # ▲/▼ increment/decrement control
+|-- components/
+|   `-- ui/
+|       |-- BottomModal.tsx          # Reusable bottom-sheet modal wrapper
+|       |-- Button.tsx               # Primary submit/action button
+|       |-- Input.tsx                # Labeled text input with error state
+|       |-- JSDatePicker.tsx         # Pure-JS Day/Month/Year spinner
+|       |-- JSTimePicker.tsx         # Pure-JS Hour/Minute spinner
+|       |-- Loader.tsx               # Full-screen loader for edit pre-fetch
+|       |-- UnitSpinner.tsx          # ▲/▼ increment/decrement control
+|       |-- themed-text.tsx          # Shared text wrapper
+|       `-- themed-view.tsx          # Shared view wrapper
+|-- constants/
+|   `-- ui.ts                        # EVENTS, ADMIN, ERRORS, VALIDATION, CATEGORY strings
 |-- services/
-|   `-- eventService.ts              # eventService.createEvent(FormData)
+|   |-- api.ts                       # HTTP client: postForm(), putForm(), auth token injection
+|   `-- events.ts                    # eventsService.create(), update(), getById(), list()
+|-- hooks/
+|   |-- useEventDetail.ts            # Loads existing event data for edit pre-population
+|   `-- useEvents.ts                 # Loads events for the temporary admin selector
 |-- types/
 |   |-- auth.ts                      # FieldError, ApiError
-|   `-- event.ts                     # EventResponse, EVENT_CATEGORIES, EventCategory
+|   `-- events.ts                    # Event, EVENT_CATEGORIES, EventCategory
 |-- utils/
 |   `-- validators.ts                # validateCreateEventForm()
 tests/
@@ -133,7 +185,7 @@ tests/
     `-- CreateEventFlowBrowserTest.tsx
 ```
 
-### Data Flow
+### Data Flow — Create
 
 ```text
 Admin fills form (title, description, capacity, category, date, start_time, end_time, image)
@@ -149,7 +201,7 @@ validateCreateEventForm(values)   <-- client-side validation
 Build FormData (multipart/form-data)
     |
     v
-eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
+eventsService.create(FormData)  --> POST /api/v1/events (Bearer token)
     |
     v
 .-----------------------------------------.
@@ -163,13 +215,54 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 `-----------------------------------------`
 ```
 
+### Data Flow — Edit
+
+```text
+Admin selects an event from the temporary selector or navigates to /(admin)/edit-event/[id]
+    |
+    v
+EditEventScreen reads id with useLocalSearchParams()
+    |
+    v
+useEventDetail(id) --> eventsService.getById(id) --> GET /api/v1/events/{id}
+    |
+    v
+useEffect pre-populates title, description, capacity, category, date, times, image_url
+    |
+    v
+Admin edits fields and taps "Guardar Cambios"
+    |
+    v
+validateCreateEventForm(values)   <-- exact same structural constraints as create
+    |-- Error? --> show field-level errors, stop
+    |
+    v
+Alert.alert() irreversible transaction warning
+    |-- Cancel --> no request
+    |-- Confirm --> build FormData
+    |
+    v
+eventsService.update(id, FormData) --> PUT /api/v1/events/{id} (Bearer token)
+    |
+    v
+.------------------------------------------------.
+| 200  --> success banner + router.back()          |
+| 409  schedule conflict                           |
+|       --> Spanish error banner                   |
+| 422  validation details                          |
+|       --> per-field error text                   |
+| 500 / ApiError --> generic error banner          |
+| TypeError (network) --> connection banner        |
+`------------------------------------------------`
+```
+
 ---
 
 ## Files
 
 ### Screen
 
-**File:** `app/(admin)/create-event.tsx`
+#### Create — `app/(admin)/create-event.tsx`
 
 | State | Description |
 |-------|-------------|
@@ -196,7 +289,34 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 | `setErrors([]); setServerError(''); setSuccess(false);` | Resets all error and success states inline before submit |
 | `openDate/Start/End()` | Opens Android native picker or iOS modal based on `Platform.OS` |
 | `pickImage()` | Launches image library picker via `expo-image-picker` |
-| `handleSubmit()` | Validates, builds `FormData`, calls `eventService`, handles response |
+| `handleSubmit()` | Validates, builds `FormData`, calls `eventsService`, handles response |
+
+#### Edit — `app/(admin)/edit-event/[id].tsx`
+
+The edit screen intentionally mirrors the create form instead of introducing a
+separate UI abstraction. This keeps the validation, field order, selector
+behavior, image picker, and error rendering identical for both admin flows.
+
+| State | Description |
+|-------|-------------|
+| `id` | Route parameter from `useLocalSearchParams<{ id: string }>()` |
+| `event` | Loaded by `useEventDetail(id)` before the form is shown |
+| `initialized` | Prevents repeated pre-population after user edits local state |
+| `imageChanged` | Tracks whether the user selected a new local image file |
+| `title`, `description`, `maxCapacity`, `category`, `date`, `startTime`, `endTime` | Same field state as create, initialized from the loaded event |
+| `imageUri` | Existing remote `image_url` for preview, or local file URI after replacement |
+| `errors`, `serverError`, `success`, `loading` | Same error/success/loading state pattern as create |
+
+**Functions:**
+
+| Function | Description |
+|----------|-------------|
+| `parseDateFromString()` | Converts API `YYYY-MM-DD` date string into a local `Date` object |
+| `parseTimeFromString()` | Converts API `HH:MM:SS` time string into a local `Date` object |
+| `buildUpdateFields()` | Builds the textual fields shared by update FormData |
+| `buildFormData()` | Builds `multipart/form-data`; appends `image` only when `imageChanged === true` |
+| `handleSubmit()` | Runs the same `validateCreateEventForm()` checks, then opens the confirmation Alert |
+| `doUpdate()` | Sends `eventsService.update(id, formData)` only after explicit confirmation |
 
 #### Cross-Platform Picker Strategy
 
@@ -215,11 +335,20 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 
 ### Services
 
-**File:** `src/services/eventService.ts`
+**File:** `src/services/events.ts`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `eventService.createEvent(formData)` | `POST /api/v1/events` | Sends multipart request, returns `EventResponse` |
+| `eventsService.create(formData)` | `POST /api/v1/events` | Sends multipart request and returns `Event` |
+| `eventsService.update(id, formData)` | `PUT /api/v1/events/{id}` | Sends multipart update request and returns `Event` |
+| `eventsService.getById(id)` | `GET /api/v1/events/{id}` | Fetches the existing event for edit pre-population |
+
+**File:** `src/services/api.ts`
+
+| Method | Description |
+|--------|-------------|
+| `api.postForm()` | Sends `POST` requests with `FormData` without forcing a JSON `Content-Type` |
+| `api.putForm()` | Sends `PUT` requests with `FormData` for event updates with optional image replacement |
 
 **HTTP Client:** `src/services/api.ts`
 
@@ -232,7 +361,7 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 
 | Function | Description |
 |----------|-------------|
-| `validateCreateEventForm(values)` | Returns accumulated `FieldError[]` for all form fields |
+| `validateCreateEventForm(values)` | Returns accumulated `FieldError[]` for all create/edit form fields |
 
 **Fields validated:**
 
@@ -250,10 +379,15 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 
 | Component | File | Description |
 |-----------|------|-------------|
+| `Input` | `src/components/ui/Input.tsx` | Labeled `TextInput` with error state; used for title, description, and capacity |
+| `Button` | `src/components/ui/Button.tsx` | Primary action button with loading state |
+| `Loader` | `src/components/ui/Loader.tsx` | Full-screen loader while edit fetches the existing event |
 | `UnitSpinner` | `src/components/ui/UnitSpinner.tsx` | Single ▲ value ▼ control. Reused by `JSDatePicker` and `JSTimePicker` |
 | `JSDatePicker` | `src/components/ui/JSDatePicker.tsx` | Day / Month / Year spinner using `UnitSpinner`. Enforces `minimumDate = today` |
 | `JSTimePicker` | `src/components/ui/JSTimePicker.tsx` | Hour / Minute spinner (±1 min) using `UnitSpinner` |
 | `BottomModal` | `src/components/ui/BottomModal.tsx` | Reusable bottom-sheet modal wrapper: overlay + header with "Listo" button + children |
+| `ThemedText` | `src/components/ui/themed-text.tsx` | Shared text wrapper for title, labels, banners, and selector values |
+| `ThemedView` | `src/components/ui/themed-view.tsx` | Shared view wrapper for form and screen containers |
 
 ---
 
@@ -277,11 +411,12 @@ eventService.createEvent(FormData)  --> POST /api/v1/events (Bearer token)
 ### Component Tree
 
 ```text
-CreateEventScreen
+CreateEventScreen / EditEventScreen
 `-- ThemedView
     |-- KeyboardAvoidingView
     |   `-- ScrollView
     |       |-- Header (ThemedText: title + subtitle)
+    |       |-- SuccessBanner (conditional)
     |       |-- ServerErrorBanner (conditional)
     |       `-- Form (ThemedView)
     |           |-- Input (title)
@@ -296,7 +431,7 @@ CreateEventScreen
     |           |   `-- DateTimePicker (Android only, conditional)
     |           |-- TouchableOpacity --> Image picker
     |           |-- Image preview (conditional)
-    |           `-- Button (Crear Evento)
+    |           `-- Button (Crear Evento / Guardar Cambios)
     |-- Modal (category)
     |   `-- BottomModal --> FlatList of CATEGORIES
     |-- Modal (date)
@@ -305,6 +440,10 @@ CreateEventScreen
     |   `-- BottomModal --> JSTimePicker
     `-- Modal (end time)
         `-- BottomModal --> JSTimePicker
+
+Edit-only:
+|-- Loader while useEventDetail(id) fetches the existing event
+`-- Alert.alert confirmation before calling eventsService.update()
 ```
 
 ### Visual States
@@ -316,6 +455,8 @@ CreateEventScreen
 | **Schedule conflict** | Red banner: `Ya existe un evento programado en esta fecha y horario. Por favor selecciona otro.` |
 | **Server validation (422)** | Per-field errors rendered from API `details[]` |
 | **Loading** | Button shows spinner, all inputs/selectors disabled |
+| **Edit pre-loading** | Full-screen loader while the existing event is fetched by route ID |
+| **Edit confirmation** | Native `Alert.alert` warns the transaction is irreversible; request only fires on explicit confirmation |
 | **Network error** | Red banner: `No se pudo conectar con el servidor. Verifica tu conexión a internet.` |
 | **Success** | `router.back()` — returns to previous admin screen |
 
@@ -376,8 +517,12 @@ CreateEventScreen
 | Server 422 validation | Feature | Server-side `details[]` rendered as field errors |
 | Network error (TypeError) | Feature | Connection error banner displayed |
 | Generic server error (500) | Feature | Unexpected error banner displayed |
-| Valid data, API succeeds | Feature | `eventService.createEvent` called, success banner shown, `router.back()` invoked |
+| Valid data, API succeeds | Feature | `eventsService.create` called, success banner shown, `router.back()` invoked |
 | Complete happy-path flow | Browser | Category modal → date modal → time modals → submit → API call → redirect |
+| Edit route pre-populates fields | Manual | Existing values from `GET /api/v1/events/{id}` appear before editing |
+| Edit confirmation cancel | Manual | User cancels `Alert.alert`; no `PUT` request is sent |
+| Edit confirmation accept | Manual | User confirms `Alert.alert`; `eventsService.update()` sends `PUT multipart/form-data` |
+| Edit without image replacement | Manual | Existing remote `image_url` is shown but not appended as a file |
 
 ---
 
@@ -417,6 +562,20 @@ npx expo lint
 - **`multipart/form-data` instead of JSON:** The API contract requires form
   encoding to support the optional image file upload in the same request.
 
+- **Edit reuses create validation:** `validateCreateEventForm()` is used by both
+  create and edit to enforce the same title, description, capacity, category,
+  date, and non-overlap time constraints before calling the API.
+
+- **Native irreversible confirmation:** Edit uses `Alert.alert()` before `PUT` so
+  the user must explicitly confirm the transactional update after client-side
+  validation succeeds.
+
+- **Remote image URL is not re-uploaded:** The edit screen preloads `image_url`
+  for preview, but tracks `imageChanged` separately. The `image` field is only
+  appended to `FormData` when the user selects a new local file with
+  `expo-image-picker`. This prevents treating an existing Cloudinary URL as a
+  local mobile file upload.
+
 - **Max capacity = 9,999,999 (INTEGER, not SMALLINT):** The database column was
   originally created as `SMALLINT` (max 32,767). The backend model and initial
   migration were updated to use PostgreSQL `INTEGER` to honour the business
@@ -450,15 +609,30 @@ npx expo lint
   camera capture is not supported in this version.
 - The iOS modals dismiss by pressing "Listo" or tapping the overlay; there is no
   explicit "Cancelar" button.
+- The admin dashboard includes a temporary event selector to reach edit routes.
+  It currently lists events through `useEvents()` and should be replaced by the
+  final admin calendar/list interaction once that flow is implemented.
 
 ---
 
 ## Changelog
 
+### v1.1.0 — 2026-06-09
+
+- Added `EditEventScreen` at `app/(admin)/edit-event/[id].tsx`.
+- Registered `edit-event/[id]` in the admin Stack layout.
+- Added provisional admin dashboard selector to access edit routes from the UI.
+- Added edit UI constants under `EVENTS` and temporary selector constants under `ADMIN`.
+- Added `api.putForm()` and `eventsService.update(id, formData)` for `PUT /api/v1/events/{event_id}`.
+- Reused create form inputs, selectors, image picker, and `validateCreateEventForm()` for edit.
+- Added route-ID pre-population via `useEventDetail(id)` and `useLocalSearchParams()`.
+- Added native irreversible confirmation with `Alert.alert()` before submitting changes.
+- Added `imageChanged` guard so an existing Cloudinary URL is previewed but not re-uploaded unless the user picks a new local image.
+
 ### v1.0.0 — 2026-06-06
 
 - Implemented `CreateEventScreen` with `multipart/form-data` submission.
-- Added `eventService.createEvent()` in `src/services/eventService.ts`.
+- Added `eventsService.create()` in `src/services/events.ts`.
 - Added `validateCreateEventForm()` in `src/utils/validators.ts`.
 - Added past-date prevention (client-side `minimumDate` + JS validation).
 - Fixed `max_capacity` database column: migrated from `SMALLINT` to `INTEGER`
@@ -467,14 +641,14 @@ npx expo lint
   `DateTimePicker display="spinner"` with pure-JS modal-based pickers.
 - Added Spanish translation for backend schedule-conflict error.
 - Added full test suite: 4 Unit, 6 Feature, 1 Browser test files.
-- **QA review fixes:** Added auth guard to `(admin)` layout, corrected Spanish orthography (tildes/accents), fixed font weight consistency across labels, added success feedback banner, fixed `app.json` plugins (removed invalid `@react-native-community/datetimepicker`, added `expo-image-picker`), unified network error message, removed unused `@react-native-picker/picker` dependency, added category enum validation (`EVENT_CATEGORIES`), added image format validation (png/jpg/webp), typed `eventService.createEvent()` with `EventResponse`, added accessibility labels to all selectors and image preview, added 3 feature tests (NetworkError, GenericServerError, Server422Validation), added 1 unit test (DescriptionValidationUnitTest), changed minute spinner to ±1.
+- **QA review fixes:** Added auth guard to `(admin)` layout, corrected Spanish orthography (tildes/accents), fixed font weight consistency across labels, added success feedback banner, fixed `app.json` plugins (removed invalid `@react-native-community/datetimepicker`, added `expo-image-picker`), unified network error message, removed unused `@react-native-picker/picker` dependency, added category enum validation (`EVENT_CATEGORIES`), added image format validation (png/jpg/webp), typed `eventsService.create()` with `Event`, added accessibility labels to all selectors and image preview, added 3 feature tests (NetworkError, GenericServerError, Server422Validation), added 1 unit test (DescriptionValidationUnitTest), changed minute spinner to ±1.
 - **Component extraction:** Moved `UnitSpinner`, `JSDatePicker`, `JSTimePicker`, and `BottomModal` from inline definitions to `src/components/ui/` for reuse by upcoming edit-event screen.
 
 ---
 
 ## Documentation Checklist
 
-- [x] API contract file linked
+- [x] API contract files linked
 - [x] File map reflects all created/modified files
 - [x] Component tree shows screen hierarchy
 - [x] All visual states documented (initial, error, loading, success)
@@ -486,5 +660,5 @@ npx expo lint
 
 ---
 
-**Last updated**: `2026-06-06`
-**Documented by**: `Luis F Rosales Vargas`
+**Last updated**: `2026-06-09`
+**Documented by**: `Luis F Rosales Vargas, Abigail Ramírez Chavarría`
