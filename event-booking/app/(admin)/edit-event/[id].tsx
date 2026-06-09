@@ -87,6 +87,7 @@ export default function EditEventScreen() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [imageChanged, setImageChanged] = useState(false);
 
   const err = (f: string) => errors.find(e => e.field === f)?.message;
   const catLabel = CATEGORIES.find(c => c.value === category)?.label ?? 'Selecciona una categoría';
@@ -132,19 +133,27 @@ export default function EditEventScreen() {
         return;
       }
       setImageUri(asset.uri);
+      setImageChanged(true);
     }
+  }
+
+  function buildUpdateFields(): Record<string, string> {
+    const fields: Record<string, string> = {
+      title: title.trim(),
+      max_capacity: maxCapacity.trim(),
+      category: category.toLowerCase(),
+    };
+    if (description.trim()) fields.description = description.trim();
+    if (date) fields.date = fmtDate(date);
+    if (startTime) fields.start_time = startTime.toTimeString().split(' ')[0];
+    if (endTime) fields.end_time = endTime.toTimeString().split(' ')[0];
+    return fields;
   }
 
   function buildFormData(): FormData {
     const fd = new FormData();
-    fd.append('title', title.trim());
-    if (description) fd.append('description', description.trim());
-    fd.append('max_capacity', maxCapacity.trim());
-    fd.append('category', category.toLowerCase());
-    if (date) fd.append('date', fmtDate(date));
-    if (startTime) fd.append('start_time', startTime.toTimeString().split(' ')[0]);
-    if (endTime) fd.append('end_time', endTime.toTimeString().split(' ')[0]);
-    if (imageUri) {
+    Object.entries(buildUpdateFields()).forEach(([key, value]) => fd.append(key, value));
+    if (imageUri && imageChanged) {
       const fn = imageUri.split('/').pop() ?? 'image.jpg';
       const m = /\.(\w+)$/.exec(fn);
       const file = {
