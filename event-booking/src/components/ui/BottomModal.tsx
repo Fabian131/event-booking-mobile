@@ -5,11 +5,12 @@ import { ThemedText } from './themed-text';
 interface BottomModalProps {
   visible: boolean;
   title: string;
+  doneLabel: string;
   onDone: () => void;
   children: ReactNode;
 }
 
-export function BottomModal({ visible, title, onDone, children }: BottomModalProps) {
+export function BottomModal({ visible, title, doneLabel, onDone, children }: BottomModalProps) {
   return (
     <Modal visible={visible} transparent animationType="slide">
       <Pressable style={styles.overlay} onPress={onDone}>
@@ -17,7 +18,7 @@ export function BottomModal({ visible, title, onDone, children }: BottomModalPro
           <View style={styles.sheetHeader}>
             <ThemedText style={styles.sheetTitle}>{title}</ThemedText>
             <TouchableOpacity onPress={onDone}>
-              <ThemedText style={styles.doneBtn}>Listo</ThemedText>
+              <ThemedText style={styles.doneBtn}>{doneLabel}</ThemedText>
             </TouchableOpacity>
           </View>
           {children}

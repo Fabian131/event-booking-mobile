@@ -9,7 +9,7 @@ import { BottomModal } from '@/src/components/ui/BottomModal';
 import { Loader } from '@/src/components/ui/Loader';
 import { useEvents } from '@/src/hooks/useEvents';
 import type { Event } from '@/src/types/events';
-import { ADMIN } from '@/src/constants/ui';
+import { ADMIN, EVENTS } from '@/src/constants/ui';
 
 export default function AdminCalendarScreen() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function AdminCalendarScreen() {
         <TouchableOpacity
           style={styles.selector}
           onPress={() => setModalVisible(true)}
-          accessibilityLabel="Seleccionar evento para editar"
+          accessibilityLabel={ADMIN.EDIT_EVENT_ACCESSIBILITY}
           accessibilityRole="button"
         >
           <ThemedText style={selected ? undefined : styles.selectorPh}>
@@ -54,6 +54,7 @@ export default function AdminCalendarScreen() {
       <BottomModal
         visible={modalVisible}
         title={ADMIN.EDIT_EVENT_MODAL_TITLE}
+        doneLabel={EVENTS.CREATE_MODAL_DONE}
         onDone={() => setModalVisible(false)}
       >
         {loadingEvents ? (
