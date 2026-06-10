@@ -10,7 +10,7 @@
 - **Status**: Completed
 - **Version**: `1.1.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-09`
+- **Last Updated**: `2026-06-10`
 
 ---
 
@@ -84,7 +84,7 @@ On a schedule conflict the backend returns a localized Spanish error banner.
 | `image` | file | No | New event banner image; omitted when the existing remote URL is kept |
 | `is_active` | boolean | No | Not exposed by the current mobile edit form |
 
-### Response (201 Created)
+### Response (200 OK)
 
 ```json
 {
@@ -121,7 +121,7 @@ On a schedule conflict the backend returns a localized Spanish error banner.
 
 ```json
 {
-  "error": "conflict",
+  "error": "schedule_conflict",
   "message": "An event already occupies this date and time slot",
   "details": [
     { "field": "schedule", "message": "An event already occupies this date and time slot" }
@@ -181,6 +181,8 @@ tests/
 |   |-- Server422ValidationFeatureTest.tsx
 |   |-- NetworkErrorFeatureTest.tsx
 |   `-- GenericServerErrorFeatureTest.tsx
+|-- Feature/edit-event/
+|   `-- EditEventFeatureTest.tsx
 `-- Browser/create-event/
     `-- CreateEventFlowBrowserTest.tsx
 ```
@@ -519,10 +521,11 @@ Edit-only:
 | Generic server error (500) | Feature | Unexpected error banner displayed |
 | Valid data, API succeeds | Feature | `eventsService.create` called, success banner shown, `router.back()` invoked |
 | Complete happy-path flow | Browser | Category modal → date modal → time modals → submit → API call → redirect |
-| Edit route pre-populates fields | Manual | Existing values from `GET /api/v1/events/{id}` appear before editing |
-| Edit confirmation cancel | Manual | User cancels `Alert.alert`; no `PUT` request is sent |
-| Edit confirmation accept | Manual | User confirms `Alert.alert`; `eventsService.update()` sends `PUT multipart/form-data` |
-| Edit without image replacement | Manual | Existing remote `image_url` is shown but not appended as a file |
+| Edit route pre-populates fields | Feature | Existing values from `GET /api/v1/events/{id}` appear before editing |
+| Edit confirmation cancel | Feature | User cancels `Alert.alert`; no `PUT` request is sent |
+| Edit confirmation accept | Feature | User confirms `Alert.alert`; `eventsService.update()` sends `PUT multipart/form-data` |
+| Edit update response image URL | Feature | Returned `Event.image_url` is stored for the preview after success |
+| Edit without image replacement | Feature | Existing remote `image_url` is shown but not appended as a file |
 
 ---
 
@@ -540,6 +543,7 @@ Edit-only:
 | Feature | `tests/Feature/create-event/Server422ValidationFeatureTest.tsx` | Server-side field validation errors from `details[]` |
 | Feature | `tests/Feature/create-event/NetworkErrorFeatureTest.tsx` | Network error banner on `TypeError` |
 | Feature | `tests/Feature/create-event/GenericServerErrorFeatureTest.tsx` | Generic error banner on unexpected error |
+| Feature | `tests/Feature/edit-event/EditEventFeatureTest.tsx` | Edit prefill, confirmation cancel/accept, update response image URL, schedule conflict, and 422 details |
 | Browser | `tests/Browser/create-event/CreateEventFlowBrowserTest.tsx` | Full form fill → modal interactions → API call → redirect |
 
 ### Commands
@@ -547,8 +551,9 @@ Edit-only:
 ```bash
 npx jest tests/Unit/create-event/
 npx jest tests/Feature/create-event/
+npx jest tests/Feature/edit-event/
 npx jest tests/Browser/create-event/
-npx jest tests/Unit/create-event/ tests/Feature/create-event/ tests/Browser/create-event/
+npx jest tests/Unit/create-event/ tests/Feature/create-event/ tests/Feature/edit-event/ tests/Browser/create-event/
 npx tsc --noEmit
 npx expo lint
 ```
@@ -660,5 +665,5 @@ npx expo lint
 
 ---
 
-**Last updated**: `2026-06-09`
+**Last updated**: `2026-06-10`
 **Documented by**: `Luis F Rosales Vargas, Abigail Ramírez Chavarría`
