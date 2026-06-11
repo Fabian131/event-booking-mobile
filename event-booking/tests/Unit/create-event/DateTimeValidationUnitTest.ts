@@ -1,4 +1,5 @@
-import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils/validators';
+import { validateCreateEventForm, mapServerErrors, type CreateEventFormValues } from '@/src/utils/validators';
+import type { FieldError } from '@/src/types/auth';
 
 function base(): CreateEventFormValues {
   const tomorrow = new Date();
@@ -52,7 +53,44 @@ describe('date and time validation', () => {
   it('should accept today date', () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const errors = validateCreateEventForm({ ...base(), date: today });
+    const futureStart = new Date();
+    futureStart.setHours(futureStart.getHours() + 2, 0, 0, 0);
+    const futureEnd = new Date(futureStart);
+    futureEnd.setHours(futureEnd.getHours() + 2, 0, 0, 0);
+    const errors = validateCreateEventForm({ ...base(), date: today, start_time: futureStart, end_time: futureEnd });
     expect(errors.filter((e) => e.field === 'date')).toHaveLength(0);
+  });
+
+  it('should reject start_time in the past on today', () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pastStart = new Date();
+    pastStart.setHours(pastStart.getHours() - 1, 0, 0, 0);
+    const futureEnd = new Date(pastStart);
+    futureEnd.setHours(futureEnd.getHours() + 3, 0, 0, 0);
+    const errors = validateCreateEventForm({ ...base(), date: today, start_time: pastStart, end_time: futureEnd });
+    expect(errors.some((e) => e.field === 'start_time')).toBe(true);
+  });
+});
+
+describe('mapServerErrors', () => {
+  it('maps known backend messages to Spanish', () => {
+    const input: FieldError[] = [
+      { field: 'date', message: 'Event date cannot be in the past' },
+      { field: 'title', message: 'Title must be at least 3 characters' },
+      { field: 'max_capacity', message: 'Capacity must be greater than 0' },
+    ];
+    const mapped = mapServerErrors(input);
+    expect(mapped.find((e) => e.field === 'date')!.message).toBe('La fecha no puede ser en el pasado');
+    expect(mapped.find((e) => e.field === 'title')!.message).toBe('El título debe tener al menos 3 caracteres');
+    expect(mapped.find((e) => e.field === 'max_capacity')!.message).toBe('La capacidad debe ser al menos 1');
+  });
+
+  it('passes through unknown messages untouched', () => {
+    const input: FieldError[] = [
+      { field: 'image', message: 'Some unknown image error' },
+    ];
+    const mapped = mapServerErrors(input);
+    expect(mapped[0].message).toBe('Some unknown image error');
   });
 });

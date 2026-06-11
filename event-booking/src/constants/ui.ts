@@ -128,6 +128,7 @@ export const VALIDATION = {
   CATEGORY_INVALID: 'La categoría seleccionada no es válida',
   DATE_REQUIRED: 'La fecha es obligatoria',
   DATE_PAST: 'La fecha no puede ser en el pasado',
+  START_TIME_PAST: 'La hora de inicio no puede estar en el pasado',
   START_REQUIRED: 'La hora de inicio es obligatoria',
   END_REQUIRED: 'La hora de fin es obligatoria',
   END_BEFORE_START: 'La hora de fin debe ser posterior a la de inicio',

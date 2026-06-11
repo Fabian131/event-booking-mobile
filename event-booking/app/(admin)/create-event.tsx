@@ -15,7 +15,7 @@ import { JSDatePicker } from '@/src/components/ui/JSDatePicker';
 import { JSTimePicker } from '@/src/components/ui/JSTimePicker';
 import { BottomModal } from '@/src/components/ui/BottomModal';
 import { ApiError } from '@/src/types/auth';
-import { validateCreateEventForm, type CreateEventFormValues } from '@/src/utils/validators';
+import { validateCreateEventForm, mapServerErrors, type CreateEventFormValues } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
 import { eventsService } from '@/src/services/events';
 import { EVENT_CATEGORIES } from '@/src/types/events';
@@ -138,7 +138,7 @@ export default function CreateEventScreen() {
             setServerError(ERRORS.SCHEDULE_CONFLICT);
             return;
           }
-          setErrors(e.details);
+          setErrors(mapServerErrors(e.details));
           return;
         }
         setServerError(e.message);
