@@ -10,6 +10,11 @@ jest.mock('@/src/constants/ui', () => ({
     COLORS: { music: '#e91e63', sports: '#4caf50', culture: '#9c27b0', gastronomy: '#ff5722', wellness: '#009688', education: '#2196f3', other: '#607d8b' },
     LABELS: { music: 'Música', sports: 'Deportes', culture: 'Cultura', gastronomy: 'Gastronomía', wellness: 'Bienestar', education: 'Educación', other: 'Otro' },
   },
+  EVENTS: {
+    CAPACITY_FULL: 'Lleno',
+    CAPACITY_SLOT: 'cupo',
+    CAPACITY_SLOTS: 'cupos',
+  },
 }));
 
 describe('EventCard component', () => {
@@ -61,5 +66,22 @@ describe('EventCard component', () => {
     const sportsEvent: EventSummary = { ...baseEvent, category: 'sports' };
     render(<EventCard event={sportsEvent} />);
     expect(screen.getByText('Deportes')).toBeTruthy();
+  });
+
+  it('should render compact variant with cupos wording', () => {
+    render(<EventCard event={baseEvent} variant="compact" />);
+    expect(screen.getByText(/342 cupos/)).toBeTruthy();
+  });
+
+  it('should show "Lleno" when remaining capacity is 0', () => {
+    const fullEvent: EventSummary = { ...baseEvent, remaining_capacity: 0 };
+    render(<EventCard event={fullEvent} variant="compact" />);
+    expect(screen.getByText(/Lleno/)).toBeTruthy();
+  });
+
+  it('should use singular "cupo" when remaining capacity is 1', () => {
+    const nearlyFullEvent: EventSummary = { ...baseEvent, remaining_capacity: 1 };
+    render(<EventCard event={nearlyFullEvent} variant="compact" />);
+    expect(screen.getByText(/1 cupo/)).toBeTruthy();
   });
 });

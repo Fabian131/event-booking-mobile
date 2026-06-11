@@ -3,10 +3,12 @@ import { View, StyleSheet } from 'react-native';
 import dayjs from 'dayjs';
 import DateTimePicker, {
   type CalendarDay,
+  type DateType,
   useDefaultStyles,
 } from 'react-native-ui-datepicker';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import type { CalendarDateItem } from '@/src/types/events';
+import { ADMIN } from '@/src/constants/ui';
 
 interface CalendarProps {
   calendarDates: CalendarDateItem[];
@@ -61,15 +63,10 @@ export function Calendar({
   };
 
   const CustomDay = (day: CalendarDay) => {
-    // day.date can be a Dayjs object or a string depending on the library version
     const dateKey =
       typeof day.date === 'string'
         ? day.date.substring(0, 10)
         : dayjs(day.date as any).format('YYYY-MM-DD');
-        
-    if (day.number === 15 && day.isCurrentMonth) {
-      console.log('Calendar DEBUG - day.date:', day.date, 'typeof:', typeof day.date, 'dateKey:', dateKey, 'eventMap size:', eventMap.size, 'keys:', Array.from(eventMap.keys()).slice(0, 3));
-    }
 
     const count = eventMap.get(dateKey) ?? 0;
     const hasEvents = count > 0;
@@ -118,13 +115,17 @@ export function Calendar({
     onMonthChange(month + 1);
   };
 
-  const onPickerChange = ({ date }: { date?: string | Date }) => {
-    if (date) {
-      const dateStr = typeof date === 'string'
+  const onPickerChange = ({ date }: { date: DateType }) => {
+    if (!date) return;
+
+    const dateStr =
+      typeof date === 'string'
         ? date.substring(0, 10)
-        : new Date(date as number | Date).toISOString().substring(0, 10);
-      onDatePress(dateStr);
-    }
+        : typeof date === 'number'
+          ? new Date(date).toISOString().substring(0, 10)
+          : dayjs(date).format('YYYY-MM-DD');
+
+    onDatePress(dateStr);
   };
 
   return (
@@ -147,7 +148,7 @@ export function Calendar({
       />
       {calendarLoading && (
         <View style={s.loadingOverlay}>
-          <ThemedText style={s.loadingText}>Cargando...</ThemedText>
+          <ThemedText style={s.loadingText}>{ADMIN.CALENDAR_LOADING}</ThemedText>
         </View>
       )}
     </View>

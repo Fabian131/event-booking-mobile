@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import type { Event } from '@/src/types/events';
-import { CATEGORY } from '@/src/constants/ui';
+import { CATEGORY, EVENTS } from '@/src/constants/ui';
 
 interface EventCardProps {
   event: Event;
@@ -57,7 +57,12 @@ export function EventCard({ event, onPress, variant = 'default' }: EventCardProp
         )}
         {isCompact && (
           <ThemedText style={styles.description} numberOfLines={1}>
-            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)} • {event.remaining_capacity} cupos
+            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)}
+            {' • '}
+            {event.remaining_capacity === 0
+              ? EVENTS.CAPACITY_FULL
+              : `${event.remaining_capacity} ${event.remaining_capacity === 1 ? EVENTS.CAPACITY_SLOT : EVENTS.CAPACITY_SLOTS}`
+            }
           </ThemedText>
         )}
       </View>

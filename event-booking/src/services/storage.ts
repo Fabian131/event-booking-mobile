@@ -20,7 +20,7 @@ export const storage = {
     if (Platform.OS === 'web') {
       try {
         return Promise.resolve(localStorage.getItem(key));
-      } catch (e) {
+      } catch {
         return Promise.resolve(null);
       }
     }

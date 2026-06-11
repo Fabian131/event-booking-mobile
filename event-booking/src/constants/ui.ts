@@ -28,6 +28,7 @@ export const AUTH = {
   REGISTER_HAS_ACCOUNT: '¿Ya tienes cuenta?',
   REGISTER_LOGIN_LINK: 'Inicia sesión',
   LOGOUT_LABEL: 'Cerrar sesión',
+  SESSION_RESTORE: 'Restaurando sesión...',
   REGISTERED_SUCCESS: 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
   LOGOUT_SUCCESS: 'Sesión cerrada correctamente.',
 } as const;
@@ -114,6 +115,9 @@ export const EVENTS = {
   LOGIN_MODAL_BODY: 'Necesitas una cuenta para reservar este evento.',
   LOGIN_MODAL_BUTTON: 'Iniciar sesión',
   LOGIN_MODAL_CANCEL: 'Cancelar',
+  CAPACITY_FULL: 'Lleno',
+  CAPACITY_SLOT: 'cupo',
+  CAPACITY_SLOTS: 'cupos',
 } as const;
 
 export const VALIDATION = {
@@ -183,6 +187,8 @@ export const ADMIN = {
   CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
   CALENDAR_NO_EVENTS_SUBTITLE: 'No hay eventos programados para este día',
   CALENDAR_LOADING_EVENTS: 'Cargando eventos...',
+  CALENDAR_LOADING: 'Cargando...',
+  CREATE_EVENT_FAB_LABEL: 'Crear evento',
 } as const;
 
 export const CUSTOMER = {

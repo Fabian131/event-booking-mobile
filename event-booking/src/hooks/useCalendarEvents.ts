@@ -46,7 +46,10 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
     setEventsLoading(true);
     try {
       const response = await eventsService.getEventsByDate(date);
-      setDayEvents(response.data);
+      const chronologicalEvents = [...response.data].sort((a, b) =>
+        a.start_time.localeCompare(b.start_time),
+      );
+      setDayEvents(chronologicalEvents);
       setError(null);
     } catch (e) {
       console.error(e);
