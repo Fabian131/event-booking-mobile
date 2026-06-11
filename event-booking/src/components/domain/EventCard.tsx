@@ -8,31 +8,56 @@ import { CATEGORY } from '@/src/constants/ui';
 interface EventCardProps {
   event: Event;
   onPress?: () => void;
+  variant?: 'default' | 'compact';
 }
 
-export function EventCard({ event, onPress }: EventCardProps) {
+export function EventCard({ event, onPress, variant = 'default' }: EventCardProps) {
   const categoryColor = CATEGORY.COLORS[event.category];
+  const isCompact = variant === 'compact';
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={event.image_url ? { uri: event.image_url } : null}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-        />
-        <View style={[styles.badge, { backgroundColor: categoryColor }]}>
-          <ThemedText style={styles.badgeText}>{CATEGORY.LABELS[event.category]}</ThemedText>
+    <TouchableOpacity
+      style={[
+        styles.card,
+        isCompact ? styles.cardCompact : styles.cardDefault,
+        isCompact && { borderLeftColor: categoryColor, borderLeftWidth: 4 }
+      ]}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      {!isCompact && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={event.image_url ? { uri: event.image_url } : null}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+          />
+          <View style={[styles.badge, { backgroundColor: categoryColor }]}>
+            <ThemedText style={styles.badgeText}>{CATEGORY.LABELS[event.category]}</ThemedText>
+          </View>
         </View>
-      </View>
-      <View style={styles.body}>
-        <ThemedText type="defaultSemiBold" style={styles.title} numberOfLines={2}>
-          {event.title}
-        </ThemedText>
-        {event.description && (
+      )}
+      
+      <View style={[styles.body, isCompact && styles.bodyCompact]}>
+        <View style={styles.titleRow}>
+          <ThemedText type="defaultSemiBold" style={styles.title} numberOfLines={isCompact ? 1 : 2}>
+            {event.title}
+          </ThemedText>
+          {isCompact && (
+            <View style={[styles.badgeCompact, { backgroundColor: categoryColor }]}>
+              <ThemedText style={styles.badgeTextCompact}>{CATEGORY.LABELS[event.category]}</ThemedText>
+            </View>
+          )}
+        </View>
+        {event.description && !isCompact && (
           <ThemedText style={styles.description} numberOfLines={2}>
             {event.description}
+          </ThemedText>
+        )}
+        {isCompact && (
+          <ThemedText style={styles.description} numberOfLines={1}>
+            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)} • {event.remaining_capacity} cupos
           </ThemedText>
         )}
       </View>
@@ -73,12 +98,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+  },
+  cardDefault: {
+    overflow: 'hidden',
   },
   imageContainer: {
     position: 'relative',
@@ -89,6 +116,21 @@ const styles = StyleSheet.create({
   },
   body: {
     padding: 16,
+    gap: 8,
+  },
+  cardCompact: {
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'visible',
+  },
+  bodyCompact: {
+    padding: 12,
+    gap: 4,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     gap: 8,
   },
   badge: {
@@ -104,9 +146,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  badgeCompact: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgeTextCompact: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
   title: {
     fontSize: 18,
     color: '#11181c',
+    flex: 1,
   },
   description: {
     fontSize: 14,

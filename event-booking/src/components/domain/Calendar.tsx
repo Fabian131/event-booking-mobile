@@ -66,6 +66,11 @@ export function Calendar({
       typeof day.date === 'string'
         ? day.date.substring(0, 10)
         : dayjs(day.date as any).format('YYYY-MM-DD');
+        
+    if (day.number === 15 && day.isCurrentMonth) {
+      console.log('Calendar DEBUG - day.date:', day.date, 'typeof:', typeof day.date, 'dateKey:', dateKey, 'eventMap size:', eventMap.size, 'keys:', Array.from(eventMap.keys()).slice(0, 3));
+    }
+
     const count = eventMap.get(dateKey) ?? 0;
     const hasEvents = count > 0;
     const dotCount = Math.min(count, 3);

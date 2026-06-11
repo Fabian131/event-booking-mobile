@@ -66,7 +66,7 @@ export default function AdminCalendarScreen() {
     return (
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
         {dayEvents.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard key={event.id} event={event} variant="compact" />
         ))}
       </Animated.View>
     );
@@ -122,11 +122,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   eventsSection: { marginTop: 16, paddingHorizontal: 12 },
   sectionTitle: {
