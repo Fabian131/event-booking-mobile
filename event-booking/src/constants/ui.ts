@@ -178,6 +178,24 @@ export const ADMIN = {
   EDIT_EVENT_LOADING: 'Cargando eventos...',
 } as const;
 
+export const BOOKING = {
+  TITLE: 'Reservar entradas',
+  TICKETS_LABEL: 'Cantidad de entradas',
+  SUBMIT_BUTTON: 'Confirmar reserva',
+  SUBMITTING: 'Procesando reserva...',
+  SUCCESS_TITLE: 'Reserva exitosa',
+  SUCCESS_MESSAGE: 'Tu reserva ha sido creada con éxito.',
+  BACK_BUTTON: 'Volver al evento',
+  LOADING: 'Cargando información del evento...',
+  NOTES_LABEL: 'Notas adicionales (opcional)',
+  NOTES_PLACEHOLDER: 'Ej: Necesito acceso para silla de ruedas',
+  SOLD_OUT: 'Agotado',
+  SOLD_OUT_MESSAGE: 'Lo sentimos, ya no hay cupos disponibles para este evento.',
+  DUPLICATE_ERROR: 'Ya tienes una reserva activa para este evento.',
+  CAPACITY_ERROR: 'La cantidad solicitada excede los cupos disponibles.',
+  SUCCESS_BANNER: 'Reserva realizada con éxito. Redirigiendo...',
+} as const;
+
 export const CUSTOMER = {
   EVENTS_TAB: 'Eventos',
   RESERVATIONS_TAB: 'Reservas',

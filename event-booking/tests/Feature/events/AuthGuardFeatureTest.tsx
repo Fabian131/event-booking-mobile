@@ -142,7 +142,7 @@ describe('auth guard', () => {
 
     fireEvent.press(screen.getByText('Reservar'));
 
-    expect(mockPush).toHaveBeenCalledWith('/(customer)/reservations');
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(customer)/events/book', params: { event_id: '1' } });
   });
 
   it('should not show modal when authenticated user taps Reservar', async () => {
