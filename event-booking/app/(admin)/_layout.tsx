@@ -20,7 +20,12 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTitle: '',
+        headerTitle: 'Event Booking',
+        headerTitleStyle: {
+          fontSize: 22,
+          fontWeight: '900',
+          color: '#0a7ea4',
+        },
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >

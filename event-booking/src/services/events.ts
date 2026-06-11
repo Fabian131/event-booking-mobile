@@ -1,5 +1,10 @@
 import { api } from './api';
-import type { Event, EventsListParams, EventsListResponse } from '@/src/types/events';
+import type {
+  Event,
+  EventsListParams,
+  EventsListResponse,
+  CalendarDatesResponse,
+} from '@/src/types/events';
 
 export const eventsService = {
   list(params: EventsListParams = {}): Promise<EventsListResponse> {
@@ -25,4 +30,15 @@ export const eventsService = {
   update(id: string, formData: FormData): Promise<Event> {
     return api.putForm<Event>(`/api/v1/events/${id}`, formData);
   },
+
+  // ── Calendar dashboard ──────────────────────────────────────────────────
+
+  getCalendarDates(year: number, month: number): Promise<CalendarDatesResponse> {
+    return api.get<CalendarDatesResponse>(`/api/v1/events/calendar?year=${year}&month=${month}`);
+  },
+
+  getEventsByDate(date: string): Promise<EventsListResponse> {
+    return api.get<EventsListResponse>(`/api/v1/events?date=${date}&limit=50`);
+  },
 };
+

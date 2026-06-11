@@ -13,12 +13,16 @@ import { AUTH, ERRORS } from '@/src/constants/ui';
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const { registered } = useLocalSearchParams<{ registered?: string }>();
-  const [showSuccess, setShowSuccess] = useState(registered === 'true');
+  const { registered, loggedOut } = useLocalSearchParams<{ registered?: string; loggedOut?: string }>();
+  const [showSuccess, setShowSuccess] = useState(registered === 'true' || loggedOut === 'true');
+  const successMessage =
+    loggedOut === 'true'
+      ? 'Sesión cerrada correctamente.'
+      : AUTH.REGISTERED_SUCCESS;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (registered !== 'true') return;
+    if (registered !== 'true' && loggedOut !== 'true') return;
 
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
@@ -31,7 +35,7 @@ export default function LoginScreen() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [registered, fadeAnim]);
+  }, [registered, loggedOut, fadeAnim]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -116,7 +120,7 @@ export default function LoginScreen() {
           {showSuccess && (
             <Animated.View style={[styles.successBanner, { opacity: fadeAnim }]}>
               <ThemedText style={styles.successText}>
-                {AUTH.REGISTERED_SUCCESS}
+                {successMessage}
               </ThemedText>
             </Animated.View>
           )}
