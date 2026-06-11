@@ -41,8 +41,9 @@ describe('server 422 validation error submit', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Title must be at least 3 characters')).toBeTruthy();
+      expect(screen.getByText('El título debe tener al menos 3 caracteres')).toBeTruthy();
       expect(screen.getByText('Capacity must be a positive integer')).toBeTruthy();
+      expect(screen.queryByText('Validation error')).toBeNull();
     });
   });
 });

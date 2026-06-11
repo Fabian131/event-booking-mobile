@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  KeyboardAvoidingView, Platform, ScrollView,
+  Alert, KeyboardAvoidingView, Platform, ScrollView,
   StyleSheet, View, TouchableOpacity, Image, FlatList,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -14,12 +14,14 @@ import { Button } from '@/src/components/ui/Button';
 import { JSDatePicker } from '@/src/components/ui/JSDatePicker';
 import { JSTimePicker } from '@/src/components/ui/JSTimePicker';
 import { BottomModal } from '@/src/components/ui/BottomModal';
+import { Loader } from '@/src/components/ui/Loader';
 import { ApiError } from '@/src/types/auth';
 import { validateCreateEventForm, mapServerErrors, type CreateEventFormValues } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
 import { eventsService } from '@/src/services/events';
 import { EVENT_CATEGORIES } from '@/src/types/events';
 import { EVENTS, ERRORS, VALIDATION, CATEGORY } from '@/src/constants/ui';
+import { useEventDetail } from '@/src/hooks/useEventDetail';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -40,10 +42,26 @@ function fmtDate(d: Date) {
 }
 function fmtTime(d: Date) { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
+function parseDateFromString(s: string): Date {
+  const [year, month, day] = s.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function parseTimeFromString(s: string): Date {
+  const [h, m] = s.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
 // ---------------------------------------------------------------------------
 // Main screen
 // ---------------------------------------------------------------------------
-export default function CreateEventScreen() {
+export default function EditEventScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { event, loading: fetching, error: fetchError } = useEventDetail(id);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [maxCapacity, setMaxCapacity] = useState('');
@@ -73,9 +91,25 @@ export default function CreateEventScreen() {
   const [serverError, setServerError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const [imageChanged, setImageChanged] = useState(false);
 
   const err = (f: string) => errors.find(e => e.field === f)?.message;
   const catLabel = CATEGORIES.find(c => c.value === category)?.label ?? EVENTS.CREATE_CATEGORY_PLACEHOLDER;
+
+  useEffect(() => {
+    if (event && !initialized) {
+      setTitle(event.title);
+      setDescription(event.description ?? '');
+      setMaxCapacity(String(event.max_capacity));
+      setCategory(event.category);
+      setDate(parseDateFromString(event.date));
+      setStartTime(parseTimeFromString(event.start_time));
+      setEndTime(parseTimeFromString(event.end_time));
+      setImageUri(event.image_url);
+      setInitialized(true);
+    }
+  }, [event, initialized]);
 
   function openDate() {
     if (loading) return;
@@ -104,35 +138,62 @@ export default function CreateEventScreen() {
         return;
       }
       setImageUri(asset.uri);
+      setImageChanged(true);
     }
   }
 
-  async function handleSubmit() {
+  function buildUpdateFields(): Record<string, string> {
+    const fields: Record<string, string> = {
+      title: title.trim(),
+      max_capacity: maxCapacity.trim(),
+      category: category.toLowerCase(),
+    };
+    if (description.trim()) fields.description = description.trim();
+    if (date) fields.date = fmtDate(date);
+    if (startTime) fields.start_time = startTime.toTimeString().split(' ')[0];
+    if (endTime) fields.end_time = endTime.toTimeString().split(' ')[0];
+    return fields;
+  }
+
+  function buildFormData(): FormData {
+    const fd = new FormData();
+    Object.entries(buildUpdateFields()).forEach(([key, value]) => fd.append(key, value));
+    if (imageUri && imageChanged) {
+      const fn = imageUri.split('/').pop() ?? 'image.jpg';
+      const m = /\.(\w+)$/.exec(fn);
+      const file = {
+        uri: imageUri,
+        name: fn,
+        type: m ? `image/${m[1]}` : 'application/octet-stream',
+      };
+      fd.append('image', file as unknown as Blob);
+    }
+    return fd;
+  }
+
+  function handleSubmit() {
     setErrors([]); setServerError(''); setSuccess(false);
     const vals: CreateEventFormValues = { title, description, max_capacity: maxCapacity, category, date, start_time: startTime, end_time: endTime, image: imageUri };
     const clientErrors = validateCreateEventForm(vals);
     if (clientErrors.length > 0) { setErrors(clientErrors); return; }
+
+    Alert.alert(
+      EVENTS.EDIT_CONFIRM_TITLE,
+      EVENTS.EDIT_CONFIRM_MESSAGE,
+      [
+        { text: EVENTS.EDIT_CONFIRM_CANCEL, style: 'cancel' },
+        { text: EVENTS.EDIT_CONFIRM_OK, onPress: () => doUpdate() },
+      ],
+    );
+  }
+
+  async function doUpdate() {
     setLoading(true);
     try {
-      const fd = new FormData();
-      fd.append('title', title.trim());
-      if (description) fd.append('description', description.trim());
-      fd.append('max_capacity', maxCapacity.trim());
-      fd.append('category', category.toLowerCase());
-      if (date) fd.append('date', fmtDate(date));
-      if (startTime) fd.append('start_time', startTime.toTimeString().split(' ')[0]);
-      if (endTime) fd.append('end_time', endTime.toTimeString().split(' ')[0]);
-      if (imageUri) {
-        const fn = imageUri.split('/').pop() ?? 'image.jpg';
-        const m = /\.(\w+)$/.exec(fn);
-        const file = {
-          uri: imageUri,
-          name: fn,
-          type: m ? `image/${m[1]}` : 'application/octet-stream',
-        };
-        fd.append('image', file as unknown as Blob);
-      }
-      await eventsService.create(fd);
+      const fd = buildFormData();
+      const updated = await eventsService.update(id, fd);
+      setImageUri(updated.image_url);
+      setImageChanged(false);
       setServerError('');
       setSuccess(true);
       setTimeout(() => router.back(), 1200);
@@ -155,19 +216,31 @@ export default function CreateEventScreen() {
     } finally { setLoading(false); }
   }
 
+  if (fetching) {
+    return <Loader message={EVENTS.EDIT_LOADING} />;
+  }
+
+  if (fetchError || !event) {
+    return (
+      <ThemedView style={st.center}>
+        <ThemedText>{fetchError ?? ERRORS.EVENT_LOAD_ERROR}</ThemedText>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={st.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={st.kav}>
         <ScrollView contentContainerStyle={st.scroll} keyboardShouldPersistTaps="handled">
 
           <ThemedView style={st.header}>
-            <ThemedText type="title">{EVENTS.CREATE_TITLE}</ThemedText>
-            <ThemedText>{EVENTS.CREATE_SUBTITLE}</ThemedText>
+            <ThemedText type="title">{EVENTS.EDIT_TITLE}</ThemedText>
+            <ThemedText>{EVENTS.EDIT_SUBTITLE}</ThemedText>
           </ThemedView>
 
           {success ? (
             <View style={st.successBanner}>
-              <ThemedText style={st.successBannerTxt}>{EVENTS.EVENT_CREATED}</ThemedText>
+              <ThemedText style={st.successBannerTxt}>{EVENTS.EDIT_SUCCESS}</ThemedText>
             </View>
           ) : null}
 
@@ -239,7 +312,7 @@ export default function CreateEventScreen() {
               {imageUri && <Image source={{ uri: imageUri }} style={st.preview} accessibilityLabel={EVENTS.CREATE_IMAGE_PREVIEW_ACCESSIBILITY} />}
             </View>
 
-            <Button title={EVENTS.CREATE_BUTTON} onPress={handleSubmit} loading={loading} style={st.submit} />
+            <Button title={EVENTS.EDIT_BUTTON} onPress={handleSubmit} loading={loading} style={st.submit} />
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -305,4 +378,5 @@ const st = StyleSheet.create({
   optRowSel: { backgroundColor: '#EEF4FF' },
   optTxt: { fontSize: 16 },
   optTxtSel: { color: '#007AFF', fontWeight: '600' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
 });

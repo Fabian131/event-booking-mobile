@@ -155,6 +155,18 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
 
   if (!values.start_time) {
     errors.push({ field: 'start_time', message: VALIDATION.START_REQUIRED });
+  } else if (values.date) {
+    const todayMid = new Date();
+    todayMid.setHours(0, 0, 0, 0);
+    const eventMid = new Date(values.date);
+    eventMid.setHours(0, 0, 0, 0);
+    if (eventMid.getTime() === todayMid.getTime()) {
+      const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+      const startMins = values.start_time.getHours() * 60 + values.start_time.getMinutes();
+      if (startMins <= nowMins) {
+        errors.push({ field: 'start_time', message: VALIDATION.START_TIME_PAST });
+      }
+    }
   }
 
   if (!values.end_time) {
@@ -170,4 +182,30 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
   }
 
   return errors;
+}
+
+const BACKEND_MESSAGE_MAP: Record<string, Record<string, string>> = {
+  date: {
+    'Event date cannot be in the past': VALIDATION.DATE_PAST,
+  },
+  start_time: {
+    'Event start time cannot be in the past': VALIDATION.START_TIME_PAST,
+  },
+  end_time: {
+    'end_time must be after start_time': VALIDATION.END_BEFORE_START,
+  },
+  title: {
+    'Title must be at least 3 characters': VALIDATION.TITLE_MIN,
+  },
+  max_capacity: {
+    'Capacity must be greater than 0': VALIDATION.CAPACITY_INVALID,
+    'Capacity cannot exceed 9999999': VALIDATION.CAPACITY_MAX,
+  },
+};
+
+export function mapServerErrors(details: FieldError[]): FieldError[] {
+  return details.map((d) => ({
+    ...d,
+    message: BACKEND_MESSAGE_MAP[d.field]?.[d.message] ?? d.message,
+  }));
 }

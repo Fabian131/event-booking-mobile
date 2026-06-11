@@ -21,4 +21,8 @@ export const eventsService = {
   create(formData: FormData): Promise<Event> {
     return api.postForm<Event>('/api/v1/events', formData);
   },
+
+  update(id: string, formData: FormData): Promise<Event> {
+    return api.putForm<Event>(`/api/v1/events/${id}`, formData);
+  },
 };

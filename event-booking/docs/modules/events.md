@@ -5,12 +5,12 @@
 ## General Information
 
 - **Module Code**: `EBM-10` (feed) · `EBM-12` (detail)
-- **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event.yaml`
+- **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
 - **Responsible**: Justin Moreira Matarrita
 - **Status**: Completed
-- **Version**: `1.2.0`
+- **Version**: `1.2.1`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-07`
+- **Last Updated**: `2026-06-09`
 
 ---
 
@@ -82,7 +82,7 @@ The data layer (types, service, hooks) is isolated from the screens so that comp
 
 ### Get Event
 
-**File:** `api-contracts/get-event.yaml`
+**File:** `api-contracts/get-event-by-id.yaml`
 
 | Method | Route                        | Auth | Description                   |
 |--------|------------------------------|------|-------------------------------|
@@ -148,6 +148,9 @@ src/
 │   │   ├── EmptyState.tsx                 # Reusable empty list state (icon, title, subtitle)
 │   │   ├── Loader.tsx                     # Full-screen loading indicator
 │   │   ├── Button.tsx                     # Primary/secondary touchable button
+│   │   ├── LogoutButton.tsx               # Header action in the nested events Stack
+│   │   ├── haptic-tab.tsx                 # Custom tab button used by the customer Tabs layout
+│   │   ├── icon-symbol.tsx                # Tab icon abstraction used by customer tabs
 │   │   ├── themed-text.tsx                # Theme-aware text (title, defaultSemiBold, link)
 │   │   └── themed-view.tsx                # Theme-aware view container
 │   └── domain/
@@ -516,6 +519,10 @@ npx jest --watch tests/Feature/events/
 
 ## Changelog
 
+### v1.2.1 — 2026-06-09 (documentation fixes)
+- Corrected the detail contract reference to `get-event-by-id.yaml`.
+- Updated the public events file map to include `LogoutButton`, `HapticTab`, and `IconSymbol` used by the customer layouts.
+
 ### v1.2.0 — 2026-06-07 (EBM-12 QA fixes + EBM-REFACTOR-01)
 - Fixed `events/_layout.tsx`: native Stack back button (matching admin pattern); `LogoutButton` moved to `headerRight` with `tintColor`
 - Fixed `app/_layout.tsx`: added `SafeAreaProvider` so `useSafeAreaInsets` returns correct insets on device
@@ -568,5 +575,5 @@ npx jest --watch tests/Feature/events/
 
 ---
 
-**Last updated**: `2026-06-07`
+**Last updated**: `2026-06-09`
 **Documented by**: Justin Moreira Matarrita
