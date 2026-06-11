@@ -28,8 +28,8 @@ export const AUTH = {
   REGISTER_HAS_ACCOUNT: '¿Ya tienes cuenta?',
   REGISTER_LOGIN_LINK: 'Inicia sesión',
   LOGOUT_LABEL: 'Cerrar sesión',
-  SESSION_RESTORE: 'Restaurando sesión...',
   REGISTERED_SUCCESS: 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
+  LOGOUT_SUCCESS: 'Sesión cerrada correctamente.',
 } as const;
 
 export const CATEGORY: {
@@ -165,6 +165,8 @@ export const ERRORS = {
   EVENTS_LOAD_ERROR: 'Error al cargar los eventos',
   EVENT_LOAD_ERROR: 'Error al cargar el evento',
   EVENT_UPDATE_ERROR: 'Error al actualizar el evento',
+  CALENDAR_LOAD_ERROR: 'No se pudo cargar el calendario.',
+  CALENDAR_EVENTS_ERROR: 'No se pudieron cargar los eventos del día.',
 } as const;
 
 export const ADMIN = {
@@ -176,6 +178,11 @@ export const ADMIN = {
   EDIT_EVENT_ACCESSIBILITY: 'Seleccionar evento para editar',
   EDIT_EVENT_MODAL_TITLE: 'Eventos disponibles',
   EDIT_EVENT_LOADING: 'Cargando eventos...',
+  CALENDAR_EMPTY_TITLE: 'Selecciona un día',
+  CALENDAR_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver sus eventos',
+  CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
+  CALENDAR_NO_EVENTS_SUBTITLE: 'No hay eventos programados para este día',
+  CALENDAR_LOADING_EVENTS: 'Cargando eventos...',
 } as const;
 
 export const CUSTOMER = {

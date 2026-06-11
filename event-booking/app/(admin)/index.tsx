@@ -15,6 +15,7 @@ import { Calendar } from '@/src/components/domain/Calendar';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
 import { useCalendarEvents } from '@/src/hooks/useCalendarEvents';
+import { ADMIN } from '@/src/constants/ui';
 
 export default function AdminCalendarScreen() {
   const router = useRouter();
@@ -48,10 +49,10 @@ export default function AdminCalendarScreen() {
 
   const renderEventList = () => {
     if (!selectedDate) {
-      return <EmptyState title="Selecciona un día" subtitle="Toca un día en el calendario para ver sus eventos" />;
+      return <EmptyState title={ADMIN.CALENDAR_EMPTY_TITLE} subtitle={ADMIN.CALENDAR_EMPTY_SUBTITLE} />;
     }
     if (eventsLoading) {
-      return <Loader message="Cargando eventos..." />;
+      return <Loader message={ADMIN.CALENDAR_LOADING_EVENTS} />;
     }
     if (error) {
       return (
@@ -61,7 +62,7 @@ export default function AdminCalendarScreen() {
       );
     }
     if (dayEvents.length === 0) {
-      return <EmptyState title="Sin eventos" subtitle="No hay eventos programados para este día" />;
+      return <EmptyState title={ADMIN.CALENDAR_NO_EVENTS_TITLE} subtitle={ADMIN.CALENDAR_NO_EVENTS_SUBTITLE} />;
     }
     return (
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>

@@ -17,7 +17,7 @@ export default function LoginScreen() {
   const [showSuccess, setShowSuccess] = useState(registered === 'true' || loggedOut === 'true');
   const successMessage =
     loggedOut === 'true'
-      ? 'Sesión cerrada correctamente.'
+      ? AUTH.LOGOUT_SUCCESS
       : AUTH.REGISTERED_SUCCESS;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { eventsService } from '@/src/services/events';
 import { getTodayYear, getTodayMonth } from '@/src/utils/dateHelpers';
 import type { CalendarDateItem, EventSummary } from '@/src/types/events';
+import { ERRORS } from '@/src/constants/ui';
 
 interface UseCalendarEventsReturn {
   calendarDates: CalendarDateItem[];
@@ -33,9 +34,9 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
       const response = await eventsService.getCalendarDates(year, month);
       setCalendarDates(response.data);
       setError(null);
-    } catch {
-      setCalendarDates([]);
-      setError('No se pudo cargar el calendario.');
+    } catch (e) {
+      console.error(e);
+      setError(ERRORS.CALENDAR_LOAD_ERROR);
     } finally {
       setCalendarLoading(false);
     }
@@ -47,9 +48,9 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
       const response = await eventsService.getEventsByDate(date);
       setDayEvents(response.data);
       setError(null);
-    } catch {
-      setDayEvents([]);
-      setError('No se pudieron cargar los eventos del día.');
+    } catch (e) {
+      console.error(e);
+      setError(ERRORS.CALENDAR_EVENTS_ERROR);
     } finally {
       setEventsLoading(false);
     }
