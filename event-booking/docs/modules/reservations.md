@@ -8,9 +8,9 @@
 - **API Contract**: `api-contracts/create-reservation.yaml`
 - **Responsible**: Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.0.0`
+- **Version**: `1.1.0`
 - **Created**: `2026-06-11`
-- **Last Updated**: `2026-06-11`
+- **Last Updated**: `2026-06-12`
 
 ---
 
@@ -64,7 +64,7 @@ validación" fallback.
   "event_start_time": "10:00:00",
   "event_end_time": "18:00:00",
   "ticket_quantity": 2,
-  "status": "PENDING",
+  "status": "CONFIRMED",
   "notes": null,
   "user": {
     "user_id": "user-uuid",
@@ -85,7 +85,7 @@ validación" fallback.
 | 404    | Event not found                                                      | API error message                                              |
 | 409    | Capacity conflict (details[]) → duplicate reservation                | "Ya tienes una reserva activa para este evento."               |
 | 409    | Capacity conflict (direct message) → exceeded remaining_capacity     | "La cantidad solicitada excede los cupos disponibles."         |
-| 422    | Validation failed                                                    | API error message                                              |
+| 422    | Validation failed (e.g., ticket_quantity > 100)               | "Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente." |
 | 500    | Unexpected server error                                              | API error message                                              |
 
 Note: 400 and 409 responses may arrive as FastAPI `validation_error` format
@@ -126,7 +126,7 @@ app/
     └── events/
         ├── _layout.tsx                    # Stack: index, [id], book
         ├── [id].tsx                       # EventDetailScreen — "Reservar" → book
-        └── book.tsx                       # BookScreen — reservation form
+        └── book.tsx                       # BookScreen — reservation form (17 tests)
 tests/
 └── Feature/
     └── events/
@@ -225,12 +225,12 @@ Capacity display updated with fresh remaining_capacity
 
 | Function                    | Description                                                |
 |-----------------------------|------------------------------------------------------------|
-| `clampQuantity(value)`      | Clamps a number between 1 and `remaining_capacity`         |
+| `clampQuantity(value)`      | Clamps a number between 1 and `Math.min(remaining_capacity, 100)` |
 | `handleQuantityTextChange()`| Cleans non-digit chars, updates quantity + clamped text    |
 | `handleQuantityTextBlur()`  | Clamps empty/invalid text to "1" on blur                   |
 | `handleIncrement()`         | Increments quantity, capped at `remaining_capacity`         |
 | `handleDecrement()`         | Decrements quantity, minimum 1                              |
-| `handleSubmit()`            | Calls `reservationsService.create`, handles response/error |
+| `handleSubmit()`            | Calls `reservationsService.create`, handles response/error; resets submitting in `finally` |
 | `useEffect` (success timer) | Shows success banner 1.2s then calls `router.back()`       |
 
 ### Components
@@ -285,7 +285,7 @@ Capacity display updated with fresh remaining_capacity
 
 | Type                       | Description                                                                                   |
 |----------------------------|-----------------------------------------------------------------------------------------------|
-| `ReservationStatus`        | `'PENDING' \| 'CONFIRMED' \| 'CANCELLED'`                                                     |
+| `ReservationStatus`        | `'CONFIRMED' \| 'CANCELLED'`                                                                 |
 | `ReservationUserContext`   | `{ user_id, user_name, user_email }`                                                          |
 | `CreateReservationRequest` | `{ event_id: string, ticket_quantity: number, notes?: string }`                                |
 | `ReservationResponse`      | id, user_id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, timestamps |
@@ -311,6 +311,7 @@ Capacity display updated with fresh remaining_capacity
 | `DUPLICATE_ERROR`     | 'Ya tienes una reserva activa para este evento.'                      |
 | `CAPACITY_ERROR`      | 'La cantidad solicitada excede los cupos disponibles.'                |
 | `EVENT_UNAVAILABLE`   | 'Este evento ya no está disponible para reservar.'                    |
+| `VALIDATION_ERROR`    | 'Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente.' |
 | `SUCCESS_BANNER`      | 'Reserva realizada con éxito. Redirigiendo...'                        |
 
 ---
@@ -382,7 +383,8 @@ BookScreen
 | **Error 400**            | Red banner: "Este evento ya no está disponible para reservar."          |
 | **Error 409 (capacity)** | Red banner: "La cantidad solicitada excede los cupos disponibles."      |
 | **Error 409 (duplicate)**| Red banner: "Ya tienes una reserva activa para este evento."            |
-| **Error server**         | Red banner with `ApiError.message`                                      |
+| **Error 422**            | Red banner: "Datos inválidos. Revisa la cantidad de entradas..."       |
+| **Error server (4xx/5xx)**| Red banner with `ApiError.message`                                     |
 | **Error network**        | Red banner: "No se pudo conectar con el servidor..."                    |
 
 ---
@@ -394,7 +396,7 @@ BookScreen
 | Validation                        | Trigger                                     |
 |-----------------------------------|---------------------------------------------|
 | Quantity clamped to min 1         | Typing "0" or empty → resets to "1" on blur |
-| Quantity capped at capacity       | Typing > remaining_capacity → clamped on blur|
+| Quantity capped at capacity + YAML max | Typing > remaining_capacity or > 100 → clamped on blur  |
 | Non-digit characters stripped     | Typing letters/symbols → removed in onChange|
 | Inputs disabled during submit     | `submitting === true` blocks all inputs      |
 | Stepper buttons disabled at limit | [−] disabled when quantity <= 1; [+] when >= capacity |
@@ -406,7 +408,7 @@ BookScreen
 | 400    | `detail[{field, message}]` about past/inactive | "Este evento ya no está disponible para reservar."      |
 | 409    | `detail[{field, message}]` duplicate   | "Ya tienes una reserva activa para este evento."         |
 | 409    | Direct `message` about capacity        | "La cantidad solicitada excede los cupos disponibles."   |
-| 422    | `detail[{field, message}]` validation  | `err.message` (may be generic if from FastAPI detail[]) |
+| 422    | `detail[{field, message}]` validation  | "Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente." |
 | 500    | `{ error, message }`                   | `err.message`                                           |
 | Network | `TypeError` thrown by `fetch`          | `ERRORS.NETWORK`                                        |
 | Unknown | Any other error                        | `ERRORS.GENERIC`                                        |
@@ -431,12 +433,17 @@ BookScreen
 |10 | 409 with FastAPI `details[]` (duplicate)                        | Red banner: "Ya tienes una reserva activa para este evento."       |
 |11 | 400 with FastAPI `details[]` (past event)                       | Red banner: "Este evento ya no está disponible para reservar."     |
 |12 | Notes included in create payload                                | `reservationsService.create` called with `notes` field             |
+|13 | Inputs disabled and spinner shown during submission             | Button shows `ActivityIndicator`, all inputs disabled              |
+|14 | Event fetch failure                                             | `EmptyState` shown with ⚠️ icon                                     |
+|15 | 422 validation error                                            | Red banner: Spanish `VALIDATION_ERROR` (not raw English)           |
+|16 | 500 server error                                                | Red banner with `err.message`                                      |
+|17 | Unexpected generic error                                        | Red banner: "Ocurrió un error inesperado..."                       |
 
 Tests use `jest.useFakeTimers()` to control the success banner timeout
 and `jest.mock('@react-navigation/native')` to provide a `useFocusEffect`
 stub that behaves like `useEffect`.
 
-**Total:** 12 tests passing
+**Total:** 16 tests passing
 
 ### Mocks
 
@@ -494,6 +501,31 @@ stub that behaves like `useEffect`.
   colored left border uses the category's assigned color for visual
   grouping.
 
+- **YAML max: 100 enforced client-side**: `clampQuantity` caps at
+  `Math.min(remaining_capacity, 100)`, matching the
+  `create-reservation.yaml` contract's `ticket_quantity.maximum: 100`.
+  Without this, users could select > 100 tickets for large events,
+  causing a backend 422 rejection that previously displayed a raw
+  English validation string. Now 422 also shows a Spanish message
+  (`BOOKING.VALIDATION_ERROR`).
+
+- **Submitting reset in `finally`**: `setSubmitting(false)` executes
+  in a `finally` block so the submitting state is always reset — on
+  success, error, and unexpected exceptions. Previously it was only
+  called in `catch`, leaking a stale `submitting=true` state on the
+  success path.
+
+- **Accessibility attributes on stepper controls**: Both `−`/`+`
+  `TouchableOpacity` buttons have `accessibilityRole="button"` and
+  `accessibilityState={{ disabled }}`. The `TextInput` also receives
+  `accessibilityState={{ disabled: submitting }}`. These enable screen
+  readers to identify actionable elements and communicate disabled state.
+
+- **Reservation status `PENDING` removed**: The backend no longer
+  supports `PENDING` status; new reservations are created as
+  `CONFIRMED`. The `ReservationStatus` type was reduced to
+  `'CONFIRMED' | 'CANCELLED'`.
+
 ### Known Limitations
 
 - The booking flow currently only supports creating a single reservation
@@ -509,6 +541,24 @@ stub that behaves like `useEffect`.
 ---
 
 ## Changelog
+
+### v1.1.0 — 2026-06-12
+- **QA fix**: `clampQuantity` now caps at `Math.min(remainingCapacity, 100)`
+  to match YAML `ticket_quantity.maximum: 100` — prevents 422 rejections
+- **QA fix**: `setSubmitting(false)` moved to `finally` block so submitting
+  state always resets (was leaking `true` on success)
+- **QA fix**: Added `accessibilityRole="button"` and
+  `accessibilityState={{ disabled }}` to stepper buttons; added
+  `accessibilityState={{ disabled: submitting }}` to `TextInput`
+- **QA fix**: 422 errors now display Spanish `BOOKING.VALIDATION_ERROR`
+  instead of raw English `detail[].message`
+- **Backend change**: `ReservationStatus` reduced to
+  `'CONFIRMED' | 'CANCELLED'` (removed `PENDING` — backend no longer
+  supports it)
+- Added 5 missing tests: submitting state lock, event fetch error, 422
+  Spanish message, 500 server error, generic exception (16 total)
+- Added `BOOKING.VALIDATION_ERROR` constant
+- Updated `reservations.ts` response status from `PENDING` to `CONFIRMED`
 
 ### v1.0.0 — 2026-06-11
 - Initial implementation of reservation booking form (EBM-13)
@@ -549,5 +599,5 @@ stub that behaves like `useEffect`.
 
 ---
 
-**Last updated**: `2026-06-11`
+**Last updated**: `2026-06-12`
 **Documented by**: Luis Alejandro Salazar Vargas
