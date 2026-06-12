@@ -102,6 +102,7 @@ export default function CustomerReservationsScreen() {
             onMonthChange={onMonthChange}
             onYearChange={onYearChange}
             calendarLoading={calendarLoading}
+            hideLoadingOverlay
           />
         </View>
 

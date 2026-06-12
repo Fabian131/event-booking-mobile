@@ -221,7 +221,6 @@ export const CUSTOMER = {
   EVENTS_TITLE: 'Eventos',
   EVENTS_SUBTITLE: 'Explora los eventos disponibles',
   RESERVATIONS_TITLE: 'Mis Reservas',
-  RESERVATIONS_SUBTITLE: 'Historial y estado de tus reservaciones',
   RESERVATIONS_EMPTY_TITLE: 'Selecciona un día',
   RESERVATIONS_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver tus reservas',
   RESERVATIONS_NO_RESERVATIONS_TITLE: 'Sin reservas',
@@ -231,4 +230,6 @@ export const CUSTOMER = {
   RESERVATIONS_HEADING: 'Reservas del día',
   STATUS_CONFIRMED: 'Confirmada',
   STATUS_CANCELLED: 'Cancelada',
+  TICKET_SINGULAR: 'entrada',
+  TICKET_PLURAL: 'entradas',
 } as const;

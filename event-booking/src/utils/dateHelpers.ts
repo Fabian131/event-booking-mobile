@@ -23,7 +23,7 @@ export function extractTime(dateTimeStr: string): string {
 
 export function formatTime(timeStr: string): string {
   const [h, m] = timeStr.split(':').map(Number);
-  const period = h >= 12 ? 'PM' : 'AM';
+  const period = h >= 12 ? 'p.m.' : 'a.m.';
   const hour12 = h % 12 || 12;
   return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
 }

@@ -95,6 +95,7 @@ export default function AdminCalendarScreen() {
             onMonthChange={onMonthChange}
             onYearChange={onYearChange}
             calendarLoading={calendarLoading}
+            hideLoadingOverlay
           />
         </View>
 

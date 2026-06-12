@@ -19,6 +19,7 @@ interface CalendarProps {
   onMonthChange: (month: number) => void;
   onYearChange: (year: number) => void;
   calendarLoading: boolean;
+  hideLoadingOverlay?: boolean;
 }
 
 export function Calendar({
@@ -30,6 +31,7 @@ export function Calendar({
   onMonthChange,
   onYearChange,
   calendarLoading,
+  hideLoadingOverlay,
 }: CalendarProps) {
   const defaultStyles = useDefaultStyles();
 
@@ -146,7 +148,7 @@ export function Calendar({
         styles={customStyles}
         components={{ Day: CustomDay }}
       />
-      {calendarLoading && (
+      {!hideLoadingOverlay && calendarLoading && (
         <View style={s.loadingOverlay}>
           <ThemedText style={s.loadingText}>{ADMIN.CALENDAR_LOADING}</ThemedText>
         </View>

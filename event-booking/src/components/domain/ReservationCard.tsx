@@ -30,7 +30,8 @@ export function ReservationCard({ reservation }: ReservationCardProps) {
       <ThemedText style={styles.subtitle} numberOfLines={1}>
         {formatTime(reservation.event_start_time)} - {formatTime(reservation.event_end_time)}
         {' • '}
-        {reservation.ticket_quantity} {reservation.ticket_quantity === 1 ? 'entrada' : 'entradas'}
+        {reservation.ticket_quantity}{' '}
+        {reservation.ticket_quantity === 1 ? CUSTOMER.TICKET_SINGULAR : CUSTOMER.TICKET_PLURAL}
       </ThemedText>
       {reservation.notes ? (
         <ThemedText style={styles.notes} numberOfLines={2}>
