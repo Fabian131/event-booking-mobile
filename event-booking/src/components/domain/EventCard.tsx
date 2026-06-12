@@ -2,6 +2,7 @@ import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { ThemedText } from '@/src/components/ui/themed-text';
+import { extractTime } from '@/src/utils/dateHelpers';
 import type { Event } from '@/src/types/events';
 import { CATEGORY, EVENTS } from '@/src/constants/ui';
 
@@ -57,7 +58,7 @@ export function EventCard({ event, onPress, variant = 'default' }: EventCardProp
         )}
         {isCompact && (
           <ThemedText style={styles.description} numberOfLines={1}>
-            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)}
+            {extractTime(event.start_time)} - {extractTime(event.end_time)}
             {' • '}
             {event.remaining_capacity === 0
               ? EVENTS.CAPACITY_FULL

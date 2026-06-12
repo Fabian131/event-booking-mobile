@@ -10,6 +10,17 @@ export function getTodayMonth(): number {
   return new Date().getMonth() + 1;
 }
 
+export function extractTime(dateTimeStr: string): string {
+  if (!dateTimeStr) return '';
+  let rawTime = dateTimeStr;
+  if (rawTime.includes('T')) {
+    rawTime = rawTime.split('T')[1];
+  } else if (rawTime.includes(' ')) {
+    rawTime = rawTime.split(' ')[1];
+  }
+  return rawTime.substring(0, 5);
+}
+
 export function formatTime(timeStr: string): string {
   const [h, m] = timeStr.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';

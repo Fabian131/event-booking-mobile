@@ -10,9 +10,9 @@
 - **API Contract**: `api-contracts/calendar-events.yaml`, `api-contracts/list-events.yaml`
 - **Responsible**: `Fabian Sanchez Salinas`
 - **Status**: Completed
-- **Version**: `1.1.0`
+- **Version**: `1.1.1`
 - **Created**: `2026-06-01`
-- **Last Updated**: `2026-06-11`
+- **Last Updated**: `2026-06-12`
 
 ---
 
@@ -131,7 +131,7 @@ Admin Dashboard Screen (app/(admin)/index.tsx)
     │       │
     │       └──► State: { calendarDates, dayEvents, selectedDate,
     │                     currentYear, currentMonth, calendarLoading,
-    │                     eventsLoading, error }
+    │                     eventsLoading, error, refresh }
     │
     ├──► Calendar component
     │       ├──► DateTimePicker (react-native-ui-datepicker)
@@ -228,6 +228,7 @@ Centralizes the event loading logic for the calendar and the selected day's even
 - **UI Constants**: All text strings (loading states, errors, empty states) were extracted to `src/constants/ui.ts` (under `ADMIN`, `AUTH`, and `ERRORS`) to maintain a clean and centralized architecture.
 - **`react-native-ui-datepicker`**: Chosen for its native support of month/year selectors with animations, arrow navigation, and style customization. The custom `Day` component allows injecting event dots.
 - **EventCard Compact Variant**: For the admin dashboard, the event card does not render the large image (`variant="compact"`). Instead, it uses a reduced style with a left sidebar matching the category color to optimize vertical space on mobile screens, ensuring iOS correctly displays the shadow through granular `overflow: 'visible'` control.
+- **Auto-Refresh**: The dashboard uses `useFocusEffect` (from `expo-router`) mapped to the hook's `refresh` function. This ensures that when an admin returns from the `create-event` route, the calendar dots and selected day's events are automatically re-fetched.
 - **Separated loading states**: `calendarLoading` and `eventsLoading` are independent to avoid blocking the calendar while a single day's events are fetched.
 - **In-memory storage fallback**: `storage.ts` supports Web environments via an automatic fallback to `localStorage`, fixing crashes caused by the absence of `ExpoSecureStore` native modules in browsers.
 
@@ -239,6 +240,11 @@ Centralizes the event loading logic for the calendar and the selected day's even
 ---
 
 ## Changelog
+
+### v1.1.1 — 2026-06-12
+- Added `refresh` function to `useCalendarEvents`.
+- Integrated `useFocusEffect` in the dashboard to automatically update calendar and events upon returning from creation routes.
+- Simplified list translation animation (removed `fadeAnim`).
 
 ### v1.1.0 — 2026-06-11
 - Migrated to `app/(admin)/index.tsx` to align with the route refactor.
@@ -256,5 +262,5 @@ Centralizes the event loading logic for the calendar and the selected day's even
 
 ---
 
-**Last updated**: `2026-06-11`
+**Last updated**: `2026-06-12`
 **Documented by**: `Fabian131` & `Antigravity`
