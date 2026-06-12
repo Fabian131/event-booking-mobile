@@ -16,6 +16,7 @@ interface UseCalendarEventsReturn {
   selectDate: (date: string) => void;
   onMonthChange: (month: number) => void;
   onYearChange: (year: number) => void;
+  refresh: () => void;
 }
 
 export function useCalendarEvents(): UseCalendarEventsReturn {
@@ -63,6 +64,13 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
     fetchCalendarDates(currentYear, currentMonth);
   }, [currentYear, currentMonth, fetchCalendarDates]);
 
+  const refresh = useCallback(() => {
+    fetchCalendarDates(currentYear, currentMonth);
+    if (selectedDate) {
+      fetchEventsByDate(selectedDate);
+    }
+  }, [currentYear, currentMonth, selectedDate, fetchCalendarDates, fetchEventsByDate]);
+
   const selectDate = useCallback((date: string) => {
     setSelectedDate(date);
     fetchEventsByDate(date);
@@ -92,5 +100,6 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
     selectDate,
     onMonthChange,
     onYearChange,
+    refresh,
   };
 }

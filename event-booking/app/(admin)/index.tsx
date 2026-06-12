@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import {
   Animated,
   Pressable,
@@ -6,7 +6,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
@@ -31,7 +31,14 @@ export default function AdminCalendarScreen() {
     selectDate,
     onMonthChange,
     onYearChange,
+    refresh,
   } = useCalendarEvents();
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   // Animation for the event list on date change
   const slideAnim = useRef(new Animated.Value(16)).current;
