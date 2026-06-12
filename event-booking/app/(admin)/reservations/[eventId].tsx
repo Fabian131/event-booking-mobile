@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -12,7 +12,11 @@ import { useReservations } from '@/src/hooks/useReservations';
 import { RESERVATIONS } from '@/src/constants/ui';
 
 export default function ReservationsListScreen() {
-  const { eventId } = useLocalSearchParams<{ eventId: string }>();
+  const raw = useLocalSearchParams<{ eventId: string }>();
+  const eventId = useMemo(() => {
+    const val = raw.eventId;
+    return Array.isArray(val) ? val[0] : (val ?? '');
+  }, [raw.eventId]);
 
   const {
     reservations,
@@ -29,19 +33,15 @@ export default function ReservationsListScreen() {
     loadReservations('');
   }, [loadReservations]);
 
-  const handleCancel = useCallback(async (reservationId: string) => {
-    await cancelReservation(reservationId);
-  }, [cancelReservation]);
-
   const renderItem = useCallback(({ item }: { item: typeof reservations[number] }) => (
     <ReservationItem
       reservation={item}
       cancelling={cancellingId === item.id}
-      onCancel={() => handleCancel(item.id)}
+      onCancel={() => cancelReservation(item.id)}
     />
-  ), [cancellingId, handleCancel]);
+  ), [cancellingId, cancelReservation]);
 
-  const renderContent = () => {
+  const renderContent = useCallback(() => {
     if (loading && reservations.length === 0) {
       return <Loader message={RESERVATIONS.LIST_LOADING} />;
     }
@@ -61,7 +61,7 @@ export default function ReservationsListScreen() {
       );
     }
     return null;
-  };
+  }, [loading, error, reservations.length]);
 
   return (
     <ThemedView style={styles.container}>
@@ -75,9 +75,16 @@ export default function ReservationsListScreen() {
           onChangeText={onSearchChange}
           autoCapitalize="none"
           autoCorrect={false}
+          accessibilityLabel={RESERVATIONS.SEARCH_PLACEHOLDER}
         />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange('')} style={styles.clearIcon} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        {search.trim().length > 0 && (
+          <TouchableOpacity
+            onPress={() => onSearchChange('')}
+            style={styles.clearIcon}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Limpiar búsqueda"
+          >
             <MaterialIcons name="close" size={18} color="#687076" />
           </TouchableOpacity>
         )}

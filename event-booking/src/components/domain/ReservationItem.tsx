@@ -58,6 +58,8 @@ export function ReservationItem({ reservation, cancelling = false, onCancel }: R
               style={styles.cancelButton}
               onPress={handleCancel}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${RESERVATIONS.CANCEL_BUTTON} reservación de ${reservation.user.user_name}`}
             >
               <ThemedText style={styles.cancelButtonText}>
                 {RESERVATIONS.CANCEL_BUTTON}

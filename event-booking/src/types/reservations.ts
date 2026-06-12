@@ -1,20 +1,15 @@
+import type { PaginationMeta } from './events';
+
 export type ReservationStatus = 'CONFIRMED' | 'CANCELLED';
 
-export interface ReservationUserContext {
+export interface ReservationUser {
   user_id: string;
   user_name: string;
   user_email: string;
 }
 
-export interface CreateReservationRequest {
-  event_id: string;
-  ticket_quantity: number;
-  notes?: string;
-}
-
-export interface ReservationResponse {
+export interface Reservation {
   id: string;
-  user_id: string;
   event_id: string;
   event_title: string;
   event_date: string;
@@ -23,7 +18,25 @@ export interface ReservationResponse {
   ticket_quantity: number;
   status: ReservationStatus;
   notes: string | null;
-  user: ReservationUserContext;
+  user: ReservationUser;
   created_at: string;
-  updated_at: string;
+}
+
+export interface ReservationListResponse {
+  data: Reservation[];
+  pagination: PaginationMeta;
+}
+
+export interface ReservationListParams {
+  event_id: string;
+  search?: string;
+  status?: ReservationStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface CreateReservationRequest {
+  event_id: string;
+  ticket_quantity: number;
+  notes?: string;
 }

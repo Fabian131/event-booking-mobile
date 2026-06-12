@@ -27,7 +27,7 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
     ...(opts.headers as Record<string, string>),
   };
 
-  if (!(opts.body instanceof FormData) && !headers['Content-Type']) {
+  if (opts.body != null && !(opts.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
 

@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { ApiError } from '@/src/types/auth';
 import type { Reservation } from '@/src/types/reservations';
 import { reservationsService } from '@/src/services/reservations';
-import { RESERVATIONS } from '@/src/constants/ui';
+import { RESERVATIONS, ERRORS } from '@/src/constants/ui';
 
 export function useReservations(eventId: string) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -11,12 +11,13 @@ export function useReservations(eventId: string) {
   const [search, setSearch] = useState('');
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  const fetchingRef = useRef(false);
+  const requestIdRef = useRef(0);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadReservations = useCallback(async (searchQuery: string) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    if (!eventId) return;
+
+    const currentRequestId = ++requestIdRef.current;
     setError(null);
     setLoading(true);
 
@@ -27,13 +28,24 @@ export function useReservations(eventId: string) {
         status: 'CONFIRMED',
         limit: 100,
       });
+
+      if (currentRequestId !== requestIdRef.current) return;
+
       setReservations(response.data);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : RESERVATIONS.LIST_ERROR;
-      setError(message);
+      if (currentRequestId !== requestIdRef.current) return;
+
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof TypeError) {
+        setError(ERRORS.NETWORK);
+      } else {
+        setError(RESERVATIONS.LIST_ERROR);
+      }
     } finally {
-      setLoading(false);
-      fetchingRef.current = false;
+      if (currentRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [eventId]);
 
@@ -55,8 +67,13 @@ export function useReservations(eventId: string) {
       setReservations((prev) => prev.filter((r) => r.id !== reservationId));
       return true;
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : RESERVATIONS.CANCEL_ERROR;
-      setError(message);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof TypeError) {
+        setError(ERRORS.NETWORK);
+      } else {
+        setError(RESERVATIONS.CANCEL_ERROR);
+      }
       return false;
     } finally {
       setCancellingId(null);
