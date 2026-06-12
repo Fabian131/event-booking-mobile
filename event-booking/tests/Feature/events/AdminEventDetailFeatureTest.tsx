@@ -95,9 +95,6 @@ describe('admin event detail', () => {
     (useEventDetail as jest.Mock).mockReturnValue({ event: makeEvent(), loading: false, error: null });
     await renderDetailScreen();
     fireEvent.press(screen.getByText('Ver Reservaciones'));
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/(admin)/events/[id]/reservations',
-      params: { id: '1' },
-    });
+    expect(mockPush).toHaveBeenCalledWith('/(admin)/reservations/1');
   });
 });
