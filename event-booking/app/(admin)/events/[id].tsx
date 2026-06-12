@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
@@ -159,7 +159,11 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
+    // iOS packs header items tighter than Android, so the edit label and
+    // logout icon visually collide. A wider gap on iOS keeps them separated
+    // without affecting the Android layout.
+    gap: Platform.select({ ios: 36, android: 24 }),
+    paddingRight: Platform.select({ ios: 8, android: 0 }),
   },
   editButton: {
     fontSize: 16,
