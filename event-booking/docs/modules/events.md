@@ -4,18 +4,13 @@
 
 ## General Information
 
-- **Module Code**: `EBM-10` (feed) · `EBM-12` (detail) · `EBM-11` (search)
+- **Module Code**: `EBM-10` (feed) · `EBM-11` (search) · `EBM-12` (detail) · `EBM-13` (booking)
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
-- **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría
+- **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría, Luis Alejandro Salazar Vargas
 - **Status**: Completed
 - **Version**: `1.3.0`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-12`
-- **Responsible**: Justin Moreira Matarrita, Luis Alejandro Salazar Vargas
-- **Status**: Completed
-- **Version**: `1.3.0`
-- **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-11`
 
 ---
 
@@ -180,9 +175,8 @@ app/
 └── (customer)/
     ├── _layout.tsx                        # Tabs layout: eventos + reservations
     └── events/
-        ├── _layout.tsx                    # Stack layout: app branding "Event Booking" header,
-        │                                  #   LogoutButton + SearchHeaderButton in headerRight
-        ├── _layout.tsx                    # Stack layout: index, [id], book
+        ├── _layout.tsx                    # Stack layout: index, [id], book, search
+        │                                  #   Header: "Event Booking" branding + SearchHeaderButton + LogoutButton
         ├── index.tsx                      # CustomerEventsScreen — FlatList feed
         ├── search.tsx                     # EventSearchScreen — debounced text, category chips, date filter
         └── [id].tsx                       # EventDetailScreen — full event view + AuthGuardModal
@@ -666,11 +660,8 @@ npx jest --watch tests/Feature/events/
 ### Known Limitations
 
 - Infinite scroll `onEndReachedThreshold={0.3}` may fire earlier than expected on very short lists. A minimum page size check could be added in a future iteration.
-- Capacity tracker is static (loaded once on mount). A future iteration could add polling or WebSocket updates for live seat counts.
-- The authenticated booking path currently navigates to `/(customer)/reservations` as a placeholder. It must be updated to the Reservation Form route once that screen is implemented.
-- Search feature tests are pending (see changelog v1.3.0).
 - Capacity tracker updates only on mount and on screen focus (after booking return). A future iteration could add polling or WebSocket updates for live seat counts.
-- No search or category filter UI is exposed to the user yet. The service params support them but filter controls are out of scope for EBM-10.
+- Search feature tests are pending (see changelog v1.3.0).
 
 ---
 
@@ -689,7 +680,8 @@ npx jest --watch tests/Feature/events/
 - **Constants**: added `SEARCH_*` entries to `EVENTS` in `src/constants/ui.ts`.
 - **Test update**: `EmptyStateFeatureTest` aligned to use `EVENTS` constants.
 - **Search feature tests pending** (to be added in a follow-up).
-### v1.3.0 — 2026-06-11 (EBM-13 integration)
+
+### v1.2.2 — 2026-06-11 (EBM-13 booking integration)
 - Updated `handleBook` in `[id].tsx`: now navigates to `events/book` with `event_id` param instead of the placeholder `/(customer)/reservations` stub
 - Registered `book` screen in `events/_layout.tsx` Stack
 - Refactored `useEventDetail`: `useEffect` → `useFocusEffect` from `@react-navigation/native` so the detail screen re-fetches event data on every focus, displaying updated capacity after returning from a booking
@@ -754,6 +746,4 @@ npx jest --watch tests/Feature/events/
 ---
 
 **Last updated**: `2026-06-12`
-**Documented by**: Justin Moreira Matarrita, Abigail Ramírez Chavarría
-**Last updated**: `2026-06-11`
-**Documented by**: Justin Moreira Matarrita, Luis Alejandro Salazar Vargas
+**Documented by**: Justin Moreira Matarrita, Abigail Ramírez Chavarría, Luis Alejandro Salazar Vargas
