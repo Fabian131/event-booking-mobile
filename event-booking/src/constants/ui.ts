@@ -98,6 +98,7 @@ export const EVENTS = {
   SEARCH_SUBTITLE: 'Busca por texto, fecha o categoría para encontrar actividades.',
   SEARCH_ACCESSIBILITY: 'Buscar eventos',
   SEARCH_INPUT_PLACEHOLDER: 'Buscar por título o descripción',
+  SEARCH_INPUT_LABEL: 'Buscar por texto',
   SEARCH_INPUT_ACCESSIBILITY: 'Buscar por texto',
   SEARCH_CATEGORY_LABEL: 'Categoría',
   SEARCH_ALL_CATEGORIES: 'Todas',

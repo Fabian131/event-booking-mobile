@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -15,6 +14,7 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ErrorBanner } from '@/src/components/ui/ErrorBanner';
 import { EventCard } from '@/src/components/domain/EventCard';
 import { JSDatePicker } from '@/src/components/ui/JSDatePicker';
+import { ListFooterLoader } from '@/src/components/ui/ListFooterLoader';
 import { SkeletonList } from '@/src/components/ui/SkeletonList';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
@@ -83,15 +83,6 @@ export default function EventSearchScreen() {
 
   const Separator = useCallback(() => <View style={styles.separator} />, []);
 
-  const renderFooter = () => {
-    if (!loading || events.length === 0) return null;
-    return (
-      <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#0a7ea4" />
-      </View>
-    );
-  };
-
   const hasActiveFilters = !!(query.trim() || selectedCategory || selectedDate);
 
   const renderEmpty = () => {
@@ -107,22 +98,22 @@ export default function EventSearchScreen() {
 
   const listHeader = (
     <View style={styles.header}>
-      <ThemedText type="title" style={styles.title}>
-        {EVENTS.SEARCH_TITLE}
-      </ThemedText>
-      <ThemedText style={styles.subtitle}>{EVENTS.SEARCH_SUBTITLE}</ThemedText>
-
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder={EVENTS.SEARCH_INPUT_PLACEHOLDER}
-        placeholderTextColor="#9ba1a6"
-        autoCapitalize="none"
-        autoCorrect={false}
-        accessibilityLabel={EVENTS.SEARCH_INPUT_ACCESSIBILITY}
-        style={styles.searchInput}
-        returnKeyType="search"
-      />
+      <View style={styles.inputField}>
+        <ThemedText type="defaultSemiBold" style={styles.filterLabel}>
+          {EVENTS.SEARCH_INPUT_LABEL}
+        </ThemedText>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={EVENTS.SEARCH_INPUT_PLACEHOLDER}
+          placeholderTextColor="#9ba1a6"
+          autoCapitalize="none"
+          autoCorrect={false}
+          accessibilityLabel={EVENTS.SEARCH_INPUT_ACCESSIBILITY}
+          style={styles.searchInput}
+          returnKeyType="search"
+        />
+      </View>
 
       <View style={styles.filterGroup}>
         <ThemedText type="defaultSemiBold" style={styles.filterLabel}>
@@ -197,7 +188,7 @@ export default function EventSearchScreen() {
         onEndReachedThreshold={0.3}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#0a7ea4" />}
         ListHeaderComponent={listHeader}
-        ListFooterComponent={renderFooter}
+        ListFooterComponent={<ListFooterLoader loading={loading} hasItems={events.length > 0} />}
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={Separator}
         contentContainerStyle={styles.listContent}
@@ -231,6 +222,9 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: 16,
     gap: 12,
+  },
+  inputField: {
+    gap: 8,
   },
   searchInput: {
     borderWidth: 1,
@@ -306,16 +300,5 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 16,
-  },
-  footer: {
-    paddingVertical: 24,
-    alignItems: 'center',
-  },
-  title: {
-    color: '#11181c',
-  },
-  subtitle: {
-    color: '#687076',
-    lineHeight: 20,
   },
 });

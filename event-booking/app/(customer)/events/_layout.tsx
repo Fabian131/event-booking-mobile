@@ -2,20 +2,24 @@ import { Stack } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { SearchHeaderButton } from '@/src/components/ui/SearchHeaderButton';
-import { CUSTOMER, EVENTS } from '@/src/constants/ui';
+import { ADMIN, EVENTS } from '@/src/constants/ui';
 
 export default function EventosStackLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTitle: '',
+        headerTitle: ADMIN.HEADER_TITLE,
+        headerTitleStyle: {
+          fontSize: 22,
+          fontWeight: '900',
+          color: '#0a7ea4',
+        },
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: CUSTOMER.EVENTS_TITLE,
           headerRight: ({ tintColor }) => (
             <View style={styles.headerActions}>
               <SearchHeaderButton color={tintColor} />
