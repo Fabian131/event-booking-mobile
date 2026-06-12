@@ -20,6 +20,15 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(() => ({ event_id: '1' })),
   useRouter: jest.fn(),
 }));
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (cb: () => (() => void) | void) => {
+    const { useEffect } = require('react');
+    useEffect(() => {
+      const cleanup = cb();
+      return cleanup;
+    }, []);
+  },
+}));
 
 function makeEvent(overrides?: Partial<Event>): Event {
   return {
@@ -142,7 +151,7 @@ describe('booking form', () => {
     expect(screen.getByText('Volver al evento')).toBeTruthy();
   });
 
-  it('should show success banner and navigate to event detail after delay', async () => {
+  it('should show success banner and navigate back after delay', async () => {
     (reservationsService.create as jest.Mock).mockResolvedValue({ id: 'res-1' });
 
     await renderBookScreen();
@@ -168,10 +177,7 @@ describe('booking form', () => {
       jest.runAllTimers();
     });
 
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: '/(customer)/events/[id]',
-      params: { id: '1' },
-    });
+    expect(mockBack).toHaveBeenCalled();
   });
 
   it('should display error banner on network failure', async () => {

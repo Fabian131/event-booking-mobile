@@ -20,6 +20,15 @@ jest.mock('expo-router', () => ({
 jest.mock('@/src/context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (cb: () => (() => void) | void) => {
+    const { useEffect } = require('react');
+    useEffect(() => {
+      const cleanup = cb();
+      return cleanup;
+    }, []);
+  },
+}));
 
 function makeEvent(overrides?: Partial<Event>): Event {
   return {

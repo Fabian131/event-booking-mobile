@@ -62,10 +62,10 @@ export default function BookScreen() {
   useEffect(() => {
     if (!success) return;
     const timer = setTimeout(() => {
-      router.replace({ pathname: '/(customer)/events/[id]', params: { id: event_id } });
+      router.back();
     }, 1200);
     return () => clearTimeout(timer);
-  }, [success, event_id, router]);
+  }, [success, router]);
 
   if (loading) {
     return <Loader message={BOOKING.LOADING} />;
