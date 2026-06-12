@@ -51,3 +51,13 @@ export function formatEventTime(t: string): string {
   date.setHours(h, m);
   return date.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
 }
+
+/**
+ * Formats a Date object to a YYYY-MM-DD string suitable for API query parameters.
+ */
+export function formatDateParam(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}

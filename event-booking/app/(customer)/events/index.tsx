@@ -13,14 +13,14 @@ import { ListFooterLoader } from '@/src/components/ui/ListFooterLoader';
 import { SkeletonList } from '@/src/components/ui/SkeletonList';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
-import { EVENTS } from '@/src/constants/ui';
+import { CUSTOMER, EVENTS } from '@/src/constants/ui';
 import { useEvents } from '@/src/hooks/useEvents';
 import type { Event } from '@/src/types/events';
 
 function ListHeader() {
   return (
     <ThemedView style={styles.listHeader}>
-      <ThemedText>Explora los eventos disponibles</ThemedText>
+      <ThemedText>{CUSTOMER.EVENTS_SUBTITLE}</ThemedText>
     </ThemedView>
   );
 }
