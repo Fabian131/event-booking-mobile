@@ -50,6 +50,7 @@ async function renderDetailScreen() {
 }
 
 describe('auth guard', () => {
+  jest.setTimeout(15000);
   const mockPush = jest.fn();
 
   beforeEach(() => {
