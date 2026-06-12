@@ -4,45 +4,12 @@ import { Image } from 'expo-image';
 import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { InfoRow } from '@/src/components/ui/InfoRow';
 import { Loader } from '@/src/components/ui/Loader';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
-
-interface InfoRowProps {
-  label: string;
-  value: string;
-  valueStyle?: object;
-}
-
-function InfoRow({ label, value, valueStyle }: InfoRowProps) {
-  return (
-    <View style={infoStyles.row}>
-      <ThemedText style={infoStyles.label}>{label}</ThemedText>
-      <ThemedText style={[infoStyles.value, valueStyle]}>{value}</ThemedText>
-    </View>
-  );
-}
-
-const infoStyles = StyleSheet.create({
-  row: {
-    paddingVertical: 12,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#9BA1A6',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 15,
-    color: '#11181c',
-    fontWeight: '500',
-  },
-});
 
 export default function AdminEventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -93,7 +60,7 @@ export default function AdminEventDetailScreen() {
             <View style={styles.divider} />
             <InfoRow label={ADMIN.DETAIL_MAX_CAPACITY_LABEL} value={String(event.max_capacity)} />
             <View style={styles.divider} />
-            <InfoRow label={ADMIN.DETAIL_AVAILABLE_LABEL} value={String(event.remaining_capacity)} />
+            <InfoRow label={EVENTS.DETAIL_CAPACITY_LABEL} value={String(event.remaining_capacity)} />
           </View>
 
           {event.description ? (
