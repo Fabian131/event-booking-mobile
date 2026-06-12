@@ -122,6 +122,17 @@ export default function BookScreen() {
 
   async function handleSubmit() {
     setSubmitError(null);
+
+    const maxQuantity = Math.min(remainingCapacity, 100);
+    const typedQuantity = parseInt(quantityText, 10);
+    if (!isNaN(typedQuantity) && typedQuantity > maxQuantity) {
+      const clamped = clampQuantity(typedQuantity);
+      setQuantity(clamped);
+      setQuantityText(String(clamped));
+      setSubmitError(`La cantidad máxima por reserva es ${maxQuantity} entradas.`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
