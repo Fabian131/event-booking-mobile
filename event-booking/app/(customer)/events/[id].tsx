@@ -7,49 +7,12 @@ import { AuthGuardModal } from '@/src/components/domain/AuthGuardModal';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
+import { InfoRow } from '@/src/components/ui/InfoRow';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useAuth } from '@/src/context/AuthContext';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
-
-interface InfoRowProps {
-  label: string;
-  value: string;
-}
-
-function InfoRow({ label, value }: InfoRowProps) {
-  return (
-    <View style={infoStyles.row}>
-      <View style={infoStyles.textGroup}>
-        <ThemedText style={infoStyles.label}>{label}</ThemedText>
-        <ThemedText style={infoStyles.value}>{value}</ThemedText>
-      </View>
-    </View>
-  );
-}
-
-const infoStyles = StyleSheet.create({
-  row: {
-    paddingVertical: 12,
-  },
-  textGroup: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#9BA1A6',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 15,
-    color: '#11181c',
-    fontWeight: '500',
-  },
-});
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
