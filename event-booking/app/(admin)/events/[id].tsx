@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 24,
   },
   editButton: {
     fontSize: 16,
