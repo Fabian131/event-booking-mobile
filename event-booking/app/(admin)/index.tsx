@@ -15,7 +15,7 @@ import { Calendar } from '@/src/components/domain/Calendar';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
 import { useCalendarEvents } from '@/src/hooks/useCalendarEvents';
-import { ADMIN } from '@/src/constants/ui';
+import { ADMIN, RESERVATIONS } from '@/src/constants/ui';
 
 export default function AdminCalendarScreen() {
   const router = useRouter();
@@ -73,7 +73,18 @@ export default function AdminCalendarScreen() {
     return (
       <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
         {dayEvents.map((event) => (
-          <EventCard key={event.id} event={event} variant="compact" />
+          <View key={event.id}>
+            <EventCard event={event} variant="compact" />
+            <Pressable
+              style={styles.reservationButton}
+              onPress={() => router.push(`/(admin)/reservations/${event.id}`)}
+              accessibilityRole="button"
+            >
+              <ThemedText style={styles.reservationButtonText}>
+                {RESERVATIONS.VIEW_RESERVATIONS}
+              </ThemedText>
+            </Pressable>
+          </View>
         ))}
       </Animated.View>
     );
@@ -170,5 +181,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     includeFontPadding: false,
+  },
+  reservationButton: {
+    alignSelf: 'flex-end',
+    marginTop: -6,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+    backgroundColor: '#fff',
+  },
+  reservationButtonText: {
+    color: '#0a7ea4',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

@@ -4,7 +4,7 @@ import React from 'react';
 import { Loader } from '@/src/components/ui/Loader';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { useAuth } from '@/src/context/AuthContext';
-import { AUTH, ADMIN, EVENTS } from '@/src/constants/ui';
+import { AUTH, ADMIN, EVENTS, RESERVATIONS } from '@/src/constants/ui';
 
 export default function AdminLayout() {
   const { isBusiness, isLoading } = useAuth();
@@ -32,6 +32,7 @@ export default function AdminLayout() {
       <Stack.Screen name="index" options={{ title: ADMIN.CALENDAR_TITLE }} />
       <Stack.Screen name="create-event" options={{ title: EVENTS.CREATE_TITLE }} />
       <Stack.Screen name="edit-event/[id]" options={{ title: EVENTS.EDIT_TITLE }} />
+      <Stack.Screen name="reservations/[eventId]" options={{ title: RESERVATIONS.LIST_TITLE }} />
     </Stack>
   );
 }
