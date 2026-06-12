@@ -1,16 +1,16 @@
-# Module: Create/Edit Event (Admin)
+# Module: Admin Events (Create · Detail · Edit)
 
 ---
 
 ## General Information
 
-- **Module Code**: `EBM-03` (create) · `EBM-05` (edit)
-- **API Contracts**: `api-contracts/create-event.yaml` · `api-contracts/update-event.yaml`
+- **Module Code**: `EBM-03` (create) · `EBM-04` (detail) · `EBM-05` (edit)
+- **API Contracts**: `api-contracts/create-event.yaml` · `api-contracts/get-event-by-id.yaml` · `api-contracts/update-event.yaml`
 - **Responsible**: Luis F Rosales Vargas, Abigail Ramírez Chavarría, Justin Moreira Matarrita
-- **Status**: Completed
-- **Version**: `1.1.0`
+- **Status**: In Development (EBM-04) · Completed (EBM-03, EBM-05)
+- **Version**: `1.2.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-10`
+- **Last Updated**: `2026-06-12`
 
 ---
 
@@ -622,6 +622,16 @@ npx expo lint
 
 ## Changelog
 
+### v1.2.0 — 2026-06-12
+
+- Added EBM-04 Admin Event Detail section to this document.
+- New screen `app/(admin)/events/[id].tsx`: read-only detail view with hero image, 5 InfoRows, two-button footer (Editar / Ver Reservaciones).
+- Extracted `InfoRow` to shared component `src/components/ui/InfoRow.tsx`; updated customer detail screen to import from shared location.
+- Removed duplicate constant `ADMIN.DETAIL_AVAILABLE_LABEL`; admin screen now reuses `EVENTS.DETAIL_CAPACITY_LABEL`.
+- Admin dashboard (`/(admin)/index`) now routes event selection to detail screen instead of edit form.
+- Added feature tests: `tests/Feature/events/AdminEventDetailFeatureTest.tsx` (6 scenarios).
+- **QA remediation:** Corrected docs (footer buttons, 5 InfoRows, removed ghost Status constants); all 4 QA issues resolved.
+
 ### v1.1.0 — 2026-06-09
 
 - Added `EditEventScreen` at `app/(admin)/edit-event/[id].tsx`.
@@ -665,8 +675,8 @@ npx expo lint
 
 ---
 
-**Last updated**: `2026-06-10`
-**Documented by**: `Luis F Rosales Vargas, Abigail Ramírez Chavarría`
+**Last updated**: `2026-06-12`
+**Documented by**: `Luis F Rosales Vargas, Abigail Ramírez Chavarría, Justin Moreira Matarrita`
 
 ---
 
