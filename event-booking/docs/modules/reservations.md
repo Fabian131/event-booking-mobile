@@ -8,7 +8,7 @@
 - **API Contract**: `api-contracts/create-reservation.yaml`, `api-contracts/calendar-reservations.yaml`, `api-contracts/list-reservations.yaml`
 - **Responsible**: Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.2.0`
+- **Version**: `1.2.1`
 - **Created**: `2026-06-11`
 - **Last Updated**: `2026-06-12`
 
