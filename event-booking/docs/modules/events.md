@@ -4,23 +4,27 @@
 
 ## General Information
 
-- **Module Code**: `EBM-10` (feed) · `EBM-12` (detail)
+- **Module Code**: `EBM-10` (feed) · `EBM-12` (detail) · `EBM-11` (search)
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
-- **Responsible**: Justin Moreira Matarrita
+- **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría
 - **Status**: Completed
-- **Version**: `1.2.1`
+- **Version**: `1.3.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-09`
+- **Last Updated**: `2026-06-12`
 
 ---
 
 ## Description
 
-Customer-facing events module composed of two screens:
+Customer-facing events module composed of three screens:
 
-**Feed screen** (`events/index.tsx`) — displays upcoming activities in a large stacked-card format. Implements the `list-events.yaml` contract using offset-based pagination (`page` / `limit`). On mount, the screen fetches the first page; as the user scrolls near the bottom, subsequent pages are appended seamlessly. Supports pull-to-refresh, skeleton loading placeholders, an empty state, and an inline error banner with a retry button.
+**Feed screen** (`events/index.tsx`) — displays upcoming activities in a large stacked-card format. Implements the `list-events.yaml` contract using offset-based pagination (`page` / `limit`). On mount, the screen fetches the first page; as the user scrolls near the bottom, subsequent pages are appended seamlessly. Supports pull-to-refresh, skeleton loading placeholders, an empty state, and an inline error banner with a retry button. The header shows the app branding "Event Booking" matching the admin layout style, with a magnifying glass icon that navigates to the advanced search screen.
+
+**Search screen** (`events/search.tsx`) — dedicated advanced search terminal accessed via the magnifying glass icon in the feed header. Provides a keyword text input with 300 ms debounce, horizontal single-select category chips using the `EventCategory` enum values, and an optional date filter via a modal date picker. All filter changes trigger fresh API requests and display filtered results instantly using `EventCard` components. Tapping a result card routes to the event detail screen. Displays contextual empty states: generic "no events" when no filters are active, and "no matches" when filters yield no results.
 
 **Detail screen** (`events/[id].tsx`) — displays the full contextual information of a single event: image, title, long description, date, start/end hours, category badge, and a live capacity tracker. Bound to the `GET /api/v1/events/{event_id}` endpoint via the `useEventDetail` hook. Includes an **authentication guard** on the "Reservar" button: unauthenticated users see a non-intrusive modal prompting them to log in; authenticated users are navigated to the reservation flow.
+
+Shared UI components extracted during search implementation — `ErrorBanner`, `SkeletonList`, and `ListFooterLoader` — are reused across both feed and search screens, ready for future admin reuse.
 
 The data layer (types, service, hooks) is isolated from the screens so that components can be extended independently.
 
@@ -140,17 +144,21 @@ src/
 │   └── events.ts                          # eventsService.list() — GET /api/v1/events
 │                                          # eventsService.getById() — GET /api/v1/events/:id
 ├── hooks/
-│   ├── useEvents.ts                       # Pagination hook: events[], loading, refreshing,
-│   │                                      #   error, hasNextPage, loadMore(), refresh()
+│   ├── useEvents.ts                       # Pagination hook with optional filters:
+│   │                                      #   search, category, date. Stale-request guard via requestId.
 │   └── useEventDetail.ts                  # Detail hook: event, loading, error
 ├── components/
 │   ├── ui/
 │   │   ├── EmptyState.tsx                 # Reusable empty list state (icon, title, subtitle)
+│   │   ├── ErrorBanner.tsx                # Reusable inline error banner with retry button
+│   │   ├── SkeletonList.tsx               # Reusable skeleton card list (count, gap configurable)
+│   │   ├── ListFooterLoader.tsx           # Reusable pagination loading indicator
 │   │   ├── Loader.tsx                     # Full-screen loading indicator
 │   │   ├── Button.tsx                     # Primary/secondary touchable button
+│   │   ├── SearchHeaderButton.tsx         # Magnifying glass header action for search entry
 │   │   ├── LogoutButton.tsx               # Header action in the nested events Stack
 │   │   ├── haptic-tab.tsx                 # Custom tab button used by the customer Tabs layout
-│   │   ├── icon-symbol.tsx                # Tab icon abstraction used by customer tabs
+│   │   ├── icon-symbol.tsx                # Tab/header icon abstraction (SF Symbols + MaterialIcons mapping)
 │   │   ├── themed-text.tsx                # Theme-aware text (title, defaultSemiBold, link)
 │   │   └── themed-view.tsx                # Theme-aware view container
 │   └── domain/
@@ -166,14 +174,16 @@ app/
 └── (customer)/
     ├── _layout.tsx                        # Tabs layout: eventos + reservations
     └── events/
-        ├── _layout.tsx                    # Stack layout: native back button, LogoutButton in headerRight
+        ├── _layout.tsx                    # Stack layout: app branding "Event Booking" header,
+        │                                  #   LogoutButton + SearchHeaderButton in headerRight
         ├── index.tsx                      # CustomerEventsScreen — FlatList feed
+        ├── search.tsx                     # EventSearchScreen — debounced text, category chips, date filter
         └── [id].tsx                       # EventDetailScreen — full event view + AuthGuardModal
 tests/
 └── Feature/
     └── events/
         ├── RenderFeedFeatureTest.tsx               # Header, cards with title/description/category
-        ├── EmptyStateFeatureTest.tsx               # "Sin eventos por ahora" when data is empty
+        ├── EmptyStateFeatureTest.tsx               # Empty state using EVENTS constants
         ├── NetworkErrorFeatureTest.tsx             # Error banner + retry flow on TypeError
         ├── ServerErrorFeatureTest.tsx              # Error banner on 500/503, no cards shown
         ├── PaginationFeatureTest.tsx               # Infinite scroll: page append, has_next_page guard, dedup
@@ -212,6 +222,40 @@ User taps EventCard
     │
     ▼
 router.push('/(customer)/events/[id]', { id })
+```
+
+### Data Flow — Search
+
+```
+User opens search from feed header magnifying glass
+    │
+    ▼
+EventSearchScreen mounts → useEvents({}) loads all events
+    │
+    ▼
+User types in TextInput → query state updates
+    │
+    ▼
+useEffect 300 ms debounce → setDebouncedFilters({ search, category, date })
+    │
+    ▼
+useEvents receives new filters → clears list, resets pagination, loads page 1
+    │
+    ▼
+eventsService.list({ page: 1, limit: 20, search, category, date })
+    │
+    ▼
+api.get('/api/v1/events?page=1&limit=20&search=...&category=...&date=...')
+    │
+    ▼
+┌──────────────────────────────────────────────────────┐
+│ 200 OK     → setEvents(data), setHasNextPage(...)    │
+│ 500 Error  → setError(ApiError.message)              │
+│ Network    → setError('Error al cargar los eventos') │
+└──────────────────────────────────────────────────────┘
+    │
+    ▼
+User taps EventCard → router.push('/(customer)/events/[id]', { id })
 ```
 
 ### Data Flow — Detail
@@ -265,9 +309,28 @@ User taps "Reservar"
 
 **UI structure:**
 - `ThemedView` (container) wraps all content
-- Header: title "Eventos" + subtitle
-- Inline error banner (conditional): red left-bordered box + "Reintentar"
+- Header: app branding "Event Booking" inherited from Stack layout (22px, bold 900, blue #0a7ea4)
 - `FlatList` with `onEndReached`, `RefreshControl`, skeleton, empty state, footer spinner
+- Each `EventCard` receives `onPress` → navigates to `events/[id]`
+
+#### Search — `app/(customer)/events/search.tsx`
+
+| State              | Type                        | Description                                          |
+|--------------------|-----------------------------|------------------------------------------------------|
+| `query`            | `string`                    | Raw input text before debounce                       |
+| `selectedCategory` | `EventCategory \| undefined`| Active category chip (single-select)                 |
+| `selectedDate`     | `Date \| null`              | Active date filter, null means any date              |
+| `pickerDate`       | `Date`                      | Temp state for the date picker modal                 |
+| `dateModalVisible` | `boolean`                   | Controls date picker modal visibility                |
+| `debouncedFilters` | `UseEventsFilters`          | Debounced filter object consumed by `useEvents`      |
+
+**UI structure:**
+- `FlatList` with `ListHeaderComponent` containing all filter controls:
+  - Labeled `TextInput` for keyword search (placeholder: "Buscar por título o descripción")
+  - Horizontal `ScrollView` of category chips: "Todas" + each `EVENT_CATEGORIES` value with color-coded selected state
+  - Date selector button + optional clear button; opens `BottomModal` with `JSDatePicker`
+- `ListEmptyComponent`: conditional empty state (generic when no filters active, "Sin coincidencias" otherwise)
+- `ListFooterComponent`: `ListFooterLoader` for pagination
 - Each `EventCard` receives `onPress` → navigates to `events/[id]`
 
 #### Detail — `app/(customer)/events/[id].tsx`
@@ -289,16 +352,20 @@ User taps "Reservar"
 
 ### Components
 
-| Component          | File                                      | Key Props / Notes                                          |
-|--------------------|-------------------------------------------|------------------------------------------------------------|
-| `ThemedText`       | `src/components/ui/themed-text.tsx`       | `type` ("title", "defaultSemiBold")                        |
-| `ThemedView`       | `src/components/ui/themed-view.tsx`       | Theme-aware container                                      |
-| `EmptyState`       | `src/components/ui/EmptyState.tsx`        | `icon, title, subtitle`                                    |
-| `Loader`           | `src/components/ui/Loader.tsx`            | `message` — full-screen loading indicator                  |
-| `Button`           | `src/components/ui/Button.tsx`            | `title, onPress, variant` ("primary"/"secondary")          |
-| `EventCard`        | `src/components/domain/EventCard.tsx`     | `event: Event, onPress?: () => void`                |
-| `EventCardSkeleton`| `src/components/domain/EventCard.tsx`     | Animated pulse placeholder                                 |
-| `AuthGuardModal`   | `src/components/domain/AuthGuardModal.tsx`| `visible, onClose, onLogin` — login-intercept modal        |
+| Component           | File                                      | Key Props / Notes                                          |
+|---------------------|-------------------------------------------|------------------------------------------------------------|
+| `ThemedText`        | `src/components/ui/themed-text.tsx`       | `type` ("title", "defaultSemiBold")                        |
+| `ThemedView`        | `src/components/ui/themed-view.tsx`       | Theme-aware container                                      |
+| `EmptyState`        | `src/components/ui/EmptyState.tsx`        | `icon, title, subtitle`                                    |
+| `ErrorBanner`       | `src/components/ui/ErrorBanner.tsx`       | `message, onRetry, retryLabel?` — shared feed + search     |
+| `SkeletonList`      | `src/components/ui/SkeletonList.tsx`      | `count?, gap?` — shared feed + search                      |
+| `ListFooterLoader`  | `src/components/ui/ListFooterLoader.tsx`  | `loading, hasItems?` — shared feed + search                |
+| `Loader`            | `src/components/ui/Loader.tsx`            | `message` — full-screen loading indicator                  |
+| `Button`            | `src/components/ui/Button.tsx`            | `title, onPress, variant` ("primary"/"secondary")          |
+| `SearchHeaderButton`| `src/components/ui/SearchHeaderButton.tsx`| `color?` — navigates to `/events/search`                   |
+| `EventCard`         | `src/components/domain/EventCard.tsx`     | `event: Event, onPress?: () => void`                |
+| `EventCardSkeleton` | `src/components/domain/EventCard.tsx`     | Animated pulse placeholder                                 |
+| `AuthGuardModal`    | `src/components/domain/AuthGuardModal.tsx`| `visible, onClose, onLogin` — login-intercept modal        |
 
 ### Services
 
@@ -319,6 +386,12 @@ User taps "Reservar"
 | `error`       | `string \| null` | Last error message, reset on successful fetch  |
 | `hasNextPage` | `boolean`        | Mirrors `pagination.has_next_page` from API    |
 | `currentPage` | `number`         | Tracks the last successfully loaded page       |
+
+Accepts optional `filters: UseEventsFilters` (`{ search?, category?, date? }`).
+When filters change, the list is cleared and page reset to 1. Pagination requests carry
+the active filters. A `requestId` counter discards stale responses when filters change
+before a previous request resolves. Pagination uses a `useRef` guard to prevent
+duplicate concurrent fetches.
 
 #### `useEventDetail` — `src/hooks/useEventDetail.ts`
 
@@ -351,21 +424,54 @@ Accepts `id: string`. Calls `eventsService.getById(id)` on mount. Includes mount
 ```
 CustomerEventsScreen
 └── ThemedView (container, flex: 1)
-    ├── ThemedView (header)
-    │   ├── ThemedText type="title"   → "Eventos"
-    │   └── ThemedText                → "Explora los eventos disponibles"
     ├── ErrorBanner (conditional)
-    │   ├── ThemedText (red)          → error message
-    │   └── TouchableOpacity          → "Reintentar" → refresh()
     └── FlatList
+        ├── ListHeaderComponent → ListHeader
+        │   └── ThemedView
+        │       └── ThemedText → "Explora los eventos disponibles"
         ├── renderItem                → EventCard (onPress → detail)
         ├── ItemSeparatorComponent    → View height: 16
         ├── ListEmptyComponent
-        │   ├── (loading)             → 5× EventCardSkeleton
+        │   ├── (loading)             → SkeletonList (5 cards)
         │   └── (!loading)            → EmptyState icon="📅"
         ├── ListFooterComponent
-        │   └── (loading + data > 0)  → ActivityIndicator (small)
+        │   └── ListFooterLoader (loading + data > 0)
         └── refreshControl            → RefreshControl
+```
+
+### Component Tree — Search
+
+```
+EventSearchScreen
+└── ThemedView (container, flex: 1)
+    ├── ErrorBanner (conditional)
+    ├── FlatList
+    │   ├── ListHeaderComponent → header
+    │   │   ├── filterGroup
+    │   │   │   ├── ThemedText → "Buscar por texto"
+    │   │   │   └── TextInput (value={query}, onChangeText, debounced)
+    │   │   ├── filterGroup
+    │   │   │   ├── ThemedText → "Categoría"
+    │   │   │   └── ScrollView (horizontal chips)
+    │   │   │       ├── Chip "Todas" (selected when no category active)
+    │   │   │       └── Chip per EVENT_CATEGORIES (color-coded when selected)
+    │   │   ├── filterGroup
+    │   │   │   ├── ThemedText → "Fecha"
+    │   │   │   └── dateRow
+    │   │   │       ├── dateButton → openDateModal()
+    │   │   │       └── clearDateButton (conditional) → clearDate()
+    │   │   └── ThemedText → "Resultados"
+    │   ├── renderItem                → EventCard (onPress → detail)
+    │   ├── ItemSeparatorComponent    → View height: 16
+    │   ├── ListEmptyComponent
+    │   │   ├── (loading)             → SkeletonList count={4}
+    │   │   └── (!loading)
+    │   │       └── EmptyState (generic or "Sin coincidencias" per hasActiveFilters)
+    │   ├── ListFooterComponent
+    │   │   └── ListFooterLoader (loading + data > 0)
+    │   └── refreshControl            → RefreshControl
+    └── BottomModal (dateModalVisible)
+        └── JSDatePicker (value={pickerDate}, onChange)
 ```
 
 ### Component Tree — Detail
@@ -396,11 +502,25 @@ EventDetailScreen
 | State               | What the user sees                                                      |
 |---------------------|-------------------------------------------------------------------------|
 | **Initial load**    | 5 skeleton cards with animated gray pulse                               |
-| **Data loaded**     | Stacked cards: image, category badge, title, description                |
-| **Paginating**      | Existing cards + footer `ActivityIndicator`                             |
+| **Data loaded**     | Stacked cards: image, category badge, title, description                 |
+| **Paginating**      | Existing cards + `ListFooterLoader` spinner                              |
 | **Pull to refresh** | `RefreshControl` spinner, list reloads from page 1                      |
-| **No events**       | 📅 icon + "Sin eventos por ahora" + subtitle                            |
-| **Error**           | Red left-bordered banner + "Reintentar" button                          |
+| **No events**       | 📅 icon + `EVENTS.FEED_EMPTY_TITLE` + `EVENTS.FEED_EMPTY_SUBTITLE`      |
+| **Error**           | `ErrorBanner` with error message + "Reintentar" button                   |
+
+### Visual States — Search
+
+| State                  | What the user sees                                                      |
+|------------------------|-------------------------------------------------------------------------|
+| **Initial (no filters)**| Search controls visible, all events loaded, no category selected ("Todas" highlighted), date shows "Cualquier fecha" |
+| **Typing**             | Input text updates instantly, API call fires after 300 ms pause          |
+| **Category selected**  | Chip turns blue, "Todas" deselects, results filter instantly             |
+| **Date selected**      | Button shows formatted date, clear button appears, results filter        |
+| **Loading results**    | 4 skeleton cards with animated gray pulse                                |
+| **Paginating**         | Existing cards + `ListFooterLoader` spinner                              |
+| **No events (no filters)**| EmptyState with `FEED_EMPTY_TITLE` / `FEED_EMPTY_SUBTITLE`           |
+| **No matches (filters)**| EmptyState with "Sin coincidencias" / "Intenta cambiar el texto..."     |
+| **Error**              | `ErrorBanner` with error message + "Reintentar" button                   |
 
 ### Visual States — Detail
 
@@ -419,9 +539,19 @@ EventDetailScreen
 
 | Error         | Trigger                    | UI Feedback                                                      |
 |---------------|----------------------------|------------------------------------------------------------------|
-| Network error | `fetch` throws `TypeError` | Red banner: "Error al cargar los eventos" + "Reintentar"         |
-| Server 500    | API returns 5xx            | Red banner with `ApiError.message` + "Reintentar"                |
+| Network error | `fetch` throws `TypeError` | `ErrorBanner`: "Error al cargar los eventos" + "Reintentar"      |
+| Server 500    | API returns 5xx            | `ErrorBanner` with `ApiError.message` + "Reintentar"             |
 | Empty result  | `data: []`                 | `EmptyState` component (no banner)                               |
+| Retry success | User taps "Reintentar"     | Error banner disappears, cards render                            |
+
+### Search
+
+| Error         | Trigger                    | UI Feedback                                                      |
+|---------------|----------------------------|------------------------------------------------------------------|
+| Network error | `fetch` throws `TypeError` | `ErrorBanner`: "Error al cargar los eventos" + "Reintentar"      |
+| Server 500    | API returns 5xx            | `ErrorBanner` with `ApiError.message` + "Reintentar"             |
+| Empty (no filters) | `data: []`, no filters active  | `EmptyState` with `FEED_EMPTY_TITLE` / `FEED_EMPTY_SUBTITLE` |
+| Empty (filters) | `data: []`, filters active     | `EmptyState` with `SEARCH_EMPTY_TITLE` / `SEARCH_EMPTY_SUBTITLE` |
 | Retry success | User taps "Reintentar"     | Error banner disappears, cards render                            |
 
 ### Detail
@@ -441,7 +571,7 @@ EventDetailScreen
 ```
 tests/
 └── Feature/
-    └── events/          # 7 files — screen integration tests
+    └── events/          # 8 files — screen integration tests
 ```
 
 ### Naming Convention
@@ -457,7 +587,7 @@ tests/
 | File                          | Scenario                                                                 | Tests |
 |-------------------------------|--------------------------------------------------------------------------|-------|
 | `RenderFeedFeatureTest.tsx`              | Header visible; cards show title, description, translated category       | 4     |
-| `EmptyStateFeatureTest.tsx`              | Empty `data: []` → "Sin eventos por ahora" shown, no cards              | 2     |
+| `EmptyStateFeatureTest.tsx`              | Empty `data: []` → `EVENTS.FEED_EMPTY_*` shown, no cards                | 2     |
 | `NetworkErrorFeatureTest.tsx`            | `TypeError` → error banner; "Reintentar" fires second fetch and recovers | 2     |
 | `ServerErrorFeatureTest.tsx`             | `ApiError` 500/503 → error banner; no cards rendered                    | 1     |
 | `PaginationFeatureTest.tsx`              | Page append on scroll; dedup guard; `has_next_page: false` stops fetch  | 3     |
@@ -465,7 +595,7 @@ tests/
 | `AuthGuardFeatureTest.tsx`               | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to reservations; no modal for authenticated | 6 |
 | `EventDetailNetworkErrorFeatureTest.tsx` | `TypeError` on `getById` → `EmptyState` with `ERRORS.NETWORK` message   | 1     |
 
-**Total:** 8 Feature files — 27 tests passing
+**Total:** 8 Feature files — 27 tests passing (search feature tests pending)
 
 **Mocks used:**
 
@@ -507,17 +637,37 @@ npx jest --watch tests/Feature/events/
 - **Auth guard via modal, not redirect**: Blocking the booking action with a non-intrusive modal (rather than a full redirect) lets the guest stay on the event detail page and choose to log in or stay browsing.
 - **Static capacity display**: Capacity is fetched once on mount and shown as the remaining seat count only. The `remaining / max (Z%)` format was removed per QA (EBM-12) — only the remaining count is needed. Real-time polling is out of scope.
 - **No auth required on GET**: `GET /api/v1/events` and `GET /api/v1/events/{id}` are public endpoints. The `api.get` wrapper attaches the Bearer token only when available.
+- **Debounced search (300 ms)**: The search screen queues all filter changes (text, category, date) into a single debounced state update. This avoids flooding the API with requests on every keystroke while keeping the UI responsive. Category and date changes are debounced together with text — visual chip state updates instantly, but the API call waits.
+- **Stale-request guard via `requestId`**: When filters change while a previous request is in-flight, the old response is discarded by comparing a monotonic counter. This ensures the UI never shows results from an outdated filter combination.
+- **Shared components extracted during search**: `ErrorBanner`, `SkeletonList`, and `ListFooterLoader` were extracted from the feed and search screens into reusable UI components. This reduces duplication and prepares the components for reuse in future admin screens.
+- **Header branding aligned with admin**: The customer events Stack layout now shows the app name "Event Booking" as the default header title with the same style (22px, bold 900, blue #0a7ea4), matching the admin layout. The feed inherits this branding; the search screen overrides it with its own title.
+- **Single-category select**: The search UI uses single-select chips. The backend currently supports one `category` query parameter. Multi-category client-side fan-out was avoided to respect pagination semantics and contract constraints.
+- **Empty state semantics**: The search screen distinguishes between "no events in the system" (when no filters are active — uses the same `FEED_EMPTY_*` constants) and "no results for current filters" (when filters are active — uses `SEARCH_EMPTY_*` constants).
 
 ### Known Limitations
 
 - Infinite scroll `onEndReachedThreshold={0.3}` may fire earlier than expected on very short lists. A minimum page size check could be added in a future iteration.
 - Capacity tracker is static (loaded once on mount). A future iteration could add polling or WebSocket updates for live seat counts.
 - The authenticated booking path currently navigates to `/(customer)/reservations` as a placeholder. It must be updated to the Reservation Form route once that screen is implemented.
-- No search or category filter UI is exposed to the user yet. The service params support them but filter controls are out of scope for EBM-10.
+- Search feature tests are pending (see changelog v1.3.0).
 
 ---
 
 ## Changelog
+
+### v1.3.0 — 2026-06-12 (search implementation + QA refactor)
+
+- **Advanced search screen** (`events/search.tsx`): dedicated terminal with keyword text input, single-select category chips using `EVENT_CATEGORIES`, and optional date filter via modal date picker. Navigated from the feed header magnifying glass icon.
+- **Debounced query binding**: all filter changes (text, category, date) debounced at 300 ms and passed to `useEvents` as `UseEventsFilters`.
+- **Empty state semantics**: search distinguishes between unfiltered (no events at all) and filtered (no matches) scenarios, using `FEED_EMPTY_*` and `SEARCH_EMPTY_*` constants respectively.
+- **`useEvents` hook extended**: now accepts `filters` parameter (`search`, `category`, `date`). Resets pagination on filter change. Added `requestId` stale-response guard.
+- **Shared components extracted**: `ErrorBanner` (`message, onRetry`), `SkeletonList` (`count, gap`), and `ListFooterLoader` (`loading, hasItems`) — reused across feed and search screens.
+- **Feed refactored** to use shared `ErrorBanner`, `SkeletonList`, and `ListFooterLoader`. Removed duplicated styles, local components, and hardcoded strings.
+- **Header branding**: customer events Stack now shows "Event Booking" (22px, bold 900, blue #0a7ea4) matching admin layout style. Removed redundant "Eventos" header title (tab bar already shows it). Added `SearchHeaderButton` next to `LogoutButton` in feed header.
+- **Icon mapping**: added `magnifyingglass → search` MaterialIcons fallback for Android/web.
+- **Constants**: added `SEARCH_*` entries to `EVENTS` in `src/constants/ui.ts`.
+- **Test update**: `EmptyStateFeatureTest` aligned to use `EVENTS` constants.
+- **Search feature tests pending** (to be added in a follow-up).
 
 ### v1.2.1 — 2026-06-09 (documentation fixes)
 - Corrected the detail contract reference to `get-event-by-id.yaml`.
@@ -575,5 +725,5 @@ npx jest --watch tests/Feature/events/
 
 ---
 
-**Last updated**: `2026-06-09`
-**Documented by**: Justin Moreira Matarrita
+**Last updated**: `2026-06-12`
+**Documented by**: Justin Moreira Matarrita, Abigail Ramírez Chavarría
