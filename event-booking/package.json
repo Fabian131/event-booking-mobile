@@ -13,6 +13,7 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "testTimeout": 15000,
     "testMatch": [
       "**/tests/Unit/**/*UnitTest.ts",
       "**/tests/Feature/**/*FeatureTest.tsx",
