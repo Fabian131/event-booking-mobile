@@ -25,28 +25,28 @@ describe('getTodayMonth', () => {
 
 describe('formatTime', () => {
   it('should format morning time in 12h AM', () => {
-    expect(formatTime('09:30:00')).toBe('9:30 AM');
-    expect(formatTime('00:00:00')).toBe('12:00 AM');
+    expect(formatTime('09:30:00')).toBe('9:30 a.m.');
+    expect(formatTime('00:00:00')).toBe('12:00 a.m.');
   });
 
   it('should format afternoon time in 12h PM', () => {
-    expect(formatTime('12:00:00')).toBe('12:00 PM');
-    expect(formatTime('14:00:00')).toBe('2:00 PM');
-    expect(formatTime('23:59:00')).toBe('11:59 PM');
+    expect(formatTime('12:00:00')).toBe('12:00 p.m.');
+    expect(formatTime('14:00:00')).toBe('2:00 p.m.');
+    expect(formatTime('23:59:00')).toBe('11:59 p.m.');
   });
 });
 
 describe('formatTimeRange', () => {
   it('should join start and end times with dash', () => {
     const range = formatTimeRange('10:00:00', '12:00:00');
-    expect(range).toContain('10:00 AM');
-    expect(range).toContain('12:00 PM');
+    expect(range).toContain('10:00 a.m.');
+    expect(range).toContain('12:00 p.m.');
   });
 
   it('should handle afternoon range', () => {
     const range = formatTimeRange('14:00:00', '18:00:00');
-    expect(range).toContain('2:00 PM');
-    expect(range).toContain('6:00 PM');
+    expect(range).toContain('2:00 p.m.');
+    expect(range).toContain('6:00 p.m.');
   });
 });
 
