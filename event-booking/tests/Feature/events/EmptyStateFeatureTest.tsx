@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
+import { EVENTS } from '@/src/constants/ui';
 import CustomerEventsScreen from '@/app/(customer)/events/index';
 
 jest.mock('@/src/services/events');
@@ -43,8 +44,8 @@ describe('empty state', () => {
     await renderFeedScreen();
 
     await waitFor(() => {
-      expect(screen.getByText('Sin eventos por ahora')).toBeTruthy();
-      expect(screen.getByText('Vuelve pronto para descubrir nuevas actividades.')).toBeTruthy();
+      expect(screen.getByText(EVENTS.FEED_EMPTY_TITLE)).toBeTruthy();
+      expect(screen.getByText(EVENTS.FEED_EMPTY_SUBTITLE)).toBeTruthy();
     });
   });
 

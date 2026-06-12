@@ -12,8 +12,10 @@ import {
 import { useRouter } from 'expo-router';
 import { BottomModal } from '@/src/components/ui/BottomModal';
 import { EmptyState } from '@/src/components/ui/EmptyState';
-import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
+import { ErrorBanner } from '@/src/components/ui/ErrorBanner';
+import { EventCard } from '@/src/components/domain/EventCard';
 import { JSDatePicker } from '@/src/components/ui/JSDatePicker';
+import { SkeletonList } from '@/src/components/ui/SkeletonList';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { CATEGORY, EVENTS } from '@/src/constants/ui';
@@ -22,25 +24,12 @@ import { useEvents, type UseEventsFilters } from '@/src/hooks/useEvents';
 import { formatEventDate } from '@/src/utils/dateHelpers';
 
 const DEBOUNCE_MS = 300;
-const SKELETON_COUNT = 4;
 
 function formatDateParam(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-function SkeletonList() {
-  return (
-    <>
-      {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-        <View key={i} style={i > 0 ? styles.separator : undefined}>
-          <EventCardSkeleton />
-        </View>
-      ))}
-    </>
-  );
 }
 
 export default function EventSearchScreen() {
@@ -103,13 +92,15 @@ export default function EventSearchScreen() {
     );
   };
 
+  const hasActiveFilters = !!(query.trim() || selectedCategory || selectedDate);
+
   const renderEmpty = () => {
-    if (loading) return <SkeletonList />;
+    if (loading) return <SkeletonList count={4} />;
     if (error) return null;
     return (
       <EmptyState
-        title={EVENTS.SEARCH_EMPTY_TITLE}
-        subtitle={EVENTS.SEARCH_EMPTY_SUBTITLE}
+        title={hasActiveFilters ? EVENTS.SEARCH_EMPTY_TITLE : EVENTS.FEED_EMPTY_TITLE}
+        subtitle={hasActiveFilters ? EVENTS.SEARCH_EMPTY_SUBTITLE : EVENTS.FEED_EMPTY_SUBTITLE}
       />
     );
   };
@@ -195,14 +186,7 @@ export default function EventSearchScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      {error && (
-        <View style={styles.errorBanner}>
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
-          <TouchableOpacity onPress={refresh} style={styles.retryButton}>
-            <ThemedText style={styles.retryText}>{EVENTS.FEED_ERROR_RETRY}</ThemedText>
-          </TouchableOpacity>
-        </View>
-      )}
+      {error && <ErrorBanner message={error} onRetry={refresh} />}
 
       <FlatList
         testID="event-search-results"
@@ -326,36 +310,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff3f3',
-    borderLeftWidth: 4,
-    borderLeftColor: '#dc3545',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 8,
-    gap: 8,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#dc3545',
-  },
-  retryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#dc3545',
-    borderRadius: 8,
-  },
-  retryText: {
-    fontSize: 13,
-    color: '#fff',
-    fontWeight: '600',
   },
   title: {
     color: '#11181c',
