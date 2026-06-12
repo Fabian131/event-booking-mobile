@@ -35,8 +35,12 @@ export function useReservations(eventId: string) {
     } catch (err) {
       if (currentRequestId !== requestIdRef.current) return;
 
+      __DEV__ && console.log('[useReservations] Error:', err);
+
       if (err instanceof ApiError) {
         setError(err.message);
+      } else if (err instanceof DOMException && err.name === 'AbortError') {
+        setError(ERRORS.NETWORK);
       } else if (err instanceof TypeError) {
         setError(ERRORS.NETWORK);
       } else {

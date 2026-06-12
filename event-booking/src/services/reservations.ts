@@ -15,7 +15,9 @@ export const reservationsService = {
     });
     if (params.search) query.append('search', params.search);
     if (params.status) query.append('status', params.status);
-    return api.get<ReservationListResponse>(`/api/v1/reservations?${query}`);
+
+    const url = `/api/v1/reservations?${query}`;
+    return api.get<ReservationListResponse>(url);
   },
 
   cancel(reservationId: string): Promise<Reservation> {

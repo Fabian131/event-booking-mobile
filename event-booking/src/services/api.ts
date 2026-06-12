@@ -35,11 +35,13 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  const url = `${API_BASE_URL}${endpoint}`;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 6000);
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    response = await fetch(url, {
       ...opts,
       headers,
       signal: controller.signal,
@@ -73,7 +75,7 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
 }
 
 export const api = {
-  get: <T>(endpoint: string) => request<T>(endpoint),
+  get: <T>(endpoint: string) => request<T>(endpoint, { method: 'GET' }),
 
   post: <T>(endpoint: string, data: unknown) =>
     request<T>(endpoint, {
