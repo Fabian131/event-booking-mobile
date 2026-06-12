@@ -47,3 +47,28 @@ export interface EventsListParams {
   is_active?: boolean;
   date?: string;
 }
+
+// ── Calendar dashboard types ───────────────────────────────────────────────
+
+/** Alias for the admin dashboard calendar (mirrors Event for the day list). */
+export type EventSummary = Event;
+
+export interface CalendarDateItem {
+  date: string;
+  count: number;
+}
+
+export interface CalendarDatesResponse {
+  data: CalendarDateItem[];
+  year: number;
+  month: number;
+}
+
+export interface DayCell {
+  date: string;
+  day: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  eventCount: number;
+}

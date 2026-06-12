@@ -4,7 +4,7 @@ import React from 'react';
 import { Loader } from '@/src/components/ui/Loader';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { useAuth } from '@/src/context/AuthContext';
-import { AUTH } from '@/src/constants/ui';
+import { AUTH, ADMIN, EVENTS } from '@/src/constants/ui';
 
 export default function AdminLayout() {
   const { isBusiness, isLoading } = useAuth();
@@ -20,13 +20,18 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTitle: '',
+        headerTitle: ADMIN.HEADER_TITLE,
+        headerTitleStyle: {
+          fontSize: 22,
+          fontWeight: '900',
+          color: '#0a7ea4',
+        },
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Calendario' }} />
-      <Stack.Screen name="create-event" options={{ title: 'Nuevo Evento' }} />
-      <Stack.Screen name="edit-event/[id]" options={{ title: 'Editar Evento' }} />
+      <Stack.Screen name="index" options={{ title: ADMIN.CALENDAR_TITLE }} />
+      <Stack.Screen name="create-event" options={{ title: EVENTS.CREATE_TITLE }} />
+      <Stack.Screen name="edit-event/[id]" options={{ title: EVENTS.EDIT_TITLE }} />
     </Stack>
   );
 }
