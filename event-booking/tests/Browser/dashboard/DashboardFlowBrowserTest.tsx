@@ -16,12 +16,14 @@ jest.mock('@/src/hooks/useCalendarEvents', () => ({
     selectDate: jest.fn(),
     onMonthChange: jest.fn(),
     onYearChange: jest.fn(),
+    refresh: jest.fn(),
   }),
 }));
 jest.mock('expo-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => children,
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  useFocusEffect: jest.fn((cb) => cb()),
 }));
 jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
 jest.mock('react-native-ui-datepicker', () => {
