@@ -193,6 +193,7 @@ export const BOOKING = {
   SOLD_OUT_MESSAGE: 'Lo sentimos, ya no hay cupos disponibles para este evento.',
   DUPLICATE_ERROR: 'Ya tienes una reserva activa para este evento.',
   CAPACITY_ERROR: 'La cantidad solicitada excede los cupos disponibles.',
+  EVENT_UNAVAILABLE: 'Este evento ya no está disponible para reservar.',
   SUCCESS_BANNER: 'Reserva realizada con éxito. Redirigiendo...',
 } as const;
 

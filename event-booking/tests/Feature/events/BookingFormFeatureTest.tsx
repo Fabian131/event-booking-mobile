@@ -229,6 +229,27 @@ describe('booking form', () => {
     });
   });
 
+  it('should display Spanish event unavailable message on 400', async () => {
+    const details: FieldError[] = [
+      { field: 'event_id', message: 'Cannot reserve a past event' },
+    ];
+    (reservationsService.create as jest.Mock).mockRejectedValue(
+      new ApiError('Errores de validación', 400, details),
+    );
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar reserva')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Confirmar reserva'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Este evento ya no está disponible para reservar.')).toBeTruthy();
+    });
+  });
+
   it('should include notes when provided', async () => {
     (reservationsService.create as jest.Mock).mockResolvedValue({ id: 'res-1' });
     const event = makeEvent({ remaining_capacity: 5 });

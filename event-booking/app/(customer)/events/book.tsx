@@ -135,6 +135,10 @@ export default function BookScreen() {
       if (err instanceof ApiError) {
         if (err.status === 409) {
           setSubmitError(err.details?.length ? BOOKING.DUPLICATE_ERROR : BOOKING.CAPACITY_ERROR);
+        } else if (err.status === 400) {
+          setSubmitError(BOOKING.EVENT_UNAVAILABLE);
+        } else if (err.details?.length && err.message === 'Errores de validación') {
+          setSubmitError(err.details[0].message);
         } else {
           setSubmitError(err.message);
         }
