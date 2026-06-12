@@ -1,4 +1,4 @@
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
@@ -73,17 +73,18 @@ export default function AdminEventDetailScreen() {
         options={{
           title: '',
           headerRight: () => (
-            <View style={styles.headerActions}>
+            <>
               <Pressable
                 onPress={() => router.push(`/(admin)/edit-event/${id}`)}
                 accessibilityRole="button"
                 accessibilityLabel={ADMIN.DETAIL_EDIT_BUTTON}
                 hitSlop={8}
+                style={styles.editPressable}
               >
                 <ThemedText style={styles.editButton}>{ADMIN.DETAIL_EDIT_BUTTON}</ThemedText>
               </Pressable>
               <LogoutButton />
-            </View>
+            </>
           ),
         }}
       />
@@ -156,14 +157,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // iOS packs header items tighter than Android, so the edit label and
-    // logout icon visually collide. A wider gap on iOS keeps them separated
-    // without affecting the Android layout.
-    gap: Platform.select({ ios: 36, android: 24 }),
-    paddingRight: Platform.select({ ios: 8, android: 0 }),
+  editPressable: {
+    marginRight: 16,
   },
   editButton: {
     fontSize: 16,
