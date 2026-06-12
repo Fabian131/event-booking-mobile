@@ -12,11 +12,11 @@ import { useReservations } from '@/src/hooks/useReservations';
 import { RESERVATIONS } from '@/src/constants/ui';
 
 export default function ReservationsListScreen() {
-  const raw = useLocalSearchParams<{ eventId: string }>();
+  const raw = useLocalSearchParams<{ id: string }>();
   const eventId = useMemo(() => {
-    const val = raw.eventId;
+    const val = raw.id;
     return Array.isArray(val) ? val[0] : (val ?? '');
-  }, [raw.eventId]);
+  }, [raw.id]);
 
   const {
     reservations,
