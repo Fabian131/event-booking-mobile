@@ -1,25 +1,20 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { CATEGORY, EVENTS } from '@/src/constants/ui';
-import { AuthGuardModal } from '@/src/components/domain/AuthGuardModal';
+import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
-import { Loader } from '@/src/components/ui/Loader';
 import { InfoRow } from '@/src/components/ui/InfoRow';
+import { Loader } from '@/src/components/ui/Loader';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
-import { useAuth } from '@/src/context/AuthContext';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
 
-export default function EventDetailScreen() {
+export default function AdminEventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const { event, loading, error } = useEventDetail(id);
-  const [modalVisible, setModalVisible] = useState(false);
 
   if (loading) {
     return <Loader message={EVENTS.DETAIL_LOADING} />;
@@ -33,19 +28,13 @@ export default function EventDetailScreen() {
     );
   }
 
-  function handleBook() {
-    if (!isAuthenticated) {
-      setModalVisible(true);
-      return;
-    }
-    router.push({ pathname: '/(customer)/events/book', params: { event_id: event.id } });
-  }
-
   const categoryColor = CATEGORY.COLORS[event.category];
   const categoryLabel = CATEGORY.LABELS[event.category];
 
   return (
     <ThemedView style={styles.container}>
+      <Stack.Screen options={{ title: '' }} />
+
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <Image
           source={event.image_url ? { uri: event.image_url } : null}
@@ -69,6 +58,8 @@ export default function EventDetailScreen() {
             <View style={styles.divider} />
             <InfoRow label={EVENTS.DETAIL_END_LABEL} value={formatEventTime(event.end_time)} />
             <View style={styles.divider} />
+            <InfoRow label={ADMIN.DETAIL_MAX_CAPACITY_LABEL} value={String(event.max_capacity)} />
+            <View style={styles.divider} />
             <InfoRow label={EVENTS.DETAIL_CAPACITY_LABEL} value={String(event.remaining_capacity)} />
           </View>
 
@@ -82,17 +73,23 @@ export default function EventDetailScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title={EVENTS.DETAIL_BOOK_BUTTON} onPress={handleBook} />
+        <Button
+          title={ADMIN.DETAIL_EDIT_BUTTON}
+          variant="secondary"
+          style={styles.footerButton}
+          onPress={() => router.push(`/(admin)/edit-event/${id}`)}
+        />
+        <Button
+          title={ADMIN.DETAIL_RESERVATIONS_BUTTON}
+          style={styles.footerButton}
+          onPress={() =>
+            router.push({
+              pathname: '/(admin)/events/[id]/reservations',
+              params: { id },
+            })
+          }
+        />
       </View>
-
-      <AuthGuardModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onLogin={() => {
-          setModalVisible(false);
-          router.push('/(auth)/login');
-        }}
-      />
     </ThemedView>
   );
 }
@@ -155,11 +152,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   footer: {
+    flexDirection: 'row',
+    gap: 12,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 32,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+  },
+  footerButton: {
+    flex: 1,
   },
 });

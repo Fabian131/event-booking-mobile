@@ -32,7 +32,8 @@ export default function AdminLayout() {
       <Stack.Screen name="index" options={{ title: ADMIN.CALENDAR_TITLE }} />
       <Stack.Screen name="create-event" options={{ title: EVENTS.CREATE_TITLE }} />
       <Stack.Screen name="edit-event/[id]" options={{ title: EVENTS.EDIT_TITLE }} />
-      <Stack.Screen name="reservations/[eventId]" options={{ title: RESERVATIONS.LIST_TITLE }} />
+      <Stack.Screen name="events/[id]" />
+      <Stack.Screen name="reservations/[id]" options={{ title: RESERVATIONS.LIST_TITLE }} />
     </Stack>
   );
 }
