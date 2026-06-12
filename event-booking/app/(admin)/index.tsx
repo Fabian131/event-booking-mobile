@@ -20,7 +20,7 @@ export default function AdminCalendarScreen() {
   function handleSelect(evt: Event) {
     setSelected(evt);
     setModalVisible(false);
-    router.push(`/(admin)/edit-event/${evt.id}`);
+    router.push(`/(admin)/events/${evt.id}`);
   }
 
   const selectorLabel = selected
