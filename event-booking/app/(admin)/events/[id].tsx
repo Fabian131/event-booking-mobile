@@ -1,11 +1,10 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
-import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
@@ -64,30 +63,10 @@ export default function AdminEventDetailScreen() {
 
   const categoryColor = CATEGORY.COLORS[event.category];
   const categoryLabel = CATEGORY.LABELS[event.category];
-  const statusLabel = event.is_active ? ADMIN.DETAIL_STATUS_ACTIVE : ADMIN.DETAIL_STATUS_INACTIVE;
-  const statusColor = event.is_active ? '#28a745' : '#687076';
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: '',
-          headerRight: () => (
-            <>
-              <Pressable
-                onPress={() => router.push(`/(admin)/edit-event/${id}`)}
-                accessibilityRole="button"
-                accessibilityLabel={ADMIN.DETAIL_EDIT_BUTTON}
-                hitSlop={8}
-                style={styles.editPressable}
-              >
-                <ThemedText style={styles.editButton}>{ADMIN.DETAIL_EDIT_BUTTON}</ThemedText>
-              </Pressable>
-              <LogoutButton />
-            </>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: '' }} />
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <Image
@@ -115,12 +94,6 @@ export default function AdminEventDetailScreen() {
             <InfoRow label={ADMIN.DETAIL_MAX_CAPACITY_LABEL} value={String(event.max_capacity)} />
             <View style={styles.divider} />
             <InfoRow label={ADMIN.DETAIL_AVAILABLE_LABEL} value={String(event.remaining_capacity)} />
-            <View style={styles.divider} />
-            <InfoRow
-              label={ADMIN.DETAIL_STATUS_LABEL}
-              value={statusLabel}
-              valueStyle={{ color: statusColor }}
-            />
           </View>
 
           {event.description ? (
@@ -134,7 +107,14 @@ export default function AdminEventDetailScreen() {
 
       <View style={styles.footer}>
         <Button
+          title={ADMIN.DETAIL_EDIT_BUTTON}
+          variant="secondary"
+          style={styles.footerButton}
+          onPress={() => router.push(`/(admin)/edit-event/${id}`)}
+        />
+        <Button
           title={ADMIN.DETAIL_RESERVATIONS_BUTTON}
+          style={styles.footerButton}
           onPress={() =>
             router.push({
               pathname: '/(admin)/events/[id]/reservations',
@@ -156,14 +136,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  editPressable: {
-    marginRight: 16,
-  },
-  editButton: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0a7ea4',
   },
   scroll: {
     flex: 1,
@@ -213,11 +185,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   footer: {
+    flexDirection: 'row',
+    gap: 12,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 32,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+  },
+  footerButton: {
+    flex: 1,
   },
 });
