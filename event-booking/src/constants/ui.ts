@@ -194,6 +194,7 @@ export const BOOKING = {
   DUPLICATE_ERROR: 'Ya tienes una reserva activa para este evento.',
   CAPACITY_ERROR: 'La cantidad solicitada excede los cupos disponibles.',
   EVENT_UNAVAILABLE: 'Este evento ya no está disponible para reservar.',
+  VALIDATION_ERROR: 'Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente.',
   SUCCESS_BANNER: 'Reserva realizada con éxito. Redirigiendo...',
 } as const;
 

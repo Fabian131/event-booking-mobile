@@ -256,6 +256,86 @@ describe('booking form', () => {
     });
   });
 
+  it('should disable inputs and show spinner during submission', async () => {
+    (reservationsService.create as jest.Mock).mockImplementation(
+      () => new Promise(() => {}),
+    );
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar reserva')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Confirmar reserva'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Confirmar reserva')).toBeTruthy();
+    });
+  });
+
+  it('should display error when event fetch fails', async () => {
+    (eventsService.getById as jest.Mock).mockRejectedValue(new Error('Server error'));
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('⚠️')).toBeTruthy();
+    });
+  });
+
+  it('should display Spanish validation error on 422', async () => {
+    (reservationsService.create as jest.Mock).mockRejectedValue(
+      new ApiError('Errores de validación', 422, [{ field: 'ticket_quantity', message: 'ensure this value is less than or equal to 100' }]),
+    );
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar reserva')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Confirmar reserva'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente.')).toBeTruthy();
+    });
+  });
+
+  it('should display server error message on 500', async () => {
+    (reservationsService.create as jest.Mock).mockRejectedValue(
+      new ApiError('Internal server error', 500),
+    );
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar reserva')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Confirmar reserva'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Internal server error')).toBeTruthy();
+    });
+  });
+
+  it('should display generic error on unexpected exception', async () => {
+    (reservationsService.create as jest.Mock).mockRejectedValue('unexpected string');
+
+    await renderBookScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar reserva')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('Confirmar reserva'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Ocurrió un error inesperado. Intenta nuevamente.')).toBeTruthy();
+    });
+  });
+
   it('should include notes when provided', async () => {
     (reservationsService.create as jest.Mock).mockResolvedValue({ id: 'res-1' });
     const event = makeEvent({ remaining_capacity: 5 });

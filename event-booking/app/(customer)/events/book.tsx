@@ -84,7 +84,7 @@ export default function BookScreen() {
   const categoryColor = CATEGORY.COLORS[event.category];
 
   function clampQuantity(value: number): number {
-    return Math.max(1, Math.min(value, remainingCapacity));
+    return Math.max(1, Math.min(value, remainingCapacity, 100));
   }
 
   function handleQuantityTextChange(text: string) {
@@ -137,6 +137,8 @@ export default function BookScreen() {
           setSubmitError(err.details?.length ? BOOKING.DUPLICATE_ERROR : BOOKING.CAPACITY_ERROR);
         } else if (err.status === 400) {
           setSubmitError(BOOKING.EVENT_UNAVAILABLE);
+        } else if (err.status === 422) {
+          setSubmitError(BOOKING.VALIDATION_ERROR);
         } else if (err.details?.length && err.message === 'Errores de validación') {
           setSubmitError(err.details[0].message);
         } else {
@@ -147,6 +149,7 @@ export default function BookScreen() {
       } else {
         setSubmitError(ERRORS.GENERIC);
       }
+    } finally {
       setSubmitting(false);
     }
   }
@@ -192,7 +195,9 @@ export default function BookScreen() {
               onPress={handleDecrement}
               disabled={submitting || quantity <= 1}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
               accessibilityLabel="Reducir cantidad"
+              accessibilityState={{ disabled: submitting || quantity <= 1 }}
             >
               <ThemedText
                 style={[
@@ -214,13 +219,16 @@ export default function BookScreen() {
               selectTextOnFocus
               textAlign="center"
               accessibilityLabel={BOOKING.TICKETS_LABEL}
+              accessibilityState={{ disabled: submitting }}
             />
             <TouchableOpacity
               style={[styles.stepperBtn, submitting && styles.stepperBtnDisabled]}
               onPress={handleIncrement}
               disabled={submitting || quantity >= remainingCapacity}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
               accessibilityLabel="Aumentar cantidad"
+              accessibilityState={{ disabled: submitting || quantity >= remainingCapacity }}
             >
               <ThemedText
                 style={[

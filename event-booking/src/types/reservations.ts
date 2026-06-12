@@ -1,4 +1,4 @@
-export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+export type ReservationStatus = 'CONFIRMED' | 'CANCELLED';
 
 export interface ReservationUserContext {
   user_id: string;
