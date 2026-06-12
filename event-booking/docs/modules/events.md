@@ -8,7 +8,7 @@
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
 - **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría, Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.3.0`
+- **Version**: `1.3.1`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-12`
 
@@ -661,11 +661,18 @@ npx jest --watch tests/Feature/events/
 
 - Infinite scroll `onEndReachedThreshold={0.3}` may fire earlier than expected on very short lists. A minimum page size check could be added in a future iteration.
 - Capacity tracker updates only on mount and on screen focus (after booking return). A future iteration could add polling or WebSocket updates for live seat counts.
-- Search feature tests are pending (see changelog v1.3.0).
 
 ---
 
 ## Changelog
+
+### v1.3.1 — 2026-06-12 (QA review fixes)
+
+- **Hardcoded string fix**: replaced `"Explora los eventos disponibles"` literal in feed `ListHeader` with `CUSTOMER.EVENTS_SUBTITLE` constant. Updated `RenderFeedFeatureTest` assertion accordingly.
+- **Search feature tests**: added `SearchFeatureTest.tsx` with 10 tests covering render, category filter, empty states, error handling + retry, and result navigation to detail.
+- **`formatDateParam` extraction**: moved from inline definition in `search.tsx` to `src/utils/dateHelpers.ts` alongside `formatEventDate`. Imported in `search.tsx`.
+- **Date modal cancel**: added `onCancel` and `cancelLabel` optional props to `BottomModal`. Search date modal now shows a "Cancelar" button and tapping the overlay dismisses without confirming a date.
+- **Accent-insensitive search (backend)**: installed PostgreSQL `unaccent` extension via Alembic migration. Updated `event_repository.py` `get_all_filtered` and `count_filtered` queries to wrap `title` and `description` columns in `func.unaccent()` so that searching "clasica" matches "Música clásica".
 
 ### v1.3.0 — 2026-06-12 (search implementation + QA refactor)
 
@@ -679,7 +686,6 @@ npx jest --watch tests/Feature/events/
 - **Icon mapping**: added `magnifyingglass → search` MaterialIcons fallback for Android/web.
 - **Constants**: added `SEARCH_*` entries to `EVENTS` in `src/constants/ui.ts`.
 - **Test update**: `EmptyStateFeatureTest` aligned to use `EVENTS` constants.
-- **Search feature tests pending** (to be added in a follow-up).
 
 ### v1.2.2 — 2026-06-11 (EBM-13 booking integration)
 - Updated `handleBook` in `[id].tsx`: now navigates to `events/book` with `event_id` param instead of the placeholder `/(customer)/reservations` stub
