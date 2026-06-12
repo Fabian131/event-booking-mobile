@@ -30,6 +30,7 @@ export const AUTH = {
   LOGOUT_LABEL: 'Cerrar sesión',
   SESSION_RESTORE: 'Restaurando sesión...',
   REGISTERED_SUCCESS: 'Cuenta creada exitosamente. Ahora puedes iniciar sesión.',
+  LOGOUT_SUCCESS: 'Sesión cerrada correctamente.',
 } as const;
 
 export const CATEGORY: {
@@ -114,6 +115,9 @@ export const EVENTS = {
   LOGIN_MODAL_BODY: 'Necesitas una cuenta para reservar este evento.',
   LOGIN_MODAL_BUTTON: 'Iniciar sesión',
   LOGIN_MODAL_CANCEL: 'Cancelar',
+  CAPACITY_FULL: 'Lleno',
+  CAPACITY_SLOT: 'cupo',
+  CAPACITY_SLOTS: 'cupos',
 } as const;
 
 export const VALIDATION = {
@@ -165,6 +169,8 @@ export const ERRORS = {
   EVENTS_LOAD_ERROR: 'Error al cargar los eventos',
   EVENT_LOAD_ERROR: 'Error al cargar el evento',
   EVENT_UPDATE_ERROR: 'Error al actualizar el evento',
+  CALENDAR_LOAD_ERROR: 'No se pudo cargar el calendario.',
+  CALENDAR_EVENTS_ERROR: 'No se pudieron cargar los eventos del día.',
 } as const;
 
 export const ADMIN = {
@@ -176,6 +182,16 @@ export const ADMIN = {
   EDIT_EVENT_ACCESSIBILITY: 'Seleccionar evento para editar',
   EDIT_EVENT_MODAL_TITLE: 'Eventos disponibles',
   EDIT_EVENT_LOADING: 'Cargando eventos...',
+  CALENDAR_EMPTY_TITLE: 'Selecciona un día',
+  CALENDAR_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver sus eventos',
+  CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
+  CALENDAR_NO_EVENTS_SUBTITLE: 'No hay eventos programados para este día',
+  CALENDAR_LOADING_EVENTS: 'Cargando eventos...',
+  CALENDAR_LOADING: 'Cargando...',
+  CALENDAR_EVENTS_FOR_DAY: 'Eventos del',
+  CALENDAR_EVENTS_TITLE: 'Eventos del día',
+  CREATE_EVENT_FAB_LABEL: 'Crear evento',
+  HEADER_TITLE: 'Event Booking',
 } as const;
 
 export const CUSTOMER = {
