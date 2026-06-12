@@ -176,6 +176,13 @@ export const ADMIN = {
   EDIT_EVENT_ACCESSIBILITY: 'Seleccionar evento para editar',
   EDIT_EVENT_MODAL_TITLE: 'Eventos disponibles',
   EDIT_EVENT_LOADING: 'Cargando eventos...',
+  DETAIL_EDIT_BUTTON: 'Editar',
+  DETAIL_RESERVATIONS_BUTTON: 'Ver Reservaciones',
+  DETAIL_MAX_CAPACITY_LABEL: 'Capacidad máxima',
+  DETAIL_AVAILABLE_LABEL: 'Cupos disponibles',
+  DETAIL_STATUS_LABEL: 'Estado',
+  DETAIL_STATUS_ACTIVE: 'Activo',
+  DETAIL_STATUS_INACTIVE: 'Inactivo',
 } as const;
 
 export const CUSTOMER = {
