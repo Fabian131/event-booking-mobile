@@ -75,8 +75,7 @@ export default function EventDetailScreen() {
       setModalVisible(true);
       return;
     }
-    // TODO: replace with reservation form route once implemented
-    router.push('/(customer)/reservations');
+    router.push({ pathname: '/(customer)/events/book', params: { event_id: event.id } });
   }
 
   const categoryColor = CATEGORY.COLORS[event.category];

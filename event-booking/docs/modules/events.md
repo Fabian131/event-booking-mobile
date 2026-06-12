@@ -6,11 +6,11 @@
 
 - **Module Code**: `EBM-10` (feed) · `EBM-12` (detail)
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
-- **Responsible**: Justin Moreira Matarrita
+- **Responsible**: Justin Moreira Matarrita, Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.2.1`
+- **Version**: `1.3.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-09`
+- **Last Updated**: `2026-06-11`
 
 ---
 
@@ -20,7 +20,7 @@ Customer-facing events module composed of two screens:
 
 **Feed screen** (`events/index.tsx`) — displays upcoming activities in a large stacked-card format. Implements the `list-events.yaml` contract using offset-based pagination (`page` / `limit`). On mount, the screen fetches the first page; as the user scrolls near the bottom, subsequent pages are appended seamlessly. Supports pull-to-refresh, skeleton loading placeholders, an empty state, and an inline error banner with a retry button.
 
-**Detail screen** (`events/[id].tsx`) — displays the full contextual information of a single event: image, title, long description, date, start/end hours, category badge, and a live capacity tracker. Bound to the `GET /api/v1/events/{event_id}` endpoint via the `useEventDetail` hook. Includes an **authentication guard** on the "Reservar" button: unauthenticated users see a non-intrusive modal prompting them to log in; authenticated users are navigated to the reservation flow.
+**Detail screen** (`events/[id].tsx`) — displays the full contextual information of a single event: image, title, long description, date, start/end hours, category badge, and a live capacity tracker. Bound to the `GET /api/v1/events/{event_id}` endpoint via the `useEventDetail` hook. Includes an **authentication guard** on the "Reservar" button: unauthenticated users see a non-intrusive modal prompting them to log in; authenticated users are navigated to the booking form (`events/book`).
 
 The data layer (types, service, hooks) is isolated from the screens so that components can be extended independently.
 
@@ -143,6 +143,7 @@ src/
 │   ├── useEvents.ts                       # Pagination hook: events[], loading, refreshing,
 │   │                                      #   error, hasNextPage, loadMore(), refresh()
 │   └── useEventDetail.ts                  # Detail hook: event, loading, error
+│                                          #   Uses useFocusEffect to re-fetch on screen focus
 ├── components/
 │   ├── ui/
 │   │   ├── EmptyState.tsx                 # Reusable empty list state (icon, title, subtitle)
@@ -166,7 +167,7 @@ app/
 └── (customer)/
     ├── _layout.tsx                        # Tabs layout: eventos + reservations
     └── events/
-        ├── _layout.tsx                    # Stack layout: native back button, LogoutButton in headerRight
+        ├── _layout.tsx                    # Stack layout: index, [id], book
         ├── index.tsx                      # CustomerEventsScreen — FlatList feed
         └── [id].tsx                       # EventDetailScreen — full event view + AuthGuardModal
 tests/
@@ -220,7 +221,7 @@ router.push('/(customer)/events/[id]', { id })
 App mounts EventDetailScreen (id from useLocalSearchParams)
     │
     ▼
-useEventDetail(id) — useEffect calls load()
+useEventDetail(id) — useFocusEffect calls load()
     │
     ├── setLoading(true)
     │
@@ -244,7 +245,15 @@ User taps "Reservar"
     ├── isAuthenticated = false → setModalVisible(true)
     │       └── Modal: "Iniciar sesión" → router.push('/(auth)/login')
     │
-    └── isAuthenticated = true  → router.push('/(customer)/reservations')
+    └── isAuthenticated = true  → router.push({
+            pathname: '/(customer)/events/book',
+            params: { event_id }
+        })
+    │       └── BookScreen (see reservations.md)
+    │
+    ▼
+When returning from booking (router.back()),
+useFocusEffect retriggers getById → updated capacity displayed
 ```
 
 ---
@@ -257,7 +266,7 @@ User taps "Reservar"
 
 | State        | Type             | Description                                          |
 |--------------|------------------|------------------------------------------------------|
-| `events`     | `Event[]` | Accumulated list of all loaded pages                 |
+| `events`     | `Event[]`        | Accumulated list of all loaded pages                 |
 | `loading`    | `boolean`        | True during any active fetch (initial or paginated)  |
 | `refreshing` | `boolean`        | True during pull-to-refresh                          |
 | `error`      | `string \| null` | Error message shown in the inline error banner       |
@@ -274,7 +283,7 @@ User taps "Reservar"
 
 | State          | Type                | Description                                    |
 |----------------|---------------------|------------------------------------------------|
-| `event`        | `Event\|null`| Loaded event data                              |
+| `event`        | `Event\|null`       | Loaded event data                              |
 | `loading`      | `boolean`           | True while fetching from API                   |
 | `error`        | `string\|null`      | Error message on failed fetch                  |
 | `modalVisible` | `boolean`           | Controls auth guard modal visibility           |
@@ -305,7 +314,7 @@ User taps "Reservar"
 | Method                        | Endpoint                        | Returns              | Description                 |
 |-------------------------------|---------------------------------|----------------------|-----------------------------|
 | `eventsService.list(params)`  | `GET /api/v1/events?...`        | `EventsListResponse` | Paginated list of events    |
-| `eventsService.getById(id)`   | `GET /api/v1/events/{id}`       | `Event`       | Single event by ID          |
+| `eventsService.getById(id)`   | `GET /api/v1/events/{id}`       | `Event`              | Single event by ID          |
 
 ### Hooks
 
@@ -313,7 +322,7 @@ User taps "Reservar"
 
 | Field         | Type             | Description                                    |
 |---------------|------------------|------------------------------------------------|
-| `events`      | `Event[]` | Accumulated results across all loaded pages    |
+| `events`      | `Event[]`        | Accumulated results across all loaded pages    |
 | `loading`     | `boolean`        | Active during initial load and paginated loads |
 | `refreshing`  | `boolean`        | Active during pull-to-refresh                  |
 | `error`       | `string \| null` | Last error message, reset on successful fetch  |
@@ -324,11 +333,11 @@ User taps "Reservar"
 
 | Field     | Type                 | Description                          |
 |-----------|----------------------|--------------------------------------|
-| `event`   | `Event\|null` | Fetched event, null until resolved   |
+| `event`   | `Event\|null`        | Fetched event, null until resolved   |
 | `loading` | `boolean`            | True while request is in flight      |
 | `error`   | `string\|null`       | Error message on failed fetch        |
 
-Accepts `id: string`. Calls `eventsService.getById(id)` on mount. Includes mounted-flag guard to prevent state updates after unmount.
+Accepts `id: string`. Uses `useFocusEffect` (from `@react-navigation/native`) instead of `useEffect` so the event data is re-fetched every time the screen gains focus — this ensures the capacity display updates automatically after returning from a successful booking. Includes mounted-flag guard to prevent state updates after cleanup.
 
 ### Types
 
@@ -337,7 +346,7 @@ Accepts `id: string`. Calls `eventsService.getById(id)` on mount. Includes mount
 | Type                 | Description                                                                                                                      |
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | `EventCategory`      | `'sports' \| 'music' \| 'culture' \| 'gastronomy' \| 'wellness' \| 'education' \| 'other'`                                      |
-| `Event`       | Full event shape: id, title, description, image_url, max_capacity, remaining_capacity, category, date, start_time, end_time, is_active, timestamps |
+| `Event`              | Full event shape: id, title, description, image_url, max_capacity, remaining_capacity, category, date, start_time, end_time, is_active, timestamps |
 | `PaginationMeta`     | `{ page, limit, total, total_pages, has_next_page }`                                                                             |
 | `EventsListResponse` | `{ data: Event[], pagination: PaginationMeta }`                                                                           |
 | `EventsListParams`   | `{ page?, limit?, search?, category?, is_active?, date? }`                                                                       |
@@ -404,12 +413,13 @@ EventDetailScreen
 
 ### Visual States — Detail
 
-| State               | What the user sees                                                      |
-|---------------------|-------------------------------------------------------------------------|
-| **Loading**         | Full-screen `Loader` with "Cargando evento..."                          |
-| **Data loaded**     | Image, title, category badge, info rows, description, Reservar button  |
-| **Error**           | `EmptyState` with ⚠️ icon and error message                             |
-| **Guest taps Reservar** | Fade-in modal: "Inicia sesión para continuar" + login button       |
+| State                    | What the user sees                                                      |
+|--------------------------|-------------------------------------------------------------------------|
+| **Loading**              | Full-screen `Loader` with "Cargando evento..."                          |
+| **Data loaded**          | Image, title, category badge, info rows, description, Reservar button  |
+| **Error**                | `EmptyState` with ⚠️ icon and error message                             |
+| **Guest taps Reservar**  | Fade-in modal: "Inicia sesión para continuar" + login button           |
+| **Return from booking**  | `useFocusEffect` re-fetches event → updated capacity shown             |
 
 ---
 
@@ -426,11 +436,11 @@ EventDetailScreen
 
 ### Detail
 
-| Error         | Trigger                    | UI Feedback                                                      |
-|---------------|----------------------------|------------------------------------------------------------------|
-| Network error | `fetch` throws `TypeError` | `EmptyState` with "Error al cargar el evento"                    |
-| Server error  | `ApiError` thrown          | `EmptyState` with `ApiError.message`                             |
-| Guest booking | `isAuthenticated === false` | Modal with login prompt (no navigation occurs)                  |
+| Error         | Trigger                     | UI Feedback                                                      |
+|---------------|-----------------------------|------------------------------------------------------------------|
+| Network error | `fetch` throws `TypeError`  | `EmptyState` with "Error al cargar el evento"                    |
+| Server error  | `ApiError` thrown           | `EmptyState` with `ApiError.message`                             |
+| Guest booking | `isAuthenticated === false` | Modal with login prompt (no navigation occurs)                   |
 
 ---
 
@@ -441,7 +451,7 @@ EventDetailScreen
 ```
 tests/
 └── Feature/
-    └── events/          # 7 files — screen integration tests
+    └── events/          # 8 files — screen integration tests
 ```
 
 ### Naming Convention
@@ -462,12 +472,14 @@ tests/
 | `ServerErrorFeatureTest.tsx`             | `ApiError` 500/503 → error banner; no cards rendered                    | 1     |
 | `PaginationFeatureTest.tsx`              | Page append on scroll; dedup guard; `has_next_page: false` stops fetch  | 3     |
 | `EventDetailFeatureTest.tsx`             | Renders title, description, category, info labels, capacity, Reservar button, error state, absent description | 8 |
-| `AuthGuardFeatureTest.tsx`               | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to reservations; no modal for authenticated | 6 |
+| `AuthGuardFeatureTest.tsx`               | Guest sees modal; no navigation on guest tap; modal routes to login; cancel closes modal; authenticated navigates to book screen; no modal for authenticated | 6 |
 | `EventDetailNetworkErrorFeatureTest.tsx` | `TypeError` on `getById` → `EmptyState` with `ERRORS.NETWORK` message   | 1     |
 
 **Total:** 8 Feature files — 27 tests passing
 
-**Mocks used:**
+Note: The booking form is tested independently in `BookingFormFeatureTest.tsx` (12 tests), documented in `reservations.md`.
+
+### Mocks used
 
 | Mock | Reason |
 |------|--------|
@@ -476,6 +488,7 @@ tests/
 | `expo-secure-store` | Imported transitively by `api.ts` via `storage.ts` |
 | `expo-router` | `useLocalSearchParams` and `useRouter` not available outside Expo context |
 | `@/src/context/AuthContext` | Control `isAuthenticated` state per test case |
+| `@react-navigation/native` | `useFocusEffect` requires navigation context; mocked to behave as `useEffect` |
 
 ### Running Tests
 
@@ -503,21 +516,28 @@ npx jest --watch tests/Feature/events/
 - **Concurrent-fetch guard via `useRef`**: `FlatList.onEndReached` can fire multiple times before the first page resolves. A `useRef<boolean>` flag prevents duplicate requests without triggering re-renders.
 - **Skeleton via `ListEmptyComponent`**: 5 `EventCardSkeleton` items render in place through `ListEmptyComponent`, providing immediate visual feedback at the same dimensions as real cards.
 - **Category badge as absolute overlay**: Placing the badge with `position: absolute` on the image preserves the card's content area for title and description.
-- **`useEventDetail` mounted-flag guard**: Prevents `setState` calls after the component unmounts when the user navigates away before the request completes.
+- **`useEventDetail` uses `useFocusEffect`**: Replaced `useEffect` with `useFocusEffect` (from `@react-navigation/native`) so the event data is re-fetched every time the screen gains focus. This ensures the capacity display updates automatically after returning from a successful booking, without needing explicit refresh logic in the screens.
 - **Auth guard via modal, not redirect**: Blocking the booking action with a non-intrusive modal (rather than a full redirect) lets the guest stay on the event detail page and choose to log in or stay browsing.
-- **Static capacity display**: Capacity is fetched once on mount and shown as the remaining seat count only. The `remaining / max (Z%)` format was removed per QA (EBM-12) — only the remaining count is needed. Real-time polling is out of scope.
+- **Static capacity display**: Capacity is fetched on mount (or on screen focus) and shown as the remaining seat count only. The `remaining / max (Z%)` format was removed per QA (EBM-12) — only the remaining count is needed. Real-time polling is out of scope.
 - **No auth required on GET**: `GET /api/v1/events` and `GET /api/v1/events/{id}` are public endpoints. The `api.get` wrapper attaches the Bearer token only when available.
 
 ### Known Limitations
 
 - Infinite scroll `onEndReachedThreshold={0.3}` may fire earlier than expected on very short lists. A minimum page size check could be added in a future iteration.
-- Capacity tracker is static (loaded once on mount). A future iteration could add polling or WebSocket updates for live seat counts.
-- The authenticated booking path currently navigates to `/(customer)/reservations` as a placeholder. It must be updated to the Reservation Form route once that screen is implemented.
+- Capacity tracker updates only on mount and on screen focus (after booking return). A future iteration could add polling or WebSocket updates for live seat counts.
 - No search or category filter UI is exposed to the user yet. The service params support them but filter controls are out of scope for EBM-10.
 
 ---
 
 ## Changelog
+
+### v1.3.0 — 2026-06-11 (EBM-13 integration)
+- Updated `handleBook` in `[id].tsx`: now navigates to `events/book` with `event_id` param instead of the placeholder `/(customer)/reservations` stub
+- Registered `book` screen in `events/_layout.tsx` Stack
+- Refactored `useEventDetail`: `useEffect` → `useFocusEffect` from `@react-navigation/native` so the detail screen re-fetches event data on every focus, displaying updated capacity after returning from a booking
+- Updated `AuthGuardFeatureTest`: route assertion changed from `/(customer)/reservations` to navigation object with `pathname: '/(customer)/events/book'`
+- Added `@react-navigation/native` mock to all test files using `useEventDetail`
+- See `reservations.md` for the complete booking form implementation (EBM-13)
 
 ### v1.2.1 — 2026-06-09 (documentation fixes)
 - Corrected the detail contract reference to `get-event-by-id.yaml`.
@@ -575,5 +595,5 @@ npx jest --watch tests/Feature/events/
 
 ---
 
-**Last updated**: `2026-06-09`
-**Documented by**: Justin Moreira Matarrita
+**Last updated**: `2026-06-11`
+**Documented by**: Justin Moreira Matarrita, Luis Alejandro Salazar Vargas
