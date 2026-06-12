@@ -21,6 +21,15 @@ jest.mock('expo-router', () => ({
 jest.mock('@/src/context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (cb: () => (() => void) | void) => {
+    const { useEffect } = require('react');
+    useEffect(() => {
+      const cleanup = cb();
+      return cleanup;
+    }, []);
+  },
+}));
 
 function makeEvent(overrides?: Partial<Event>): Event {
   return {
@@ -143,7 +152,7 @@ describe('auth guard', () => {
 
     fireEvent.press(screen.getByText('Reservar'));
 
-    expect(mockPush).toHaveBeenCalledWith('/(customer)/reservations');
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(customer)/events/book', params: { event_id: '1' } });
   });
 
   it('should not show modal when authenticated user taps Reservar', async () => {

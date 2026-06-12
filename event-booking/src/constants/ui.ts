@@ -197,6 +197,9 @@ export const ADMIN = {
   EDIT_EVENT_ACCESSIBILITY: 'Seleccionar evento para editar',
   EDIT_EVENT_MODAL_TITLE: 'Eventos disponibles',
   EDIT_EVENT_LOADING: 'Cargando eventos...',
+  DETAIL_EDIT_BUTTON: 'Editar',
+  DETAIL_RESERVATIONS_BUTTON: 'Ver Reservaciones',
+  DETAIL_MAX_CAPACITY_LABEL: 'Capacidad máxima',
   CALENDAR_EMPTY_TITLE: 'Selecciona un día',
   CALENDAR_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver sus eventos',
   CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
@@ -207,6 +210,26 @@ export const ADMIN = {
   CALENDAR_EVENTS_TITLE: 'Eventos del día',
   CREATE_EVENT_FAB_LABEL: 'Crear evento',
   HEADER_TITLE: 'Event Booking',
+} as const;
+
+export const BOOKING = {
+  TITLE: 'Reservar entradas',
+  TICKETS_LABEL: 'Cantidad de entradas',
+  SUBMIT_BUTTON: 'Confirmar reserva',
+  SUBMITTING: 'Procesando reserva...',
+  SUCCESS_TITLE: 'Reserva exitosa',
+  SUCCESS_MESSAGE: 'Tu reserva ha sido creada con éxito.',
+  BACK_BUTTON: 'Volver al evento',
+  LOADING: 'Cargando información del evento...',
+  NOTES_LABEL: 'Notas adicionales (opcional)',
+  NOTES_PLACEHOLDER: 'Ej: Necesito acceso para silla de ruedas',
+  SOLD_OUT: 'Agotado',
+  SOLD_OUT_MESSAGE: 'Lo sentimos, ya no hay cupos disponibles para este evento.',
+  DUPLICATE_ERROR: 'Ya tienes una reserva activa para este evento.',
+  CAPACITY_ERROR: 'La cantidad solicitada excede los cupos disponibles.',
+  EVENT_UNAVAILABLE: 'Este evento ya no está disponible para reservar.',
+  VALIDATION_ERROR: 'Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente.',
+  SUCCESS_BANNER: 'Reserva realizada con éxito. Redirigiendo...',
 } as const;
 
 export const CUSTOMER = {

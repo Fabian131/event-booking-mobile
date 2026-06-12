@@ -73,7 +73,12 @@ export default function AdminCalendarScreen() {
     return (
       <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
         {dayEvents.map((event) => (
-          <EventCard key={event.id} event={event} variant="compact" />
+          <EventCard
+              key={event.id}
+              event={event}
+              variant="compact"
+              onPress={() => router.push(`/(admin)/events/${event.id}`)}
+            />
         ))}
       </Animated.View>
     );
