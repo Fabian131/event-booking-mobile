@@ -442,7 +442,6 @@ useFocusEffect → refresh() on every tab focus
 | Constant                        | Value                                              |
 |---------------------------------|----------------------------------------------------|
 | `RESERVATIONS_TITLE`            | 'Mis Reservas'                                     |
-| `RESERVATIONS_SUBTITLE`         | 'Historial y estado de tus reservaciones'           |
 | `RESERVATIONS_EMPTY_TITLE`      | 'Selecciona un día'                                |
 | `RESERVATIONS_EMPTY_SUBTITLE`   | 'Toca un día en el calendario para ver tus reservas'|
 | `RESERVATIONS_NO_RESERVATIONS_TITLE` | 'Sin reservas'                                 |
@@ -452,6 +451,8 @@ useFocusEffect → refresh() on every tab focus
 | `RESERVATIONS_HEADING`          | 'Reservas del día'                                 |
 | `STATUS_CONFIRMED`              | 'Confirmada'                                       |
 | `STATUS_CANCELLED`              | 'Cancelada'                                        |
+| `TICKET_SINGULAR`                | 'entrada'                                          |
+| `TICKET_PLURAL`                  | 'entradas'                                         |
 
 **File:** `src/constants/ui.ts` — `ERRORS` block (calendar additions)
 
@@ -750,6 +751,19 @@ stub that behaves like `useEffect`.
 ---
 
 ## Changelog
+
+### v1.2.1 — 2026-06-12
+- **QA fix**: Moved hardcoded `'entrada'`/`'entradas'` to `CUSTOMER.TICKET_SINGULAR`/`TICKET_PLURAL`
+- **QA fix**: Removed `console.error(e)` from `useCalendarEvents` and `useReservationsCalendar` catch blocks
+- **QA fix**: Added `hideLoadingOverlay` prop to `Calendar` — customer screen no longer shows redundant loading overlay
+- **QA fix**: Changed `formatTime` from English AM/PM to Spanish `a.m.`/`p.m.` for locale consistency
+- **QA fix**: Removed unused `CUSTOMER.RESERVATIONS_SUBTITLE` constant
+- **QA fix**: Updated `useReservations.ts` TODO comment; deleted `ReservationItem.tsx` placeholder
+- **QA fix**: Added 22 tests across 4 new test files (186 total):
+  - `ReservationCardFeatureTest.tsx` — 9 tests (render, CONFIRMED, CANCELLED, notes, singular/plural)
+  - `ReservationsCalendarFeatureTest.tsx` — 5 tests (empty state, loading, error, empty day, reservations list)
+  - `ReservationsCalendarUnitTest.ts` — 6 tests (hook: fetch, sort, errors, month/year clearing)
+  - `ReservationsServiceUnitTest.ts` — 2 tests (getCalendarDates URL, list URL)
 
 ### v1.2.0 — 2026-06-12
 - **New feature**: Reservations calendar (EBM-14) in the "Reservas" tab
