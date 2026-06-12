@@ -188,7 +188,10 @@ export const ADMIN = {
   CALENDAR_NO_EVENTS_SUBTITLE: 'No hay eventos programados para este día',
   CALENDAR_LOADING_EVENTS: 'Cargando eventos...',
   CALENDAR_LOADING: 'Cargando...',
+  CALENDAR_EVENTS_FOR_DAY: 'Eventos del',
+  CALENDAR_EVENTS_TITLE: 'Eventos del día',
   CREATE_EVENT_FAB_LABEL: 'Crear evento',
+  HEADER_TITLE: 'Event Booking',
 } as const;
 
 export const CUSTOMER = {

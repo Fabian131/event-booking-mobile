@@ -34,17 +34,16 @@ export default function AdminCalendarScreen() {
   } = useCalendarEvents();
 
   // Animation for the event list on date change
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(16)).current;
 
   const handleDatePress = (date: string) => {
-    fadeAnim.setValue(0);
     slideAnim.setValue(16);
     selectDate(date);
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-    ]).start();
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const renderEventList = () => {
@@ -65,7 +64,7 @@ export default function AdminCalendarScreen() {
       return <EmptyState title={ADMIN.CALENDAR_NO_EVENTS_TITLE} subtitle={ADMIN.CALENDAR_NO_EVENTS_SUBTITLE} />;
     }
     return (
-      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
         {dayEvents.map((event) => (
           <EventCard key={event.id} event={event} variant="compact" />
         ))}
@@ -94,7 +93,7 @@ export default function AdminCalendarScreen() {
 
         <View style={styles.eventsSection}>
           <ThemedText style={styles.sectionTitle}>
-            {selectedDate ? `Eventos del ${selectedDate}` : 'Eventos del día'}
+            {selectedDate ? `${ADMIN.CALENDAR_EVENTS_FOR_DAY} ${selectedDate}` : ADMIN.CALENDAR_EVENTS_TITLE}
           </ThemedText>
           {renderEventList()}
           <View style={styles.bottomSection} />
@@ -106,7 +105,7 @@ export default function AdminCalendarScreen() {
         style={styles.fab}
         onPress={() => router.push('/(admin)/create-event')}
         accessibilityRole="button"
-        accessibilityLabel="Crear evento"
+        accessibilityLabel={ADMIN.CREATE_EVENT_FAB_LABEL}
       >
         <ThemedText style={styles.fabText}>+</ThemedText>
       </Pressable>

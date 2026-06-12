@@ -72,4 +72,3 @@ export interface DayCell {
   isSelected: boolean;
   eventCount: number;
 }
-

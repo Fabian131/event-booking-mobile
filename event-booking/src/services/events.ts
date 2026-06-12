@@ -41,4 +41,3 @@ export const eventsService = {
     return api.get<EventsListResponse>(`/api/v1/events?date=${date}&limit=50`);
   },
 };
-

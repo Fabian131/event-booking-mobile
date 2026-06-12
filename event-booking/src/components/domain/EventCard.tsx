@@ -38,7 +38,7 @@ export function EventCard({ event, onPress, variant = 'default' }: EventCardProp
           </View>
         </View>
       )}
-      
+
       <View style={[styles.body, isCompact && styles.bodyCompact]}>
         <View style={styles.titleRow}>
           <ThemedText type="defaultSemiBold" style={styles.title} numberOfLines={isCompact ? 1 : 2}>
