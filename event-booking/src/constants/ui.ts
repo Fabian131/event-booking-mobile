@@ -185,7 +185,6 @@ export const ADMIN = {
   DETAIL_EDIT_BUTTON: 'Editar',
   DETAIL_RESERVATIONS_BUTTON: 'Ver Reservaciones',
   DETAIL_MAX_CAPACITY_LABEL: 'Capacidad máxima',
-  DETAIL_AVAILABLE_LABEL: 'Cupos disponibles',
   CALENDAR_EMPTY_TITLE: 'Selecciona un día',
   CALENDAR_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver sus eventos',
   CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
