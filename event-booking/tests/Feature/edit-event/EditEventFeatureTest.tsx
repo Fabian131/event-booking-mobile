@@ -16,6 +16,15 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
 }));
 jest.mock('@react-native-community/datetimepicker', () => 'DateTimePicker');
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (cb: () => (() => void) | void) => {
+    const { useEffect } = require('react');
+    useEffect(() => {
+      const cleanup = cb();
+      return cleanup;
+    }, []);
+  },
+}));
 
 jest.mock('@/src/utils/validators', () => {
   const original = jest.requireActual('@/src/utils/validators');

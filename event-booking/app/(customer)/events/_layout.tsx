@@ -10,6 +10,7 @@ export default function EventosStackLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerTitle: 'Eventos' }} />
+      <Stack.Screen name="book" options={{ headerTitle: 'Reservar' }} />
     </Stack>
   );
 }
