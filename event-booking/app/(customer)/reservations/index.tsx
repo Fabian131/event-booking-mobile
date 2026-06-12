@@ -6,12 +6,9 @@ import {
   View,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { useTheme } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
-import { LogoutButton } from '@/src/components/ui/LogoutButton';
 import { Calendar } from '@/src/components/domain/Calendar';
 import { ReservationCard } from '@/src/components/domain/ReservationCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
@@ -20,9 +17,6 @@ import { useReservationsCalendar } from '@/src/hooks/useReservationsCalendar';
 import { CUSTOMER } from '@/src/constants/ui';
 
 export default function CustomerReservationsScreen() {
-  const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
-
   const {
     calendarDates,
     dayReservations,
@@ -94,16 +88,6 @@ export default function CustomerReservationsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerText}>
-            <ThemedText type="title">{CUSTOMER.RESERVATIONS_TITLE}</ThemedText>
-            <ThemedText>{CUSTOMER.RESERVATIONS_SUBTITLE}</ThemedText>
-          </View>
-          <LogoutButton color={colors.primary} />
-        </View>
-      </ThemedView>
-
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -141,19 +125,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 100,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingBottom: 8,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerText: {
-    flex: 1,
-    gap: 4,
   },
   calendarSection: {
     backgroundColor: '#fff',

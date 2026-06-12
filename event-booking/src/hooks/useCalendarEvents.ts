@@ -35,8 +35,7 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
       const response = await eventsService.getCalendarDates(year, month);
       setCalendarDates(response.data);
       setError(null);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setError(ERRORS.CALENDAR_LOAD_ERROR);
     } finally {
       setCalendarLoading(false);
@@ -52,8 +51,7 @@ export function useCalendarEvents(): UseCalendarEventsReturn {
       );
       setDayEvents(chronologicalEvents);
       setError(null);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setError(ERRORS.CALENDAR_EVENTS_ERROR);
     } finally {
       setEventsLoading(false);

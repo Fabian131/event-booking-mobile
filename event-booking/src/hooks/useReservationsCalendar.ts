@@ -36,8 +36,7 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
       const response = await reservationsService.getCalendarDates(year, month);
       setCalendarDates(response.data);
       setError(null);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setError(ERRORS.CALENDAR_LOAD_ERROR);
     } finally {
       setCalendarLoading(false);
@@ -53,8 +52,7 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
       );
       setDayReservations(chronological);
       setError(null);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setError(ERRORS.CALENDAR_RESERVATIONS_ERROR);
     } finally {
       setReservationsLoading(false);
