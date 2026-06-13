@@ -6,11 +6,11 @@
 
 ## General Information
 
-- **Module Code**: `EBM-02`
+- **Module Code**: `EBM-02` (dashboard) · `EBM-07` (admin search)
 - **API Contract**: `api-contracts/calendar-events.yaml`, `api-contracts/list-events.yaml`
-- **Responsible**: `Fabian Sanchez Salinas`
+- **Responsible**: `Fabian Sanchez Salinas`, Abigail Ramírez Chavarría
 - **Status**: Completed
-- **Version**: `1.1.1`
+- **Version**: `1.2.0`
 - **Created**: `2026-06-01`
 - **Last Updated**: `2026-06-12`
 
@@ -20,6 +20,8 @@
 
 Primary dashboard for administrators (business roles) located in `app/(admin)`.
 It allows users to visualize the venue's schedule through an interactive monthly calendar and a filtered list of events by day in a compact format. It includes month navigation with arrows, a native month/year selector provided by `react-native-ui-datepicker`, dots indicating days with events, compact event cards for quick scanning, and a FAB (+) to create new events.
+
+The header includes a **magnifying glass icon** that opens a dedicated **advanced search screen** (`app/(admin)/search.tsx`) — replicating the customer search pattern. Admins can find events by keyword, single category, or date across the entire catalog, with debounced queries, and tapping a result card navigates to the admin event detail screen.
 
 ---
 
@@ -91,23 +93,33 @@ event-booking/
 │   │   └── useCalendarEvents.ts         # calendarLoading, eventsLoading, selectDate
 │   ├── components/
 │   │   ├── ui/
-│   │   │   └── EmptyState.tsx           # EmptyState + LoadingState
+│   │   │   ├── BottomModal.tsx            # Date picker modal with cancel support
+│   │   │   ├── EmptyState.tsx             # EmptyState
+│   │   │   ├── ErrorBanner.tsx            # Reusable error banner with retry
+│   │   │   ├── JSDatePicker.tsx           # Pure-JS date spinner
+│   │   │   ├── ListFooterLoader.tsx       # Reusable pagination loader
+│   │   │   ├── SearchHeaderButton.tsx     # Magnifying glass header action
+│   │   │   └── SkeletonList.tsx           # Reusable skeleton card list
 │   │   └── domain/
-│   │       ├── Calendar.tsx             # Calendar component (DateTimePicker wrapper)
-│   │       └── EventCard.tsx            # Event card (supports "default" and "compact" variants)
-│   └── config/
-│       └── api.ts                       # API base URL
+│   │       ├── Calendar.tsx               # Calendar component
+│   │       └── EventCard.tsx              # Event card (supports "default" and "compact" variants)
+│   └── hooks/
+│       ├── useCalendarEvents.ts           # Calendar + day events loading
+│       └── useEvents.ts                   # Filtered pagination with stale-request guard
 ├── app/
 │   ├── (admin)/
-│   │   ├── index.tsx                    # Dashboard screen (calendar + list + FAB)
-│   │   ├── create-event.tsx             # Create event route
-│   │   └── _layout.tsx                  # Auth guard (business role)
+│   │   ├── index.tsx                      # Dashboard screen (calendar + list + FAB)
+│   │   ├── search.tsx                     # Admin search screen (keyword + category + date)
+│   │   ├── create-event.tsx               # Create event route
+│   │   └── _layout.tsx                    # Auth guard (business role) + header actions
 ├── tests/
 │   ├── Unit/dashboard/
 │   │   └── DateHelpersUnitTest.ts       # tests for date utilities
 │   ├── Feature/dashboard/
 │   │   ├── CalendarFeatureTest.tsx      # tests for Calendar component
 │   │   └── EventCardFeatureTest.tsx     # tests for EventCard component
+│   ├── Feature/events/
+│   │   └── AdminSearchFeatureTest.tsx   # tests for admin search screen
 │   └── Browser/dashboard/
 │       └── DashboardFlowBrowserTest.tsx # tests for dashboard flow
 └── docs/modules/
@@ -147,6 +159,42 @@ Admin Dashboard Screen (app/(admin)/index.tsx)
     │       └──► EventCard[] (variant="compact")
     │
     └──► FAB (+) → router.push('/(admin)/create-event')
+    │
+    └──► Search button (header) → router.push('/(admin)/search')
+
+### Data Flow — Search
+
+```
+Admin taps magnifying glass in dashboard header
+    │
+    ▼
+AdminSearchScreen mounts → useEvents({}) loads all events
+    │
+    ▼
+Admin types keyword / selects category / picks date
+    │
+    ▼
+useEffect 300 ms debounce → setDebouncedFilters({ search, category, date })
+    │
+    ▼
+useEvents receives new filters → clears list, resets pagination, loads page 1
+    │
+    ▼
+eventsService.list({ page: 1, limit: 20, search, category, date })
+    │
+    ▼
+api.get('/api/v1/events?page=1&limit=20&search=...&category=...&date=...')
+    │
+    ▼
+┌──────────────────────────────────────────────────────┐
+│ 200 OK     → setEvents(data), setHasNextPage(...)    │
+│ 500 Error  → setError(ApiError.message)              │
+│ Network    → setError('Error al cargar los eventos') │
+└──────────────────────────────────────────────────────┘
+    │
+    ▼
+Admin taps EventCard → router.push('/(admin)/events/:id')
+```
 
 ┌────────────────────────────────────────────────────────┐
 │ Loading → Loader message                               │
@@ -219,6 +267,20 @@ Centralizes the event loading logic for the calendar and the selected day's even
 | **Selected**       | Solid blue background on the selected day                         |
 | **Outside month**  | Adjacent month days with 0.3 opacity                              |
 
+### Search Visual States
+
+| State                   | What the user sees                                                    |
+|-------------------------|-----------------------------------------------------------------------|
+| **Initial (no filters)**| All events loaded, "Todas" chip highlighted, date shows "Cualquier fecha" |
+| **Typing**              | Input updates instantly; API call after 300 ms pause                  |
+| **Category selected**   | Chip highlights, "Todas" deselects, results filter                    |
+| **Date selected**       | Button shows formatted date, clear button appears                     |
+| **Loading**             | 4 skeleton cards with animated pulse                                  |
+| **Paginating**          | Existing cards + `ListFooterLoader` spinner                           |
+| **No events (no filters)**| `FEED_EMPTY_TITLE` / `FEED_EMPTY_SUBTITLE`                          |
+| **No matches (filters)**| "Sin coincidencias" / "Intenta cambiar el texto, fecha o categoría." |
+| **Error**               | `ErrorBanner` with message + "Reintentar"                             |
+
 ---
 
 ## Technical Notes
@@ -231,15 +293,33 @@ Centralizes the event loading logic for the calendar and the selected day's even
 - **Auto-Refresh**: The dashboard uses `useFocusEffect` (from `expo-router`) mapped to the hook's `refresh` function. This ensures that when an admin returns from the `create-event` route, the calendar dots and selected day's events are automatically re-fetched.
 - **Separated loading states**: `calendarLoading` and `eventsLoading` are independent to avoid blocking the calendar while a single day's events are fetched.
 - **In-memory storage fallback**: `storage.ts` supports Web environments via an automatic fallback to `localStorage`, fixing crashes caused by the absence of `ExpoSecureStore` native modules in browsers.
+- **Admin search reuses customer components**: The admin search screen (`app/(admin)/search.tsx`) shares the same UI components, hooks, and filter logic as the customer search screen. Only the navigation target differs (`/(admin)/events/[id]` vs `/(customer)/events/[id]`). All shared components — `ErrorBanner`, `SkeletonList`, `ListFooterLoader`, `BottomModal` with cancel — are reused without modification.
+- **Debounced search (300 ms)**: Text, category, and date filter changes are batched into a single debounced state update before calling `eventsService.list`, avoiding API flood on every keystroke.
+- **Stale-request guard**: The `useEvents` hook uses a monotonic `requestId` counter to discard responses from outdated filter combinations.
 
 ### Known Limitations
 
 - **Dots only in current month**: Dots only appear in the currently loaded month. Adjacent months require scrolling/navigation to fetch their data.
 - **Events crossing midnight**: The `ck_events_time_range` constraint (`end_time > start_time`) does not allow events to cross 00:00.
+- **Month navigation dots bug**: `react-native-ui-datepicker` v3.3.0 uses 0-indexed months internally while the app hook uses 1-indexed months. The library's `useEffect` calls back with 0-indexed values, causing an off-by-one loop that reverts the displayed month and prevents dots and events from loading after navigating to a different month. A library upgrade or custom header replacement is needed to resolve this.
 
 ---
 
 ## Changelog
+
+### v1.2.1 — 2026-06-12 (admin search QA fixes)
+
+- Expanded `AdminSearchFeatureTest` from 6 to 12 tests: text search, date filter, loading skeleton, server error, network error, and pagination.
+- Added `variant` prop to `EventCardSkeleton`/`SkeletonList` so admin search loading state matches compact card layout.
+- Added `accessibilityLabel` to filter chips and date buttons.
+- Replaced string interpolation with typed route params for admin search navigation.
+
+### v1.2.0 — 2026-06-12 (admin search)
+- Added `SearchHeaderButton` to the admin header, next to `LogoutButton`.
+- Registered `search` route in admin Stack layout.
+- Created `app/(admin)/search.tsx` — advanced search screen with keyword, category, and date filters, reusing shared components and the `useEvents` hook.
+- Added `AdminSearchFeatureTest.tsx` with 12 tests covering render, text search, date filter, category filter, loading skeleton, error handling, pagination, empty states, and navigation.
+- See `docs/modules/events.md` for the shared search architecture (v1.3.0).
 
 ### v1.1.1 — 2026-06-12
 - Added `refresh` function to `useCalendarEvents`.
