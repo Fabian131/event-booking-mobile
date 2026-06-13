@@ -72,13 +72,12 @@ export default function AdminSearchScreen() {
     ({ item }: { item: Event }) => (
       <EventCard
         event={item}
+        variant="compact"
         onPress={() => router.push(`/(admin)/events/${item.id}`)}
       />
     ),
     [router],
   );
-
-  const Separator = useCallback(() => <View style={styles.separator} />, []);
 
   const hasActiveFilters = !!(query.trim() || selectedCategory || selectedDate);
 
@@ -187,7 +186,6 @@ export default function AdminSearchScreen() {
         ListHeaderComponent={listHeader}
         ListFooterComponent={<ListFooterLoader loading={loading} hasItems={events.length > 0} />}
         ListEmptyComponent={renderEmpty}
-        ItemSeparatorComponent={Separator}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -296,8 +294,5 @@ const styles = StyleSheet.create({
   resultsLabel: {
     marginTop: 4,
     color: '#11181c',
-  },
-  separator: {
-    height: 16,
   },
 });
