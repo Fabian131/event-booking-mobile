@@ -1,9 +1,9 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image } from 'expo-image';
 import { CATEGORY, EVENTS } from '@/src/constants/ui';
 import { AuthGuardModal } from '@/src/components/domain/AuthGuardModal';
+import { EventImage } from '@/src/components/domain/EventImage';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
@@ -47,12 +47,7 @@ export default function EventDetailScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Image
-          source={event.image_url ? { uri: event.image_url } : null}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-        />
+        <EventImage imageUrl={event.image_url} height={280} />
 
         <View style={styles.content}>
           <View style={styles.titleRow}>
@@ -109,10 +104,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
-  },
-  image: {
-    width: '100%',
-    height: 280,
   },
   content: {
     paddingHorizontal: 20,
