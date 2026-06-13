@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { reservationsService } from '@/src/services/reservations';
 import { getTodayYear, getTodayMonth } from '@/src/utils/dateHelpers';
+import { ApiError } from '@/src/types/auth';
 import type { CalendarDateItem } from '@/src/types/events';
 import type { Reservation } from '@/src/types/reservations';
-import { ERRORS } from '@/src/constants/ui';
+import { ERRORS, RESERVATIONS } from '@/src/constants/ui';
 
 interface UseReservationsCalendarReturn {
   calendarDates: CalendarDateItem[];
@@ -14,10 +15,12 @@ interface UseReservationsCalendarReturn {
   calendarLoading: boolean;
   reservationsLoading: boolean;
   error: string | null;
+  cancellingId: string | null;
   selectDate: (date: string) => void;
   onMonthChange: (month: number) => void;
   onYearChange: (year: number) => void;
   refresh: () => void;
+  cancelReservation: (reservationId: string) => Promise<boolean>;
 }
 
 export function useReservationsCalendar(): UseReservationsCalendarReturn {
@@ -29,6 +32,7 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
   const [calendarLoading, setCalendarLoading] = useState(true);
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const fetchCalendarDates = useCallback(async (year: number, month: number) => {
     setCalendarLoading(true);
@@ -87,6 +91,32 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
     setCurrentYear(year);
   }, []);
 
+  const cancelReservation = useCallback(async (reservationId: string): Promise<boolean> => {
+    setCancellingId(reservationId);
+    setError(null);
+    try {
+      await reservationsService.cancel(reservationId);
+      setDayReservations((prev) =>
+        prev.map((r) =>
+          r.id === reservationId ? { ...r, status: 'CANCELLED' as const } : r,
+        ),
+      );
+      fetchCalendarDates(currentYear, currentMonth);
+      return true;
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof TypeError) {
+        setError(ERRORS.NETWORK);
+      } else {
+        setError(RESERVATIONS.CANCEL_ERROR);
+      }
+      return false;
+    } finally {
+      setCancellingId(null);
+    }
+  }, [currentYear, currentMonth, fetchCalendarDates]);
+
   return {
     calendarDates,
     dayReservations,
@@ -96,9 +126,11 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
     calendarLoading,
     reservationsLoading,
     error,
+    cancellingId,
     selectDate,
     onMonthChange,
     onYearChange,
     refresh,
+    cancelReservation,
   };
 }

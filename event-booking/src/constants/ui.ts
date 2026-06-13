@@ -250,6 +250,12 @@ export const CUSTOMER = {
   STATUS_CANCELLED: 'Cancelada',
   TICKET_SINGULAR: 'entrada',
   TICKET_PLURAL: 'entradas',
+  CANCEL_ACTION: 'Cancelar reserva',
+  CANCEL_CONFIRM_TITLE: '¿Cancelar reservación?',
+  CANCEL_CONFIRM_MESSAGE: 'Esta acción es permanente. Los cupos se liberarán y no podrás recuperar esta reservación.',
+  CANCEL_CONFIRM_OK: 'Sí, cancelar',
+  CANCEL_CONFIRM_CANCEL: 'No',
+  CANCEL_ACCESSIBILITY: 'Acciones de la reservación',
 } as const;
 
 export const RESERVATIONS = {
