@@ -7,6 +7,11 @@ export default function ReservationsStackLayout() {
     <Stack
       screenOptions={{
         headerTitle: '',
+        headerTitleStyle: {
+          fontSize: 22,
+          fontWeight: '900',
+          color: '#0a7ea4',
+        },
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >
