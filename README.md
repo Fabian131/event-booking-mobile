@@ -132,4 +132,4 @@ To run the app on your mobile device without an emulator:
 > **Note:** Your mobile device and computer must be connected to the **same Wi-Fi network**.
 
 Contracts in API DOG: https://rm6l6vvc8k.apidog.io/
-VIDEO TY: 
+VIDEO TY: https://youtu.be/4kpe3MSs1oU
