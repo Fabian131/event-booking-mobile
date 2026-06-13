@@ -1,46 +1,43 @@
 import { useRef, useCallback } from 'react';
 import {
   Animated,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
-import { EventCard } from '@/src/components/domain/EventCard';
 import { Calendar } from '@/src/components/domain/Calendar';
+import { ReservationCard } from '@/src/components/domain/ReservationCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { Loader } from '@/src/components/ui/Loader';
-import { useCalendarEvents } from '@/src/hooks/useCalendarEvents';
-import { ADMIN } from '@/src/constants/ui';
+import { useReservationsCalendar } from '@/src/hooks/useReservationsCalendar';
+import { CUSTOMER } from '@/src/constants/ui';
 
-export default function AdminCalendarScreen() {
-  const router = useRouter();
+export default function CustomerReservationsScreen() {
   const {
     calendarDates,
-    dayEvents,
+    dayReservations,
     selectedDate,
     currentYear,
     currentMonth,
     calendarLoading,
-    eventsLoading,
+    reservationsLoading,
     error,
     selectDate,
     onMonthChange,
     onYearChange,
     refresh,
-  } = useCalendarEvents();
+  } = useReservationsCalendar();
 
   useFocusEffect(
     useCallback(() => {
       refresh();
-    }, [refresh])
+    }, [refresh]),
   );
 
-  // Animation for the event list on date change
   const slideAnim = useRef(new Animated.Value(16)).current;
 
   const handleDatePress = (date: string) => {
@@ -53,12 +50,17 @@ export default function AdminCalendarScreen() {
     }).start();
   };
 
-  const renderEventList = () => {
+  const renderReservationList = () => {
     if (!selectedDate) {
-      return <EmptyState title={ADMIN.CALENDAR_EMPTY_TITLE} subtitle={ADMIN.CALENDAR_EMPTY_SUBTITLE} />;
+      return (
+        <EmptyState
+          title={CUSTOMER.RESERVATIONS_EMPTY_TITLE}
+          subtitle={CUSTOMER.RESERVATIONS_EMPTY_SUBTITLE}
+        />
+      );
     }
-    if (eventsLoading) {
-      return <Loader message={ADMIN.CALENDAR_LOADING_EVENTS} />;
+    if (reservationsLoading) {
+      return <Loader message={CUSTOMER.RESERVATIONS_LOADING} />;
     }
     if (error) {
       return (
@@ -67,18 +69,18 @@ export default function AdminCalendarScreen() {
         </View>
       );
     }
-    if (dayEvents.length === 0) {
-      return <EmptyState title={ADMIN.CALENDAR_NO_EVENTS_TITLE} subtitle={ADMIN.CALENDAR_NO_EVENTS_SUBTITLE} />;
+    if (dayReservations.length === 0) {
+      return (
+        <EmptyState
+          title={CUSTOMER.RESERVATIONS_NO_RESERVATIONS_TITLE}
+          subtitle={CUSTOMER.RESERVATIONS_NO_RESERVATIONS_SUBTITLE}
+        />
+      );
     }
     return (
       <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
-        {dayEvents.map((event) => (
-          <EventCard
-              key={event.id}
-              event={event}
-              variant="compact"
-              onPress={() => router.push(`/(admin)/events/${event.id}`)}
-            />
+        {dayReservations.map((reservation) => (
+          <ReservationCard key={reservation.id} reservation={reservation} />
         ))}
       </Animated.View>
     );
@@ -104,31 +106,27 @@ export default function AdminCalendarScreen() {
           />
         </View>
 
-        <View style={styles.eventsSection}>
+        <View style={styles.reservationsSection}>
           <ThemedText style={styles.sectionTitle}>
-            {selectedDate ? `${ADMIN.CALENDAR_EVENTS_FOR_DAY} ${selectedDate}` : ADMIN.CALENDAR_EVENTS_TITLE}
+            {selectedDate
+              ? `${CUSTOMER.RESERVATIONS_FOR_DAY} ${selectedDate}`
+              : CUSTOMER.RESERVATIONS_HEADING}
           </ThemedText>
-          {renderEventList()}
+          {renderReservationList()}
           <View style={styles.bottomSection} />
         </View>
       </ScrollView>
-
-      {/* FAB — create event */}
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push('/(admin)/create-event')}
-        accessibilityRole="button"
-        accessibilityLabel={ADMIN.CREATE_EVENT_FAB_LABEL}
-      >
-        <ThemedText style={styles.fabText}>+</ThemedText>
-      </Pressable>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { paddingBottom: 100 },
+  container: {
+    flex: 1,
+  },
+  scroll: {
+    paddingBottom: 100,
+  },
   calendarSection: {
     backgroundColor: '#fff',
     marginHorizontal: 12,
@@ -136,14 +134,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
   },
-  eventsSection: { marginTop: 16, paddingHorizontal: 12 },
+  reservationsSection: {
+    marginTop: 16,
+    paddingHorizontal: 12,
+  },
   sectionTitle: {
     fontSize: 13,
     color: '#687076',
     fontWeight: '500',
     marginBottom: 8,
   },
-  bottomSection: { minHeight: 120 },
+  bottomSection: {
+    minHeight: 120,
+  },
   errorBanner: {
     backgroundColor: '#fdecea',
     borderRadius: 8,
@@ -151,30 +154,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#dc3545',
   },
-  errorText: { color: '#dc3545', textAlign: 'center' },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#0a7ea4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.27,
-    shadowRadius: 4.65,
-    elevation: 6,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 28,
-    lineHeight: 28,
-    fontWeight: '300',
+  errorText: {
+    color: '#dc3545',
     textAlign: 'center',
-    textAlignVertical: 'center',
-    includeFontPadding: false,
   },
 });

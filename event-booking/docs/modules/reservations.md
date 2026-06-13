@@ -4,11 +4,11 @@
 
 ## General Information
 
-- **Module Code**: `EBM-13`
-- **API Contract**: `api-contracts/create-reservation.yaml`
+- **Module Code**: `EBM-13`, `EBM-14`
+- **API Contract**: `api-contracts/create-reservation.yaml`, `api-contracts/calendar-reservations.yaml`, `api-contracts/list-reservations.yaml`
 - **Responsible**: Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.1.0`
+- **Version**: `1.2.1`
 - **Created**: `2026-06-11`
 - **Last Updated**: `2026-06-12`
 
@@ -16,9 +16,15 @@
 
 ## Description
 
-Customer-facing reservation booking form that allows authenticated users to
-secure tickets for a specific event. Implements the `create-reservation.yaml`
-contract.
+Customer-facing reservation module with two features:
+
+1. **Booking Form** (EBM-13): Allows authenticated users to secure tickets for a
+   specific event. Implements `create-reservation.yaml`.
+
+2. **Reservations Calendar** (EBM-14): Interactive monthly calendar view in the
+   "Reservas" tab where customers can browse their own reservations by date.
+   Reuses the `Calendar` component from the admin dashboard. Implements
+   `calendar-reservations.yaml` and `list-reservations.yaml`.
 
 The screen receives the `event_id` as a URL parameter from the event detail
 screen (which enforces authentication via `AuthGuardModal`). On mount, it
@@ -38,13 +44,59 @@ validación" fallback.
 
 ## API Contract
 
+### Create Reservation
+
 **File:** `api-contracts/create-reservation.yaml`
 
 | Method | Route                    | Auth | Description               |
 |--------|--------------------------|------|---------------------------|
 | POST   | `/api/v1/reservations`   | Yes  | Create a new reservation  |
 
-### Request Body
+### Calendar Reservations
+
+**File:** `api-contracts/calendar-reservations.yaml`
+
+| Method | Route                              | Auth | Description                             |
+|--------|-------------------------------------|------|-----------------------------------------|
+| GET    | `/api/v1/reservations/calendar`     | Yes  | Month dates with reservation counts     |
+
+**Parameters:**
+
+| Field   | Type    | Required | Constraints     |
+|---------|---------|----------|-----------------|
+| `year`  | integer | Yes      | 2000 - 2100     |
+| `month` | integer | Yes      | 1 - 12          |
+
+**Response (200):**
+
+```json
+{
+  "data": [
+    { "date": "2026-06-15", "count": 1 },
+    { "date": "2026-06-20", "count": 2 }
+  ],
+  "year": 2026,
+  "month": 6
+}
+```
+
+### List Reservations
+
+**File:** `api-contracts/list-reservations.yaml`
+
+| Method | Route                    | Auth | Description                             |
+|--------|--------------------------|------|-----------------------------------------|
+| GET    | `/api/v1/reservations`   | Yes  | Customer's reservations, filterable by date |
+
+**Parameters:**
+
+| Field   | Type    | Required | Default    |
+|---------|---------|----------|------------|
+| `date`  | string  | No       | None       |
+| `page`  | integer | No       | 1          |
+| `limit` | integer | No       | 50         |
+
+### Create Reservation Request Body
 
 | Field            | Type    | Required | Constraints       |
 |------------------|---------|----------|-------------------|
@@ -104,12 +156,19 @@ the appropriate Spanish constant rather than showing raw backend strings.
 src/
 ├── types/
 │   └── reservations.ts                    # ReservationStatus, ReservationUserContext,
-│                                          #   CreateReservationRequest, ReservationResponse
+│                                          #   CreateReservationRequest, ReservationResponse,
+│                                          #   ReservationSummary, ReservationsListParams,
+│                                          #   PaginatedReservationsResponse
 ├── services/
-│   └── reservations.ts                    # reservationsService.create() — POST /api/v1/reservations
+│   └── reservations.ts                    # create(), getCalendarDates(), list()
 ├── hooks/
-│   └── useEventDetail.ts                  # (shared with events) re-fetches on screen focus
+│   ├── useEventDetail.ts                  # (shared with events) re-fetches on screen focus
+│   └── useReservationsCalendar.ts         # Calendar dates + reservations by day
 ├── components/
+│   ├── domain/
+│   │   ├── Calendar.tsx                   # Reused from admin dashboard (unchanged)
+│   │   ├── EventCard.tsx                  # Time format changed to 12h (consistency)
+│   │   └── ReservationCard.tsx            # Reservation list item with status + notes
 │   └── ui/
 │       ├── Button.tsx                     # Submit button with loading spinner
 │       ├── EmptyState.tsx                 # Sold out, error, success states
@@ -118,19 +177,22 @@ src/
 │       ├── themed-text.tsx                # All screen text
 │       └── themed-view.tsx                # Container views
 ├── constants/
-│   └── ui.ts                              # BOOKING constants block
+│   └── ui.ts                              # BOOKING + CUSTOMER constants blocks
 └── utils/
-    └── dateHelpers.ts                     # formatEventDate(), formatEventTime()
+    └── dateHelpers.ts                     # formatEventDate(), formatTime(), formatTimeRange()
 app/
 └── (customer)/
-    └── events/
-        ├── _layout.tsx                    # Stack: index, [id], book
-        ├── [id].tsx                       # EventDetailScreen — "Reservar" → book
-        └── book.tsx                       # BookScreen — reservation form (17 tests)
+    ├── events/
+    │   ├── _layout.tsx                    # Stack: index, [id], book
+    │   ├── [id].tsx                       # EventDetailScreen — "Reservar" → book
+    │   └── book.tsx                       # BookScreen — reservation form (17 tests)
+    └── reservations/
+        ├── _layout.tsx                    # Stack: index (native header + logout)
+        └── index.tsx                      # Calendar + reservation list
 tests/
 └── Feature/
     └── events/
-        └── BookingFormFeatureTest.tsx     # 11 tests: form, stepper, submit, errors
+        └── BookingFormFeatureTest.tsx     # 16 tests: form, stepper, submit, errors
 ```
 
 ### Data Flow
@@ -201,6 +263,51 @@ useFocusEffect retriggered → eventsService.getById(id)
     │
     ▼
 Capacity display updated with fresh remaining_capacity
+
+### Reservations Calendar Flow
+
+```
+Reservations Tab (customer) — app/(customer)/reservations/
+    │
+    ▼
+_layout.tsx — Stack navigator
+    │   headerTitle: "Mis Reservas", headerRight: LogoutButton
+    ▼
+index.tsx — CustomerReservationsScreen
+    │
+    ▼
+useReservationsCalendar() hook
+    │
+    ├──► reservationsService.getCalendarDates(year, month)
+    │     └──► GET /api/v1/reservations/calendar?year=&month=
+    │           └──► calendarDates: CalendarDateItem[]
+    │
+    ├──► reservationsService.list({ date })
+    │     └──► GET /api/v1/reservations?date=
+    │           └──► dayReservations: ReservationSummary[]
+    │
+    └──► State: { calendarDates, dayReservations, selectedDate,
+                  currentYear, currentMonth, calendarLoading,
+                  reservationsLoading, error, refresh }
+
+Screen Layout:
+┌────────────────────────────────────────────────────────┐
+│ Calendar Section                                       │
+│   └── Calendar component (reused from admin)           │
+│       ├── DateTimePicker (react-native-ui-datepicker)  │
+│       ├── Custom Day (dots for reservations)           │
+│       ├── Month/Year navigation                        │
+│       └── Loading overlay                              │
+├────────────────────────────────────────────────────────┤
+│ Reservations Section                                   │
+│   ├── No date selected → EmptyState                    │
+│   ├── Loading → Loader                                 │
+│   ├── Error → Red banner                               │
+│   ├── No reservations → EmptyState                     │
+│   └── Reservations → Animated list of ReservationCards │
+└────────────────────────────────────────────────────────┘
+
+useFocusEffect → refresh() on every tab focus
 ```
 
 ---
@@ -250,15 +357,18 @@ Capacity display updated with fresh remaining_capacity
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| - | - | - |
+| `Calendar` | `src/components/domain/Calendar.tsx` | Monthly calendar with dots (reused from admin) |
+| `ReservationCard` | `src/components/domain/ReservationCard.tsx` | Compact card with status, time, quantity, notes |
 
 ### Services
 
 **Reservation API calls:**
 
-| Method                          | Endpoint                    | Description              |
-|---------------------------------|-----------------------------|--------------------------|
-| `reservationsService.create(d)` | `POST /api/v1/reservations` | Creates a new reservation|
+| Method                               | Endpoint                            | Description              |
+|--------------------------------------|-------------------------------------|--------------------------|
+| `reservationsService.create(d)`      | `POST /api/v1/reservations`         | Creates a new reservation|
+| `reservationsService.getCalendarDates(y, m)` | `GET /api/v1/reservations/calendar` | Month dates with counts  |
+| `reservationsService.list(params)`   | `GET /api/v1/reservations`          | Customer's reservations by date |
 
 **HTTP Client:** `src/services/api.ts`
 - Wraps native `fetch` with JSON serialization/deserialization
@@ -275,9 +385,19 @@ Capacity display updated with fresh remaining_capacity
 - Uses `useFocusEffect` so data is re-fetched whenever the screen gains focus
 - Returns `{ event, loading, error }`
 
+**Hook — `useReservationsCalendar`** (`src/hooks/useReservationsCalendar.ts`):
+- Centralizes calendar loading logic for the "Reservas" tab
+- Fetches calendar dates (`getCalendarDates`) and reservations by day (`list`)
+- Manages independent loading states: `calendarLoading`, `reservationsLoading`
+- Provides `refresh` for `useFocusEffect` auto-refresh
+- Returns `{ calendarDates, dayReservations, selectedDate, currentYear,
+  currentMonth, calendarLoading, reservationsLoading, error, selectDate,
+  onMonthChange, onYearChange, refresh }`
+
 **Types — `src/types/events.ts`**:
 - `Event` interface provides `remaining_capacity`, `title`, `date`,
   `start_time`, `end_time`, `category` used in the booking form card.
+- `CalendarDateItem`, `CalendarDatesResponse` reused for reservations calendar.
 
 ### Types
 
@@ -289,6 +409,9 @@ Capacity display updated with fresh remaining_capacity
 | `ReservationUserContext`   | `{ user_id, user_name, user_email }`                                                          |
 | `CreateReservationRequest` | `{ event_id: string, ticket_quantity: number, notes?: string }`                                |
 | `ReservationResponse`      | id, user_id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, timestamps |
+| `ReservationSummary`       | id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, created_at |
+| `ReservationsListParams`   | `{ page?, limit?, date?, status? }`                                                            |
+| `PaginatedReservationsResponse` | `{ data: ReservationSummary[], pagination: { page, limit, total, total_pages, has_next_page } }` |
 
 ### Constants
 
@@ -313,6 +436,29 @@ Capacity display updated with fresh remaining_capacity
 | `EVENT_UNAVAILABLE`   | 'Este evento ya no está disponible para reservar.'                    |
 | `VALIDATION_ERROR`    | 'Datos inválidos. Revisa la cantidad de entradas e intenta nuevamente.' |
 | `SUCCESS_BANNER`      | 'Reserva realizada con éxito. Redirigiendo...'                        |
+
+**File:** `src/constants/ui.ts` — `CUSTOMER` block (reservations calendar)
+
+| Constant                        | Value                                              |
+|---------------------------------|----------------------------------------------------|
+| `RESERVATIONS_TITLE`            | 'Mis Reservas'                                     |
+| `RESERVATIONS_EMPTY_TITLE`      | 'Selecciona un día'                                |
+| `RESERVATIONS_EMPTY_SUBTITLE`   | 'Toca un día en el calendario para ver tus reservas'|
+| `RESERVATIONS_NO_RESERVATIONS_TITLE` | 'Sin reservas'                                 |
+| `RESERVATIONS_NO_RESERVATIONS_SUBTITLE` | 'No tienes reservas para este día'           |
+| `RESERVATIONS_LOADING`          | 'Cargando reservas...'                             |
+| `RESERVATIONS_FOR_DAY`          | 'Reservas del'                                     |
+| `RESERVATIONS_HEADING`          | 'Reservas del día'                                 |
+| `STATUS_CONFIRMED`              | 'Confirmada'                                       |
+| `STATUS_CANCELLED`              | 'Cancelada'                                        |
+| `TICKET_SINGULAR`                | 'entrada'                                          |
+| `TICKET_PLURAL`                  | 'entradas'                                         |
+
+**File:** `src/constants/ui.ts` — `ERRORS` block (calendar additions)
+
+| Constant                       | Value                                              |
+|--------------------------------|----------------------------------------------------|
+| `CALENDAR_RESERVATIONS_ERROR`  | 'No se pudieron cargar las reservas del día.'      |
 
 ---
 
@@ -386,6 +532,37 @@ BookScreen
 | **Error 422**            | Red banner: "Datos inválidos. Revisa la cantidad de entradas..."       |
 | **Error server (4xx/5xx)**| Red banner with `ApiError.message`                                     |
 | **Error network**        | Red banner: "No se pudo conectar con el servidor..."                    |
+
+### Visual States — Reservations Calendar
+
+| State                    | What the user sees                                                      |
+|--------------------------|-------------------------------------------------------------------------|
+| **Tab loaded**           | Calendar with today's month, no date selected, "Selecciona un día"     |
+| **Calendar loading**     | Dots update in background, "Cargando..." overlay on calendar            |
+| **Day selected**         | Slide-up animation shows ReservationCards for that date                 |
+| **Reservations loading** | "Cargando reservas..." spinner in the bottom section                    |
+| **No reservations**      | "Sin reservas" / "No tienes reservas para este día"                     |
+| **Reservations found**   | List of ReservationCards (green CONFIRMED, red CANCELLED + strikethrough)|
+| **Error**                | Red banner (`#fdecea` / `#dc3545`) with error message                   |
+| **Dots**                 | 1-3 blue dots below dates with reservations (max 3 visually)            |
+| **Today**                | Light blue circle around current day                                    |
+| **Selected**             | Solid blue background on selected day (#0a7ea4)                         |
+
+### ReservationCard Component
+
+```
+ReservationCard
+└── View (borderLeftColor: green/red, borderRadius: 12, shadow)
+    ├── View (titleRow)
+    │   ├── ThemedText (event_title, defaultSemiBold)
+    │   │  ↳ cancelled → line-through + gray color
+    │   └── View (statusBadge, green/red bg, borderRadius: 12)
+    │      └── ThemedText ("Confirmada" / "Cancelada", white, 10px, bold)
+    ├── ThemedText (subtitle)
+    │  ↳ "10:00 AM - 06:00 PM • 2 entradas"  (12h format via formatTime)
+    └── ThemedText (notes, conditional, italic, gray)
+       ↳ Only rendered if reservation.notes is truthy
+```
 
 ---
 
@@ -526,6 +703,39 @@ stub that behaves like `useEffect`.
   `CONFIRMED`. The `ReservationStatus` type was reduced to
   `'CONFIRMED' | 'CANCELLED'`.
 
+- **Calendar component reused from admin**: The `Calendar` component from
+  the admin dashboard was reused without modification. It accepts
+  `CalendarDateItem[]` (matching both events and reservations API
+  responses) and renders dots based on the `count` field. The loading
+  overlay text "Cargando..." is acceptable in both contexts.
+
+- **Separate hook for reservations calendar**: `useReservationsCalendar`
+  follows the same pattern as `useCalendarEvents` but calls
+  `reservationsService.getCalendarDates` and `reservationsService.list`
+  instead of the events endpoints. Independent loading states avoid
+  blocking the calendar when fetching a day's reservations.
+
+- **12-hour time format**: Both `ReservationCard` and `EventCard` (compact
+  variant) now use `formatTime()` from `dateHelpers.ts` instead of
+  `extractTime()`, displaying times as "10:00 AM" / "06:00 PM" for better
+  readability. Changed in both components for consistency.
+
+- **Native Stack header on "Reservas" tab**: Converted from a single-file
+  route to a directory-based route with `_layout.tsx` + `index.tsx`,
+  matching the "Eventos" tab pattern. The custom inline header (with
+  `useSafeAreaInsets`) was removed — now handled by the Stack navigator
+  with `headerTitle: "Mis Reservas"` and `headerRight: LogoutButton`.
+
+- **No `console.error(e)` on network failures**: Removed raw error logging
+  from both `useCalendarEvents` and `useReservationsCalendar` catch blocks.
+  Errors are handled exclusively through the `error` state → red banner,
+  preventing `TypeError: Network request failed` console dumps.
+
+- **Max quantity validation before submit**: If the typed quantity exceeds
+  `Math.min(remainingCapacity, 100)`, a red banner is shown with the max
+  allowed instead of submitting. The quantity is auto-corrected in the
+  input and the reservation is not sent until the user acknowledges.
+
 ### Known Limitations
 
 - The booking flow currently only supports creating a single reservation
@@ -541,6 +751,35 @@ stub that behaves like `useEffect`.
 ---
 
 ## Changelog
+
+### v1.2.1 — 2026-06-12
+- **QA fix**: Moved hardcoded `'entrada'`/`'entradas'` to `CUSTOMER.TICKET_SINGULAR`/`TICKET_PLURAL`
+- **QA fix**: Removed `console.error(e)` from `useCalendarEvents` and `useReservationsCalendar` catch blocks
+- **QA fix**: Added `hideLoadingOverlay` prop to `Calendar` — customer screen no longer shows redundant loading overlay
+- **QA fix**: Changed `formatTime` from English AM/PM to Spanish `a.m.`/`p.m.` for locale consistency
+- **QA fix**: Removed unused `CUSTOMER.RESERVATIONS_SUBTITLE` constant
+- **QA fix**: Updated `useReservations.ts` TODO comment; deleted `ReservationItem.tsx` placeholder
+- **QA fix**: Added 22 tests across 4 new test files (186 total):
+  - `ReservationCardFeatureTest.tsx` — 9 tests (render, CONFIRMED, CANCELLED, notes, singular/plural)
+  - `ReservationsCalendarFeatureTest.tsx` — 5 tests (empty state, loading, error, empty day, reservations list)
+  - `ReservationsCalendarUnitTest.ts` — 6 tests (hook: fetch, sort, errors, month/year clearing)
+  - `ReservationsServiceUnitTest.ts` — 2 tests (getCalendarDates URL, list URL)
+
+### v1.2.0 — 2026-06-12
+- **New feature**: Reservations calendar (EBM-14) in the "Reservas" tab
+  - Reused `Calendar` component from admin dashboard (unchanged)
+  - Created `useReservationsCalendar` hook — calendar dots + daily reservation list
+  - Created `ReservationCard` component — compact card with status badge, 12h time, notes
+  - Converted `reservations.tsx` to directory-based route with Stack layout (native header)
+  - Added `useFocusEffect` → `refresh()` for auto-refresh on tab focus
+- Added `reservationsService.getCalendarDates(year, month)` → `GET /api/v1/reservations/calendar`
+- Added `reservationsService.list(params)` → `GET /api/v1/reservations`
+- Added types: `ReservationSummary`, `ReservationsListParams`, `PaginatedReservationsResponse`
+- Added 12 CUSTOMER constants for reservations calendar in `ui.ts` (empty/loading/status labels)
+- Added `ERRORS.CALENDAR_RESERVATIONS_ERROR` constant
+- Changed time format to 12h in `ReservationCard` and `EventCard` compact variant (consistency)
+- Removed `console.error(e)` from `useCalendarEvents` and `useReservationsCalendar` catch blocks
+- Added max quantity validation banner before submit (no auto-submit with corrected value)
 
 ### v1.1.0 — 2026-06-12
 - **QA fix**: `clampQuantity` now caps at `Math.min(remainingCapacity, 100)`

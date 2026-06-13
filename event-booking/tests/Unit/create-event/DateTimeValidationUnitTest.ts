@@ -16,6 +16,15 @@ function base(): CreateEventFormValues {
 }
 
 describe('date and time validation', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-06-12T12:00:00Z'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('should reject past date', () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
