@@ -35,7 +35,7 @@ export default function AdminEventDetailScreen() {
           style: 'destructive',
           onPress: handleDeleteConfirm,
         },
-        { text: ADMIN.DETAIL_DELETE_CONFIRM_CANCEL, style: 'cancel' },
+        { text: EVENTS.EDIT_CONFIRM_CANCEL, style: 'cancel' },
       ],
     );
   };
@@ -45,7 +45,7 @@ export default function AdminEventDetailScreen() {
       ADMIN.DETAIL_DELETE_CONFIRM_TITLE,
       ADMIN.DETAIL_DELETE_CONFIRM_MESSAGE,
       [
-        { text: ADMIN.DETAIL_DELETE_CONFIRM_CANCEL, style: 'cancel' },
+        { text: EVENTS.EDIT_CONFIRM_CANCEL, style: 'cancel' },
         {
           text: ADMIN.DETAIL_DELETE_CONFIRM_OK,
           style: 'destructive',
@@ -61,16 +61,22 @@ export default function AdminEventDetailScreen() {
     try {
       await eventsService.delete(id);
       if (!mountedRef.current) return;
-      router.replace('/(admin)');
+      Alert.alert(
+        '',
+        ADMIN.DETAIL_DELETE_SUCCESS,
+        [{ text: 'OK', onPress: () => router.replace('/(admin)') }],
+      );
     } catch (err) {
       if (!mountedRef.current) return;
       const message = err instanceof TypeError
         ? ERRORS.NETWORK
-        : err instanceof ApiError && err.status === 404
-          ? EVENTS.DETAIL_NOT_FOUND
-          : err instanceof ApiError
-            ? err.message
-            : ADMIN.DETAIL_DELETE_ERROR;
+        : err instanceof DOMException && err.name === 'AbortError'
+          ? ERRORS.NETWORK
+          : err instanceof ApiError && err.status === 404
+            ? EVENTS.DETAIL_NOT_FOUND
+            : err instanceof ApiError
+              ? err.message
+              : ADMIN.DETAIL_DELETE_ERROR;
       Alert.alert('', message);
     } finally {
       if (mountedRef.current) setDeleting(false);
@@ -122,7 +128,7 @@ export default function AdminEventDetailScreen() {
                   pressed && styles.optionsButtonPressed,
                 ]}
               >
-                <ThemedText style={styles.optionsDots}>⋯</ThemedText>
+                <ThemedText style={styles.optionsDots}>{ADMIN.DETAIL_OPTIONS_ICON}</ThemedText>
               </Pressable>
             </View>
           </View>

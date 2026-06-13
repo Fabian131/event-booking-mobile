@@ -59,6 +59,11 @@ function autoConfirmDeleteAlerts() {
     );
     if (eliminarBtn) {
       eliminarBtn.onPress?.();
+      return;
+    }
+    const okBtn = buttons?.find((b: { text: string }) => b.text === 'OK');
+    if (okBtn) {
+      okBtn.onPress?.();
     }
   });
 }

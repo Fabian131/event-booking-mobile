@@ -1,4 +1,4 @@
-import { Alert, NativeModules } from 'react-native';
+import { Alert } from 'react-native';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
 import { eventsService } from '@/src/services/events';
@@ -147,13 +147,18 @@ describe('admin event detail', () => {
     );
   });
 
-  it('calls eventsService.delete and redirects on confirmed delete', async () => {
+  it('calls eventsService.delete, shows success Alert, and redirects on OK', async () => {
     jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       const deleteOption = buttons?.find((b: { text: string }) =>
         b.text === 'Eliminar evento' || b.text === 'Eliminar',
       );
       if (deleteOption) {
         deleteOption.onPress?.();
+        return;
+      }
+      const okButton = buttons?.find((b: { text: string }) => b.text === 'OK');
+      if (okButton) {
+        okButton.onPress?.();
       }
     });
 

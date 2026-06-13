@@ -210,6 +210,7 @@ export const ADMIN = {
   DETAIL_DELETE_SUCCESS: 'Evento eliminado exitosamente.',
   DETAIL_DELETE_ERROR: 'Error al eliminar el evento.',
   DETAIL_OPTIONS_LABEL: 'Opciones',
+  DETAIL_OPTIONS_ICON: '⋯',
   CALENDAR_EMPTY_TITLE: 'Selecciona un día',
   CALENDAR_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver sus eventos',
   CALENDAR_NO_EVENTS_TITLE: 'Sin eventos',
