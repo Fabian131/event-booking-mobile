@@ -66,9 +66,11 @@ export default function AdminEventDetailScreen() {
       if (!mountedRef.current) return;
       const message = err instanceof TypeError
         ? ERRORS.NETWORK
-        : err instanceof ApiError
-          ? err.message
-          : ADMIN.DETAIL_DELETE_ERROR;
+        : err instanceof ApiError && err.status === 404
+          ? EVENTS.DETAIL_NOT_FOUND
+          : err instanceof ApiError
+            ? err.message
+            : ADMIN.DETAIL_DELETE_ERROR;
       Alert.alert('', message);
     } finally {
       if (mountedRef.current) setDeleting(false);

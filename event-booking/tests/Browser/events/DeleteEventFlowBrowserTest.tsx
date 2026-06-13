@@ -123,7 +123,7 @@ describe('delete event flow', () => {
       const errorAlert = spy.mock.calls.find(
         (call: unknown[]) =>
           typeof call[1] === 'string' &&
-          call[1] === 'Event not found',
+          call[1] === 'Evento no encontrado',
       );
       expect(errorAlert).toBeTruthy();
     });

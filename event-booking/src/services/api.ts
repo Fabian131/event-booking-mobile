@@ -59,7 +59,11 @@ async function request<T>(endpoint: string, opts: RequestInit = {}): Promise<T> 
     // Support FastAPI's "detail" structure
     if (!details && Array.isArray(body.detail)) {
       details = body.detail;
-      if (!message) message = 'Errores de validación';
+      if (!message) {
+        message = body.detail.length === 1 && body.detail[0].message
+          ? body.detail[0].message
+          : 'Errores de validación';
+      }
     } else if (!message && typeof body.detail === 'string') {
       message = body.detail;
     }
@@ -132,7 +136,11 @@ export const api = {
       let message = body.message;
       if (!details && Array.isArray(body.detail)) {
         details = body.detail;
-        if (!message) message = 'Errores de validación';
+        if (!message) {
+          message = body.detail.length === 1 && body.detail[0].message
+            ? body.detail[0].message
+            : 'Errores de validación';
+        }
       } else if (!message && typeof body.detail === 'string') {
         message = body.detail;
       }
