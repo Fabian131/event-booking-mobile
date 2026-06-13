@@ -1,6 +1,6 @@
 import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
+import { EventImage } from '@/src/components/domain/EventImage';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { formatTime } from '@/src/utils/dateHelpers';
 import type { Event } from '@/src/types/events';
@@ -28,12 +28,7 @@ export function EventCard({ event, onPress, variant = 'default' }: EventCardProp
     >
       {!isCompact && (
         <View style={styles.imageContainer}>
-          <Image
-            source={event.image_url ? { uri: event.image_url } : null}
-            style={styles.image}
-            contentFit="cover"
-            transition={200}
-          />
+          <EventImage imageUrl={event.image_url} />
           <View style={[styles.badge, { backgroundColor: categoryColor }]}>
             <ThemedText style={styles.badgeText}>{CATEGORY.LABELS[event.category]}</ThemedText>
           </View>
@@ -88,7 +83,7 @@ export function EventCardSkeleton() {
   return (
     <Animated.View style={[styles.card, { opacity }]}>
       <View style={styles.imageContainer}>
-        <View style={[styles.image, styles.skeletonBlock]} />
+        <View style={[styles.skeletonImage, styles.skeletonBlock]} />
         <View style={[styles.badge, styles.skeletonBadge]} />
       </View>
       <View style={styles.body}>
@@ -115,10 +110,6 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: 200,
   },
   body: {
     padding: 16,
@@ -175,6 +166,10 @@ const styles = StyleSheet.create({
   skeletonBlock: {
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
+  },
+  skeletonImage: {
+    width: '100%',
+    height: 200,
   },
   skeletonBadge: {
     width: 80,
