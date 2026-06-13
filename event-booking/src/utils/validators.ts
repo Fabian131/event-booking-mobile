@@ -160,7 +160,7 @@ export function validateCreateEventForm(values: CreateEventFormValues): FieldErr
     todayMid.setHours(0, 0, 0, 0);
     const eventMid = new Date(values.date);
     eventMid.setHours(0, 0, 0, 0);
-    if (eventMid.getTime() === todayMid.getTime()) {
+    if (eventMid.toDateString() === todayMid.toDateString()) {
       const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
       const startMins = values.start_time.getHours() * 60 + values.start_time.getMinutes();
       if (startMins <= nowMins) {
