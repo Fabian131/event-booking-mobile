@@ -14,7 +14,6 @@ jest.mock('@/src/constants/ui', () => ({
     CANCEL_CONFIRM_MESSAGE: 'Esta acción es permanente.',
     CANCEL_CONFIRM_OK: 'Sí, cancelar',
     CANCEL_CONFIRM_CANCEL: 'No',
-    CANCEL_ACCESSIBILITY: 'Acciones para Summer Festival',
   },
 }));
 

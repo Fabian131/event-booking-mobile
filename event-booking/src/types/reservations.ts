@@ -23,7 +23,7 @@ export interface Reservation {
   notes: string | null;
   user: ReservationUser;
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
 }
 
 export interface ReservationListResponse {

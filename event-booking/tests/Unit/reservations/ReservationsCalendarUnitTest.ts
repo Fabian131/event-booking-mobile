@@ -7,10 +7,6 @@ import type { CalendarDatesResponse } from '@/src/types/events';
 import type { ReservationListResponse } from '@/src/types/reservations';
 
 jest.mock('@/src/services/reservations');
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return RN;
-});
 
 const mockCalendarResponse: CalendarDatesResponse = {
   data: [
