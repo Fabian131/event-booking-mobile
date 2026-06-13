@@ -179,6 +179,7 @@ export const ERRORS = {
   NETWORK: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
   GENERIC: 'Ocurrió un error inesperado. Intenta nuevamente.',
   INVALID_CREDENTIALS: 'Credenciales inválidas. Verifica tu correo y contraseña.',
+  UNAUTHORIZED: 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.',
   VALIDATION_BANNER: 'Revisa los campos ingresados e intenta nuevamente.',
   SCHEDULE_CONFLICT: 'Ya existe un evento programado en esta fecha y horario. Por favor selecciona otro.',
   EVENTS_LOAD_ERROR: 'Error al cargar los eventos',
@@ -258,6 +259,11 @@ export const CUSTOMER = {
   STATUS_CANCELLED: 'Cancelada',
   TICKET_SINGULAR: 'entrada',
   TICKET_PLURAL: 'entradas',
+  CANCEL_ACTION: 'Cancelar reserva',
+  CANCEL_CONFIRM_TITLE: '¿Cancelar reservación?',
+  CANCEL_CONFIRM_MESSAGE: 'Esta acción es permanente. Los cupos se liberarán y no podrás recuperar esta reservación.',
+  CANCEL_CONFIRM_OK: 'Sí, cancelar',
+  CANCEL_CONFIRM_CANCEL: 'No',
 } as const;
 
 export const RESERVATIONS = {
@@ -276,6 +282,8 @@ export const RESERVATIONS = {
   CANCEL_LOADING: 'Cancelando...',
   CANCEL_SUCCESS: 'Reservación cancelada exitosamente.',
   CANCEL_ERROR: 'Error al cancelar la reservación',
+  CANCEL_NOT_FOUND: 'Esta reservación ya no existe.',
+  CANCEL_ALREADY_CANCELLED: 'Esta reservación ya fue cancelada.',
   VIEW_RESERVATIONS: 'Ver reservaciones',
   SLOTS_LABEL: 'cupos',
   SLOT_LABEL: 'cupo',
