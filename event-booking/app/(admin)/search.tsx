@@ -73,7 +73,7 @@ export default function AdminSearchScreen() {
       <EventCard
         event={item}
         variant="compact"
-        onPress={() => router.push(`/(admin)/events/${item.id}`)}
+        onPress={() => router.push({ pathname: '/(admin)/events/[id]', params: { id: item.id } })}
       />
     ),
     [router],
@@ -82,7 +82,7 @@ export default function AdminSearchScreen() {
   const hasActiveFilters = !!(query.trim() || selectedCategory || selectedDate);
 
   const renderEmpty = () => {
-    if (loading) return <SkeletonList count={4} />;
+    if (loading) return <SkeletonList count={4} variant="compact" gap={12} />;
     if (error) return null;
     return (
       <EmptyState
@@ -120,6 +120,7 @@ export default function AdminSearchScreen() {
             style={[styles.chip, !selectedCategory && styles.chipSelected]}
             onPress={() => setSelectedCategory(undefined)}
             accessibilityRole="button"
+            accessibilityLabel={EVENTS.SEARCH_ALL_CATEGORIES}
           >
             <ThemedText style={[styles.chipText, !selectedCategory && styles.chipTextSelected]}>
               {EVENTS.SEARCH_ALL_CATEGORIES}
@@ -137,6 +138,7 @@ export default function AdminSearchScreen() {
                 ]}
                 onPress={() => setSelectedCategory(selected ? undefined : category)}
                 accessibilityRole="button"
+                accessibilityLabel={CATEGORY.LABELS[category]}
               >
                 <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
                   {CATEGORY.LABELS[category]}
@@ -152,13 +154,13 @@ export default function AdminSearchScreen() {
           {EVENTS.SEARCH_DATE_LABEL}
         </ThemedText>
         <View style={styles.dateRow}>
-          <TouchableOpacity style={styles.dateButton} onPress={openDateModal} accessibilityRole="button">
+          <TouchableOpacity style={styles.dateButton} onPress={openDateModal} accessibilityRole="button" accessibilityLabel={EVENTS.SEARCH_DATE_LABEL}>
             <ThemedText style={selectedDateParam ? styles.dateText : styles.datePlaceholder}>
               {selectedDateParam ? formatEventDate(selectedDateParam) : EVENTS.SEARCH_ANY_DATE}
             </ThemedText>
           </TouchableOpacity>
           {selectedDate && (
-            <TouchableOpacity style={styles.clearDateButton} onPress={clearDate} accessibilityRole="button">
+            <TouchableOpacity style={styles.clearDateButton} onPress={clearDate} accessibilityRole="button" accessibilityLabel={EVENTS.SEARCH_CLEAR_DATE}>
               <ThemedText style={styles.clearDateText}>{EVENTS.SEARCH_CLEAR_DATE}</ThemedText>
             </TouchableOpacity>
           )}

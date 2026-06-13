@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
 import { eventsService } from '@/src/services/events';
 import { EVENTS, CATEGORY } from '@/src/constants/ui';
 import { ApiError } from '@/src/types/auth';
@@ -84,6 +85,54 @@ describe('admin search screen — render', () => {
   });
 });
 
+describe('admin search screen — text search', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should call API with search param after typing text', async () => {
+    (eventsService.list as jest.Mock).mockResolvedValue({
+      data: [],
+      pagination: makePagination({ total: 0 }),
+    });
+    await renderSearch();
+    await waitFor(() => expect(eventsService.list).toHaveBeenCalledTimes(1));
+
+    const input = screen.getByPlaceholderText(EVENTS.SEARCH_INPUT_PLACEHOLDER);
+    fireEvent.changeText(input, 'festival');
+
+    await waitFor(() => {
+      expect(eventsService.list).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'festival' }),
+      );
+    }, { timeout: 1500 });
+  });
+});
+
+describe('admin search screen — date filter', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should call API with date param when a date is selected', async () => {
+    (eventsService.list as jest.Mock).mockResolvedValue({
+      data: [],
+      pagination: makePagination({ total: 0 }),
+    });
+    await renderSearch();
+    await waitFor(() => expect(eventsService.list).toHaveBeenCalledTimes(1));
+
+    fireEvent.press(screen.getByText(EVENTS.SEARCH_ANY_DATE));
+    fireEvent.press(screen.getByText(EVENTS.CREATE_MODAL_DONE));
+
+    await waitFor(() => {
+      expect(eventsService.list).toHaveBeenCalledWith(
+        expect.objectContaining({ date: expect.any(String) }),
+      );
+    });
+  });
+});
+
 describe('admin search screen — category filter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -104,6 +153,90 @@ describe('admin search screen — category filter', () => {
         expect.objectContaining({ category: 'music' }),
       );
     });
+  });
+});
+
+describe('admin search screen — loading skeleton', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should show skeleton list while initial data loads', async () => {
+    let resolvePromise!: (value: unknown) => void;
+    (eventsService.list as jest.Mock).mockReturnValue(
+      new Promise((resolve) => { resolvePromise = resolve; }),
+    );
+
+    render(<AdminSearchScreen />);
+    await act(async () => { await Promise.resolve(); });
+
+    const list = screen.getByTestId('admin-event-search-results');
+    expect(list).toBeTruthy();
+
+    await act(async () => {
+      resolvePromise({ data: [], pagination: makePagination({ total: 0 }) });
+    });
+  });
+});
+
+describe('admin search screen — error handling', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should show error banner when API returns a server error', async () => {
+    (eventsService.list as jest.Mock).mockRejectedValueOnce(
+      new ApiError('Error del servidor', 500),
+    );
+    await renderSearch();
+    await waitFor(() => {
+      expect(screen.getByText('Error del servidor')).toBeTruthy();
+      expect(screen.getByText(EVENTS.FEED_ERROR_RETRY)).toBeTruthy();
+    });
+  });
+
+  it('should show network error when fetch fails', async () => {
+    (eventsService.list as jest.Mock).mockRejectedValueOnce(
+      new TypeError('Failed to fetch'),
+    );
+    await renderSearch();
+    await waitFor(() => {
+      expect(screen.getByText('Error al cargar los eventos')).toBeTruthy();
+    });
+  });
+});
+
+describe('admin search screen — pagination', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should load more events when onEndReached fires', async () => {
+    (eventsService.list as jest.Mock)
+      .mockResolvedValueOnce({
+        data: [makeEvent({ id: '1', title: 'Page 1 Event' })],
+        pagination: makePagination({ page: 1, has_next_page: true, total: 40, total_pages: 2 }),
+      })
+      .mockResolvedValueOnce({
+        data: [makeEvent({ id: '2', title: 'Page 2 Event' })],
+        pagination: makePagination({ page: 2, has_next_page: false, total: 40, total_pages: 2 }),
+      });
+
+    await renderSearch();
+
+    await waitFor(() => {
+      expect(screen.getByText('Page 1 Event')).toBeTruthy();
+    });
+
+    await act(async () => {
+      fireEvent(screen.getByTestId('admin-event-search-results'), 'onEndReached');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Page 2 Event')).toBeTruthy();
+    });
+
+    expect(eventsService.list).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -152,6 +285,9 @@ describe('admin search screen — navigation', () => {
     await renderSearch();
     await waitFor(() => expect(screen.getByText('Admin Event')).toBeTruthy());
     fireEvent.press(screen.getByText('Admin Event'));
-    expect(mockPush).toHaveBeenCalledWith('/(admin)/events/abc-123');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(admin)/events/[id]',
+      params: { id: 'abc-123' },
+    });
   });
 });

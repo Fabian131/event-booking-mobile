@@ -66,8 +66,13 @@ export function EventCard({ event, onPress, variant = 'default' }: EventCardProp
   );
 }
 
-export function EventCardSkeleton() {
+interface EventCardSkeletonProps {
+  variant?: 'default' | 'compact';
+}
+
+export function EventCardSkeleton({ variant = 'default' }: EventCardSkeletonProps) {
   const opacity = useRef(new Animated.Value(0.4)).current;
+  const isCompact = variant === 'compact';
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -81,14 +86,21 @@ export function EventCardSkeleton() {
   }, [opacity]);
 
   return (
-    <Animated.View style={[styles.card, { opacity }]}>
-      <View style={styles.imageContainer}>
-        <View style={[styles.skeletonImage, styles.skeletonBlock]} />
-        <View style={[styles.badge, styles.skeletonBadge]} />
-      </View>
-      <View style={styles.body}>
+    <Animated.View style={[
+      styles.card,
+      isCompact ? styles.cardCompact : styles.cardDefault,
+      isCompact && { borderLeftColor: '#e0e0e0', borderLeftWidth: 4 },
+      { opacity },
+    ]}>
+      {!isCompact && (
+        <View style={styles.imageContainer}>
+          <View style={[styles.skeletonImage, styles.skeletonBlock]} />
+          <View style={[styles.badge, styles.skeletonBadge]} />
+        </View>
+      )}
+      <View style={[styles.body, isCompact && styles.bodyCompact]}>
         <View style={[styles.skeletonBlock, styles.skeletonTitle]} />
-        <View style={[styles.skeletonBlock, styles.skeletonLine]} />
+        {!isCompact && <View style={[styles.skeletonBlock, styles.skeletonLine]} />}
         <View style={[styles.skeletonBlock, styles.skeletonLineShort]} />
       </View>
     </Animated.View>
