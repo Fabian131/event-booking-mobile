@@ -12,6 +12,7 @@ export type ReservationUserContext = ReservationUser;
 
 export interface Reservation {
   id: string;
+  user_id: string;
   event_id: string;
   event_title: string;
   event_date: string;
@@ -22,7 +23,7 @@ export interface Reservation {
   notes: string | null;
   user: ReservationUser;
   created_at: string;
-  updated_at?: string;
+  updated_at: string;
 }
 
 export interface ReservationListResponse {
