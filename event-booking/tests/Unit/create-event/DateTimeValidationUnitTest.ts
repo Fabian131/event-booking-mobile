@@ -70,11 +70,17 @@ describe('date and time validation', () => {
     expect(errors.filter((e) => e.field === 'date')).toHaveLength(0);
   });
 
+  //conflicto
   it('should reject start_time in the past on today', () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const pastStart = new Date(Date.now() - 3600000);
     const futureEnd = new Date(Date.now() + 7200000);
+
+    const pastStart = new Date(today);
+    pastStart.setHours(0, 0, 0, 0);
+    const futureEnd = new Date(today);
+    futureEnd.setHours(23, 59, 0, 0);
     const errors = validateCreateEventForm({ ...base(), date: today, start_time: pastStart, end_time: futureEnd });
     expect(errors.some((e) => e.field === 'start_time')).toBe(true);
   });

@@ -251,3 +251,25 @@ export const CUSTOMER = {
   TICKET_SINGULAR: 'entrada',
   TICKET_PLURAL: 'entradas',
 } as const;
+
+export const RESERVATIONS = {
+  LIST_TITLE: 'Reservaciones',
+  LIST_SUBTITLE: 'Gestión de reservas del evento',
+  LIST_LOADING: 'Cargando reservaciones...',
+  LIST_EMPTY_TITLE: 'Sin reservaciones',
+  LIST_EMPTY_SUBTITLE: 'No hay reservaciones activas para este evento',
+  LIST_ERROR: 'Error al cargar las reservaciones',
+  SEARCH_PLACEHOLDER: 'Buscar por nombre o correo...',
+  CANCEL_BUTTON: 'Cancelar',
+  CANCEL_CONFIRM_TITLE: '¿Cancelar reservación?',
+  CANCEL_CONFIRM_MESSAGE: 'Esta acción es irreversible. Los cupos se liberarán automáticamente.',
+  CANCEL_CONFIRM_OK: 'Sí, cancelar',
+  CANCEL_CONFIRM_CANCEL: 'No',
+  CANCEL_LOADING: 'Cancelando...',
+  CANCEL_SUCCESS: 'Reservación cancelada exitosamente.',
+  CANCEL_ERROR: 'Error al cancelar la reservación',
+  VIEW_RESERVATIONS: 'Ver reservaciones',
+  SLOTS_LABEL: 'cupos',
+  SLOT_LABEL: 'cupo',
+  PAGINATION_WARNING: 'Hay más reservaciones que no se muestran. Usa el buscador para filtrar.',
+} as const;
