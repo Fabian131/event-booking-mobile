@@ -84,7 +84,7 @@ export default function AdminEventDetailScreen() {
           style={styles.footerButton}
           onPress={() =>
             router.push({
-              pathname: '/(admin)/events/[id]/reservations',
+              pathname: '/(admin)/events/[id]/reservations' as any,
               params: { id },
             })
           }

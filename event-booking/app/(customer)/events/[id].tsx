@@ -33,13 +33,13 @@ export default function EventDetailScreen() {
     );
   }
 
-  function handleBook() {
+  const handleBook = () => {
     if (!isAuthenticated) {
       setModalVisible(true);
       return;
     }
     router.push({ pathname: '/(customer)/events/book', params: { event_id: event.id } });
-  }
+  };
 
   const categoryColor = CATEGORY.COLORS[event.category];
   const categoryLabel = CATEGORY.LABELS[event.category];
