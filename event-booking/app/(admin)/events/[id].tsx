@@ -1,11 +1,11 @@
 import { ScrollView, StyleSheet, View, Alert, Pressable } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Image } from 'expo-image';
 import { useState, useRef, useEffect } from 'react';
 import { ADMIN, CATEGORY, EVENTS, ERRORS } from '@/src/constants/ui';
 import { ApiError } from '@/src/types/auth';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { EventImage } from '@/src/components/domain/EventImage';
 import { InfoRow } from '@/src/components/ui/InfoRow';
 import { Loader } from '@/src/components/ui/Loader';
 import { ThemedText } from '@/src/components/ui/themed-text';
@@ -103,12 +103,7 @@ export default function AdminEventDetailScreen() {
       <Stack.Screen options={{ title: '' }} />
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Image
-          source={event.image_url ? { uri: event.image_url } : null}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-        />
+        <EventImage imageUrl={event.image_url} height={280} />
 
         <View style={styles.content}>
           <View style={styles.titleRow}>
@@ -185,10 +180,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
-  },
-  image: {
-    width: '100%',
-    height: 280,
   },
   content: {
     paddingHorizontal: 20,

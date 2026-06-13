@@ -1,8 +1,10 @@
 import { Redirect, Stack } from 'expo-router';
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { Loader } from '@/src/components/ui/Loader';
 import { LogoutButton } from '@/src/components/ui/LogoutButton';
+import { SearchHeaderButton } from '@/src/components/ui/SearchHeaderButton';
 import { useAuth } from '@/src/context/AuthContext';
 import { AUTH, ADMIN, EVENTS, RESERVATIONS } from '@/src/constants/ui';
 
@@ -29,7 +31,19 @@ export default function AdminLayout() {
         headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >
-      <Stack.Screen name="index" options={{ title: ADMIN.CALENDAR_TITLE }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          title: ADMIN.CALENDAR_TITLE,
+          headerRight: ({ tintColor }) => (
+            <View style={styles.headerActions}>
+              <SearchHeaderButton color={tintColor} href="/(admin)/search" />
+              <LogoutButton color={tintColor} />
+            </View>
+          ),
+        }}
+      />
+      <Stack.Screen name="search" options={{ headerTitle: EVENTS.SEARCH_TITLE }} />
       <Stack.Screen name="create-event" options={{ title: EVENTS.CREATE_TITLE }} />
       <Stack.Screen name="edit-event/[id]" options={{ title: EVENTS.EDIT_TITLE }} />
       <Stack.Screen name="events/[id]" />
@@ -37,3 +51,10 @@ export default function AdminLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});
