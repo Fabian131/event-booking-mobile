@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react-nativ
 import { AuthProvider } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth';
 import { ApiError } from '@/src/types/auth';
+import { SERVER_ERROR } from '@/src/constants/ui';
 import RegisterScreen from '@/app/(auth)/register';
 
 jest.mock('@/src/services/auth');
@@ -40,7 +41,7 @@ describe('409 conflict error', () => {
     fireEvent.press(screen.getByText('Registrarse'));
 
     await waitFor(() => {
-      expect(screen.getByText('Email already registered')).toBeTruthy();
+      expect(screen.getByText(SERVER_ERROR.EMAIL_REGISTERED)).toBeTruthy();
     });
   });
 
@@ -67,7 +68,7 @@ describe('409 conflict error', () => {
     fireEvent.press(screen.getByText('Registrarse'));
 
     await waitFor(() => {
-      expect(screen.getByText('Phone number already registered')).toBeTruthy();
+      expect(screen.getByText(SERVER_ERROR.PHONE_REGISTERED)).toBeTruthy();
     });
   });
 });

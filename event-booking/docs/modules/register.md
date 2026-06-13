@@ -6,11 +6,11 @@
 
 - **Module Code**: `EVB-001`
 - **API Contract**: `api-contracts/register-user.yaml`
-- **Responsible**: Fabian Sanchez Salinas
+- **Responsible**: Fabian Sanchez Salinas y Abigail Ramirez Chavarria
 - **Status**: Completed
-- **Version**: `1.2.0`
+- **Version**: `1.3.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-05`
+- **Last Updated**: `2026-06-13`
 
 ---
 
@@ -440,13 +440,15 @@ All errors are accumulated and displayed simultaneously (matching the API contra
 
 ### Server-Side Errors
 
-| Status   | Condition                  | UI Mapping                                      |
-|----------|----------------------------|-------------------------------------------------|
-| 422      | Backend validation failure | `details[]` merged into field-level errors      |
-| 409      | Duplicate email or phone   | `details[]` merged into field-level errors      |
-| 500      | Unexpected server error    | Red banner with `ApiError.message`              |
-| Network  | `fetch` throws `TypeError` | Red banner: "No se pudo conectar..."            |
-| Unknown  | Any other error            | Red banner: "Ocurrio un error inesperado..."    |
+Server-side `details[]` messages are translated from English to Spanish via `translateServerErrors()` before display. The translation map is defined in `src/constants/ui.ts` as `SERVER_ERROR_TRANSLATIONS`.
+
+| Status   | Condition                  | UI Mapping                                            |
+|----------|----------------------------|-------------------------------------------------------|
+| 422      | Backend validation failure | `details[]` translated and merged into field errors   |
+| 409      | Duplicate email or phone   | `details[]` translated and merged into field errors   |
+| 500      | Unexpected server error    | Red banner with `translateServerMessage(ApiError.message)` |
+| Network  | `fetch` throws `TypeError` | Red banner: "No se pudo conectar..."                  |
+| Unknown  | Any other error            | Red banner: "Ocurrio un error inesperado..."          |
 
 ---
 
@@ -689,6 +691,12 @@ npx jest --ci --coverage --verbose
 
 ## Changelog
 
+### v1.3.0 — 2026-06-13
+- Added `SERVER_ERROR_TRANSLATIONS` map and `translateServerErrors()` helper in `src/constants/ui.ts`
+- Server-side error messages (email/phone already registered, validation failures) are now translated from English to Spanish before display
+- Fixed password visibility toggle icon in `Input` component (eye icon was inverted)
+- Updated conflict and server validation feature tests to use constants
+
 ### v1.2.0 — 2026-06-05
 - Reorganized tests into three-layer structure: `tests/Unit/`, `tests/Feature/`, `tests/Browser/`
 - Split 2 monolithic test files into 18 individual files by test type and scenario
@@ -736,5 +744,5 @@ npx jest --ci --coverage --verbose
 
 ---
 
-**Last updated**: `2026-06-05`
-**Documented by**: Fabian Sanchez Salinas
+**Last updated**: `2026-06-13`
+**Documented by**: Fabian Sanchez Salinas y Abigail Ramirez Chavarria

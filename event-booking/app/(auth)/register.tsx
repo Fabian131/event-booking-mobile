@@ -13,7 +13,7 @@ import {
   type RegisterFormValues,
 } from '@/src/utils/validators';
 import type { FieldError } from '@/src/types/auth';
-import { AUTH, ERRORS } from '@/src/constants/ui';
+import { AUTH, ERRORS, translateServerErrors, translateServerMessage } from '@/src/constants/ui';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
@@ -71,9 +71,9 @@ export default function RegisterScreen() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.details && err.details.length > 0) {
-          setErrors(err.details);
+          setErrors(translateServerErrors(err.details));
         }
-        setServerError(err.message);
+        setServerError(translateServerMessage(err.message));
       } else if (err instanceof TypeError) {
         setServerError(ERRORS.NETWORK);
       } else {

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth';
 import { ApiError } from '@/src/types/auth';
+import { SERVER_ERROR, VALIDATION } from '@/src/constants/ui';
 import LoginScreen from '@/app/(auth)/login';
 
 jest.mock('@/src/services/auth');
@@ -52,8 +53,8 @@ describe('server validation error', () => {
     fireEvent.press(screen.getByText('Ingresar'));
 
     await waitFor(() => {
-      expect(screen.getByText('Email must be a valid email address')).toBeTruthy();
-      expect(screen.getByText('Password is required')).toBeTruthy();
+      expect(screen.getByText(SERVER_ERROR.EMAIL_INVALID)).toBeTruthy();
+      expect(screen.getByText(VALIDATION.PASSWORD_REQUIRED)).toBeTruthy();
     });
 
     expect(screen.getByText('Revisa los campos ingresados e intenta nuevamente.')).toBeTruthy();

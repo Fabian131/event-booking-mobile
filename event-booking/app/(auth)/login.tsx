@@ -9,7 +9,7 @@ import { Button } from '@/src/components/ui/Button';
 import { useAuth } from '@/src/context/AuthContext';
 import { ApiError, type FieldError } from '@/src/types/auth';
 import { validateLoginForm, type LoginFormValues } from '@/src/utils/validators';
-import { AUTH, ERRORS } from '@/src/constants/ui';
+import { AUTH, ERRORS, translateServerErrors } from '@/src/constants/ui';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -82,7 +82,7 @@ export default function LoginScreen() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (Array.isArray(err.details) && err.details.length > 0) {
-          setErrors(err.details);
+          setErrors(translateServerErrors(err.details));
         }
 
         if (err.status === 401) {
