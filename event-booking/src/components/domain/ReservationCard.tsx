@@ -2,10 +2,10 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { formatTime } from '@/src/utils/dateHelpers';
 import { CUSTOMER } from '@/src/constants/ui';
-import type { ReservationSummary } from '@/src/types/reservations';
+import type { Reservation } from '@/src/types/reservations';
 
 interface ReservationCardProps {
-  reservation: ReservationSummary;
+  reservation: Reservation;
 }
 
 export function ReservationCard({ reservation }: ReservationCardProps) {

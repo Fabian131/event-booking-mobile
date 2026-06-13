@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import { ReservationCard } from '@/src/components/domain/ReservationCard';
-import type { ReservationSummary } from '@/src/types/reservations';
+import type { Reservation } from '@/src/types/reservations';
 
 jest.mock('@/src/constants/ui', () => ({
   CUSTOMER: {
@@ -11,7 +11,7 @@ jest.mock('@/src/constants/ui', () => ({
   },
 }));
 
-function makeReservation(overrides?: Partial<ReservationSummary>): ReservationSummary {
+function makeReservation(overrides?: Partial<Reservation>): Reservation {
   return {
     id: 'abc-1',
     event_id: 'evt-1',

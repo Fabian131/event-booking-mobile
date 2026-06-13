@@ -8,6 +8,8 @@ export interface ReservationUser {
   user_email: string;
 }
 
+export type ReservationUserContext = ReservationUser;
+
 export interface Reservation {
   id: string;
   event_id: string;
@@ -29,7 +31,7 @@ export interface ReservationListResponse {
 }
 
 export interface ReservationListParams {
-  event_id: string;
+  event_id?: string;
   search?: string;
   status?: ReservationStatus;
   page?: number;

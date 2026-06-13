@@ -3,7 +3,7 @@ import { useReservationsCalendar } from '@/src/hooks/useReservationsCalendar';
 import { reservationsService } from '@/src/services/reservations';
 import { ERRORS } from '@/src/constants/ui';
 import type { CalendarDatesResponse } from '@/src/types/events';
-import type { PaginatedReservationsResponse } from '@/src/types/reservations';
+import type { ReservationListResponse } from '@/src/types/reservations';
 
 jest.mock('@/src/services/reservations');
 jest.mock('react-native', () => {
@@ -20,7 +20,7 @@ const mockCalendarResponse: CalendarDatesResponse = {
   month: 6,
 };
 
-const mockReservationsResponse: PaginatedReservationsResponse = {
+const mockReservationsResponse: ReservationListResponse = {
   data: [
     {
       id: 'r1',

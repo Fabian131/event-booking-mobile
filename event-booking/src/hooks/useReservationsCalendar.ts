@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { reservationsService } from '@/src/services/reservations';
 import { getTodayYear, getTodayMonth } from '@/src/utils/dateHelpers';
 import type { CalendarDateItem } from '@/src/types/events';
-import type { ReservationSummary } from '@/src/types/reservations';
+import type { Reservation } from '@/src/types/reservations';
 import { ERRORS } from '@/src/constants/ui';
 
 interface UseReservationsCalendarReturn {
   calendarDates: CalendarDateItem[];
-  dayReservations: ReservationSummary[];
+  dayReservations: Reservation[];
   selectedDate: string | null;
   currentYear: number;
   currentMonth: number;
@@ -24,7 +24,7 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
   const [currentYear, setCurrentYear] = useState(getTodayYear());
   const [currentMonth, setCurrentMonth] = useState(getTodayMonth());
   const [calendarDates, setCalendarDates] = useState<CalendarDateItem[]>([]);
-  const [dayReservations, setDayReservations] = useState<ReservationSummary[]>([]);
+  const [dayReservations, setDayReservations] = useState<Reservation[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [calendarLoading, setCalendarLoading] = useState(true);
   const [reservationsLoading, setReservationsLoading] = useState(false);

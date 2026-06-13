@@ -1,8 +1,7 @@
 import { reservationsService } from '@/src/services/reservations';
 import type { CalendarDatesResponse } from '@/src/types/events';
 import type {
-  PaginatedReservationsResponse,
-  ReservationsListParams,
+  ReservationListParams,
 } from '@/src/types/reservations';
 
 jest.mock('@/src/services/reservations');
@@ -30,7 +29,7 @@ describe('reservationsService', () => {
 
   describe('list', () => {
     it('should include date and default pagination in query', async () => {
-      const mockRes: ReservationsListParams = { date: '2026-07-15' };
+      const mockRes: ReservationListParams = { date: '2026-07-15' };
       (reservationsService.list as jest.Mock).mockResolvedValue({
         data: [],
         pagination: { page: 1, limit: 50, total: 0, total_pages: 0, has_next_page: false },
