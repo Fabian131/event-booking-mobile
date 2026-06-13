@@ -273,8 +273,8 @@ describe('useReservationsCalendar', () => {
       expect(reservationsService.getCalendarDates).toHaveBeenCalled();
     });
 
-    it('should set error on ApiError and clear cancellingId', async () => {
-      const apiError = new ApiError('Reservation already cancelled', 400);
+    it('should set localized error on 400 ApiError (already cancelled)', async () => {
+      const apiError = new ApiError('This reservation has already been cancelled', 400);
       (reservationsService.cancel as jest.Mock).mockRejectedValue(apiError);
 
       const { result } = await setupWithReservations();
@@ -283,7 +283,21 @@ describe('useReservationsCalendar', () => {
         await result.current.cancelReservation('r1');
       });
 
-      expect(result.current.error).toBe('Reservation already cancelled');
+      expect(result.current.error).toBe('Esta reservación ya fue cancelada.');
+      expect(result.current.cancellingId).toBeNull();
+    });
+
+    it('should set error message from ApiError for non-400/404 statuses', async () => {
+      const apiError = new ApiError('Server exploded', 500);
+      (reservationsService.cancel as jest.Mock).mockRejectedValue(apiError);
+
+      const { result } = await setupWithReservations();
+
+      await act(async () => {
+        await result.current.cancelReservation('r1');
+      });
+
+      expect(result.current.error).toBe('Server exploded');
       expect(result.current.cancellingId).toBeNull();
     });
 
@@ -343,7 +357,7 @@ describe('useReservationsCalendar', () => {
     });
 
     it('should clear previous error before attempting cancel', async () => {
-      const apiError = new ApiError('First error', 400);
+      const apiError = new ApiError('First error', 500);
       (reservationsService.cancel as jest.Mock).mockRejectedValueOnce(apiError);
       (reservationsService.cancel as jest.Mock).mockResolvedValueOnce({});
 

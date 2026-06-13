@@ -105,13 +105,15 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
       );
       fetchCalendarDates(currentYear, currentMonth).catch(() => {});
       return true;
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 404) {
-          setError('Esta reservación ya no existe.');
-        } else {
-          setError(err.message);
-        }
+    } catch (err: unknown) {
+      const apiStatus = (err as { status?: number }).status;
+      const apiMessage = (err as { message?: string }).message;
+      if (apiStatus === 404) {
+        setError('Esta reservación ya no existe.');
+      } else if (apiStatus === 400) {
+        setError('Esta reservación ya fue cancelada.');
+      } else if (apiStatus != null) {
+        setError(apiMessage || RESERVATIONS.CANCEL_ERROR);
       } else if (err instanceof TypeError) {
         setError(ERRORS.NETWORK);
       } else {
