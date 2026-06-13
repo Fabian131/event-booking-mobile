@@ -8,9 +8,9 @@
 - **API Contract**: `api-contracts/login-user.yaml`
 - **Responsible**: Abigail Ramirez Chavarria
 - **Status**: Completed
-- **Version**: `1.2.0`
+- **Version**: `1.3.0`
 - **Created**: `2026-06-05`
-- **Last Updated**: `2026-06-05`
+- **Last Updated**: `2026-06-13`
 
 ---
 
@@ -371,10 +371,12 @@ LoginScreen
 
 ### Server-Side Errors
 
+Server-side `details[]` messages are translated from English to Spanish via `translateServerErrors()` before display. The translation map is defined in `src/constants/ui.ts` as `SERVER_ERROR_TRANSLATIONS`.
+
 | Status / Error | Trigger | UI Mapping |
 |----------------|---------|------------|
 | `401` | Invalid credentials or inactive account | Red banner: `Credenciales inválidas. Verifica tu correo y contraseña.` |
-| `422` | Backend validation failure | Field errors from `details[]` plus validation banner |
+| `422` | Backend validation failure | Field errors from `details[]` translated to Spanish plus validation banner |
 | `500` or unexpected `ApiError` | Unexpected backend failure | Generic red error banner |
 | `TypeError` | Network request failed | Red banner: `No se pudo conectar con el servidor. Verifica tu conexión.` |
 
@@ -451,6 +453,13 @@ npm test
 
 ## Changelog
 
+### v1.3.0 - 2026-06-13
+
+- Added `SERVER_ERROR_TRANSLATIONS` map and `translateServerErrors()` helper in `src/constants/ui.ts`
+- Server-side error details (e.g., "Email must be a valid email address", "Password is required") are now translated from English to Spanish before display
+- Fixed password visibility toggle icon in `Input` component (eye icon was inverted)
+- Updated server validation feature test to use constants
+
 ### v1.2.0 - 2026-06-05
 
 - Applied correct Spanish orthography (diacritics, accents, opening question marks) across login and register screens.
@@ -493,5 +502,5 @@ Before considering this document complete:
 
 ---
 
-**Last updated**: `2026-06-05`
+**Last updated**: `2026-06-13`
 **Documented by**: `Abigail Ramirez Chavarria`

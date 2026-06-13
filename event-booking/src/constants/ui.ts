@@ -175,6 +175,44 @@ export const VALIDATION = {
   IMAGE_FORMAT: 'La imagen debe estar en formato PNG, JPG o WebP.',
 } as const;
 
+export const SERVER_ERROR = {
+  EMAIL_REGISTERED: 'Este correo electrónico ya está registrado',
+  PHONE_REGISTERED: 'Este número de teléfono ya está registrado',
+  EMAIL_INVALID: 'Ingresa un correo electrónico válido',
+  INVALID_CREDENTIALS: 'Credenciales inválidas. Verifica tu correo y contraseña.',
+  VALIDATION_ERRORS: 'Uno o más errores de validación ocurrieron',
+  VALIDATION_ERROR: 'Error de validación',
+} as const;
+
+export const SERVER_ERROR_TRANSLATIONS: Record<string, string> = {
+  'Email already registered': SERVER_ERROR.EMAIL_REGISTERED,
+  'Phone number already registered': SERVER_ERROR.PHONE_REGISTERED,
+  'First name can only contain letters': VALIDATION.FIRST_NAME_LETTERS,
+  'Last name can only contain letters': VALIDATION.LAST_NAME_LETTERS,
+  'Password must contain at least one uppercase letter': VALIDATION.PASSWORD_UPPER,
+  'Password must contain at least one lowercase letter': VALIDATION.PASSWORD_LOWER,
+  'Password must contain at least one number': VALIDATION.PASSWORD_NUMBER,
+  'Password must contain at least one special character': VALIDATION.PASSWORD_SPECIAL,
+  'Email must be a valid email address': SERVER_ERROR.EMAIL_INVALID,
+  'Password is required': VALIDATION.PASSWORD_REQUIRED,
+  'Invalid email or password': SERVER_ERROR.INVALID_CREDENTIALS,
+  'One or more validation errors occurred': SERVER_ERROR.VALIDATION_ERRORS,
+  'validation_error': SERVER_ERROR.VALIDATION_ERROR,
+};
+
+export function translateServerErrors(
+  details: Array<{ field: string; message: string }>,
+): Array<{ field: string; message: string }> {
+  return details.map((d) => ({
+    ...d,
+    message: SERVER_ERROR_TRANSLATIONS[d.message] ?? d.message,
+  }));
+}
+
+export function translateServerMessage(message: string): string {
+  return SERVER_ERROR_TRANSLATIONS[message] ?? message;
+}
+
 export const ERRORS = {
   NETWORK: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
   GENERIC: 'Ocurrió un error inesperado. Intenta nuevamente.',
