@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react-native';
-import { AuthProvider } from '@/src/context/AuthContext';
 import RegisterScreen from '@/app/(auth)/register';
 
 jest.mock('@/src/services/auth');
@@ -9,6 +8,14 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
 }));
 jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: () => ({
+    register: (data: any) => {
+      const { authService } = require('@/src/services/auth');
+      return authService.register(data);
+    },
+  }),
+}));
 
 describe('navigation between screens', () => {
   jest.setTimeout(15000);
@@ -19,9 +26,7 @@ describe('navigation between screens', () => {
 
   it('should have a link to login screen in the footer', () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     expect(screen.getByText('¿Ya tienes cuenta? ')).toBeTruthy();
@@ -30,9 +35,7 @@ describe('navigation between screens', () => {
 
   it('should display all form labels in the correct order', () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     const labels = [
@@ -56,9 +59,7 @@ describe('navigation between screens', () => {
 
   it('should accept accented names following Latin American naming conventions', () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     fireEvent.changeText(

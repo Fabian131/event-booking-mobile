@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import { AuthProvider } from '@/src/context/AuthContext';
 import { authService } from '@/src/services/auth';
 import RegisterScreen from '@/app/(auth)/register';
 
@@ -10,6 +9,14 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
 }));
 jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: () => ({
+    register: (data: any) => {
+      const { authService } = require('@/src/services/auth');
+      return authService.register(data);
+    },
+  }),
+}));
 
 describe('form interaction patterns', () => {
   jest.setTimeout(15000);
@@ -20,9 +27,7 @@ describe('form interaction patterns', () => {
 
   it('should toggle password visibility when eye icon is pressed', () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     const passwordInput = screen.getByPlaceholderText('Crea una contraseña');
@@ -43,9 +48,7 @@ describe('form interaction patterns', () => {
     });
 
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     // Submit empty form to trigger errors
@@ -87,9 +90,7 @@ describe('form interaction patterns', () => {
 
   it('should show all client errors simultaneously for multiple invalid fields', async () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     // Fill first name correctly, leave rest empty or invalid

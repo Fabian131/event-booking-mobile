@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react-native';
-import { AuthProvider } from '@/src/context/AuthContext';
 import RegisterScreen from '@/app/(auth)/register';
 
 jest.mock('@/src/services/auth');
@@ -8,6 +7,14 @@ jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
 }));
 jest.mock('@expo/vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('@/src/context/AuthContext', () => ({
+  useAuth: () => ({
+    register: (data: any) => {
+      const { authService } = require('@/src/services/auth');
+      return authService.register(data);
+    },
+  }),
+}));
 
 describe('register form render', () => {
   beforeEach(() => {
@@ -16,9 +23,7 @@ describe('register form render', () => {
 
   it('should render all form fields', () => {
     render(
-      <AuthProvider>
-        <RegisterScreen />
-      </AuthProvider>,
+      <RegisterScreen />
     );
 
     expect(screen.getByText('Crear Cuenta')).toBeTruthy();
