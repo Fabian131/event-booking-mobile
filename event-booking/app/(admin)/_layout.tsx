@@ -28,15 +28,21 @@ export default function AdminLayout() {
           fontWeight: '900',
           color: '#0a7ea4',
         },
-        headerRight: ({ tintColor }) => (
-          <View style={styles.headerActions}>
-            <SearchHeaderButton color={tintColor} />
-            <LogoutButton color={tintColor} />
-          </View>
-        ),
+        headerRight: ({ tintColor }) => <LogoutButton color={tintColor} />,
       }}
     >
-      <Stack.Screen name="index" options={{ title: ADMIN.CALENDAR_TITLE }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          title: ADMIN.CALENDAR_TITLE,
+          headerRight: ({ tintColor }) => (
+            <View style={styles.headerActions}>
+              <SearchHeaderButton color={tintColor} href="/(admin)/search" />
+              <LogoutButton color={tintColor} />
+            </View>
+          ),
+        }}
+      />
       <Stack.Screen name="search" options={{ headerTitle: EVENTS.SEARCH_TITLE }} />
       <Stack.Screen name="create-event" options={{ title: EVENTS.CREATE_TITLE }} />
       <Stack.Screen name="edit-event/[id]" options={{ title: EVENTS.EDIT_TITLE }} />
