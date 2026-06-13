@@ -31,6 +31,7 @@ function makeReservation(overrides?: Partial<Reservation>): Reservation {
     notes: null,
     user: { user_id: 'u1', user_name: 'Jane', user_email: 'jane@test.com' },
     created_at: '2026-06-01T00:00:00Z',
+    updated_at: '2026-06-01T00:00:00Z',
     ...overrides,
   };
 }

@@ -32,6 +32,7 @@ const mockReservationsResponse: ReservationListResponse = {
       notes: null,
       user: { user_id: 'u1', user_name: 'Jane', user_email: 'jane@test.com' },
       created_at: '2026-06-01T00:00:00Z',
+      updated_at: '2026-06-01T00:00:00Z',
     },
     {
       id: 'r2',
@@ -46,6 +47,7 @@ const mockReservationsResponse: ReservationListResponse = {
       notes: null,
       user: { user_id: 'u1', user_name: 'Jane', user_email: 'jane@test.com' },
       created_at: '2026-06-01T00:00:00Z',
+      updated_at: '2026-06-01T00:00:00Z',
     },
   ],
   pagination: { page: 1, limit: 50, total: 2, total_pages: 1, has_next_page: false },
@@ -279,7 +281,7 @@ describe('useReservationsCalendar', () => {
         await result.current.cancelReservation('r1');
       });
 
-      expect(result.current.error).toBe('Esta reservación ya fue cancelada.');
+      expect(result.current.error).toBe(RESERVATIONS.CANCEL_ALREADY_CANCELLED);
       expect(result.current.cancellingId).toBeNull();
     });
 
@@ -320,7 +322,7 @@ describe('useReservationsCalendar', () => {
         await result.current.cancelReservation('r1');
       });
 
-      expect(result.current.error).toBe('Esta reservación ya no existe.');
+      expect(result.current.error).toBe(RESERVATIONS.CANCEL_NOT_FOUND);
       expect(result.current.cancellingId).toBeNull();
     });
 
