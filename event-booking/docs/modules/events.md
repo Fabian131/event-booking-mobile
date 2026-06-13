@@ -8,7 +8,7 @@
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
 - **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría, Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.3.1`
+- **Version**: `1.3.2`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-12`
 
@@ -165,6 +165,7 @@ src/
 │   └── domain/
 │       ├── EventCard.tsx                  # Large event card + EventCardSkeleton (animated pulse)
 │       │                                  #   onPress prop wired to detail navigation
+│       ├── EventImage.tsx                 # Shared image/placeholder with calendar icon fallback
 │       └── AuthGuardModal.tsx             # Reusable login-intercept modal (visible, onClose, onLogin)
 ├── utils/
 │   └── dateHelpers.ts                     # formatEventDate(), formatEventTime() — es-CR locale
@@ -374,6 +375,7 @@ useFocusEffect retriggers getById → updated capacity displayed
 | `SearchHeaderButton`| `src/components/ui/SearchHeaderButton.tsx`| `color?` — navigates to `/events/search`                   |
 | `EventCard`         | `src/components/domain/EventCard.tsx`     | `event: Event, onPress?: () => void`                |
 | `EventCardSkeleton` | `src/components/domain/EventCard.tsx`     | Animated pulse placeholder                                 |
+| `EventImage`        | `src/components/domain/EventImage.tsx`    | `imageUrl, height?` — image or gray placeholder with calendar icon |
 | `AuthGuardModal`    | `src/components/domain/AuthGuardModal.tsx`| `visible, onClose, onLogin` — login-intercept modal        |
 
 ### Services
@@ -665,6 +667,10 @@ npx jest --watch tests/Feature/events/
 ---
 
 ## Changelog
+
+### v1.3.2 — 2026-06-12 (EventImage placeholder)
+
+- **EventImage component** (`src/components/domain/EventImage.tsx`): extracted shared image/placeholder logic from `EventCard`, customer detail, and admin detail screens. Events without an `image_url` now render a neutral gray background with a centered calendar icon instead of an empty white space. Height is configurable (default 200px, 280px for detail screens).
 
 ### v1.3.1 — 2026-06-12 (QA review fixes)
 

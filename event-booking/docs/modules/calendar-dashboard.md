@@ -301,6 +301,7 @@ Centralizes the event loading logic for the calendar and the selected day's even
 
 - **Dots only in current month**: Dots only appear in the currently loaded month. Adjacent months require scrolling/navigation to fetch their data.
 - **Events crossing midnight**: The `ck_events_time_range` constraint (`end_time > start_time`) does not allow events to cross 00:00.
+- **Month navigation dots bug**: `react-native-ui-datepicker` v3.3.0 uses 0-indexed months internally while the app hook uses 1-indexed months. The library's `useEffect` calls back with 0-indexed values, causing an off-by-one loop that reverts the displayed month and prevents dots and events from loading after navigating to a different month. A library upgrade or custom header replacement is needed to resolve this.
 
 ---
 
