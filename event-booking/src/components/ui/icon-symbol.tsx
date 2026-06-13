@@ -21,6 +21,7 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   'calendar': 'calendar-month',
   'list.bullet': 'list',
+  'magnifyingglass': 'search',
   'person.fill': 'person',
   'rectangle.portrait.and.arrow.right': 'logout',
 } as IconMapping;

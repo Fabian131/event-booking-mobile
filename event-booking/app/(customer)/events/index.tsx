@@ -1,39 +1,27 @@
 import { useCallback } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { EventCard, EventCardSkeleton } from '@/src/components/domain/EventCard';
+import { EventCard } from '@/src/components/domain/EventCard';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { ErrorBanner } from '@/src/components/ui/ErrorBanner';
+import { ListFooterLoader } from '@/src/components/ui/ListFooterLoader';
+import { SkeletonList } from '@/src/components/ui/SkeletonList';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
+import { CUSTOMER, EVENTS } from '@/src/constants/ui';
 import { useEvents } from '@/src/hooks/useEvents';
 import type { Event } from '@/src/types/events';
-
-const SKELETON_COUNT = 5;
 
 function ListHeader() {
   return (
     <ThemedView style={styles.listHeader}>
-      <ThemedText>Explora los eventos disponibles</ThemedText>
+      <ThemedText>{CUSTOMER.EVENTS_SUBTITLE}</ThemedText>
     </ThemedView>
-  );
-}
-
-function SkeletonList() {
-  return (
-    <>
-      {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-        <View key={i} style={i > 0 ? styles.separator : undefined}>
-          <EventCardSkeleton />
-        </View>
-      ))}
-    </>
   );
 }
 
@@ -53,37 +41,21 @@ export default function CustomerEventsScreen() {
 
   const Separator = useCallback(() => <View style={styles.separator} />, []);
 
-  const renderFooter = () => {
-    if (!loading || events.length === 0) return null;
-    return (
-      <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#0a7ea4" />
-      </View>
-    );
-  };
-
   const renderEmpty = () => {
     if (loading) return <SkeletonList />;
     if (error) return null;
     return (
       <EmptyState
         icon="📅"
-        title="Sin eventos por ahora"
-        subtitle="Vuelve pronto para descubrir nuevas actividades."
+        title={EVENTS.FEED_EMPTY_TITLE}
+        subtitle={EVENTS.FEED_EMPTY_SUBTITLE}
       />
     );
   };
 
   return (
     <ThemedView style={styles.container}>
-      {error && (
-        <View style={styles.errorBanner}>
-          <ThemedText style={styles.errorText}>{error}</ThemedText>
-          <TouchableOpacity onPress={refresh} style={styles.retryButton}>
-            <ThemedText style={styles.retryText}>Reintentar</ThemedText>
-          </TouchableOpacity>
-        </View>
-      )}
+      {error && <ErrorBanner message={error} onRetry={refresh} />}
 
       <FlatList
         testID="events-list"
@@ -96,7 +68,7 @@ export default function CustomerEventsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#0a7ea4" />
         }
         ListHeaderComponent={ListHeader}
-        ListFooterComponent={renderFooter}
+        ListFooterComponent={<ListFooterLoader loading={loading} hasItems={events.length > 0} />}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={Separator}
@@ -130,38 +102,5 @@ const styles = StyleSheet.create({
   separator: {
     height: 16,
   },
-  footer: {
-    paddingVertical: 24,
-    alignItems: 'center',
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff3f3',
-    borderLeftWidth: 4,
-    borderLeftColor: '#dc3545',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 8,
-    gap: 8,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#dc3545',
-  },
-  retryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#dc3545',
-    borderRadius: 8,
-  },
-  retryText: {
-    fontSize: 13,
-    color: '#fff',
-    fontWeight: '600',
-  },
+
 });

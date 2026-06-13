@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { eventsService } from '@/src/services/events';
+import { CUSTOMER } from '@/src/constants/ui';
 import CustomerEventsScreen from '@/app/(customer)/events/index';
 import type { Event, PaginationMeta } from '@/src/types/events';
 
@@ -67,7 +68,7 @@ describe('events feed render', () => {
 
     await renderFeedScreen();
 
-    expect(screen.getByText('Explora los eventos disponibles')).toBeTruthy();
+    expect(screen.getByText(CUSTOMER.EVENTS_SUBTITLE)).toBeTruthy();
   });
 
   it('should display event cards when API returns data', async () => {
