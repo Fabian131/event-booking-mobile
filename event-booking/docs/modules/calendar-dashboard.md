@@ -307,11 +307,18 @@ Centralizes the event loading logic for the calendar and the selected day's even
 
 ## Changelog
 
+### v1.2.1 — 2026-06-12 (admin search QA fixes)
+
+- Expanded `AdminSearchFeatureTest` from 6 to 12 tests: text search, date filter, loading skeleton, server error, network error, and pagination.
+- Added `variant` prop to `EventCardSkeleton`/`SkeletonList` so admin search loading state matches compact card layout.
+- Added `accessibilityLabel` to filter chips and date buttons.
+- Replaced string interpolation with typed route params for admin search navigation.
+
 ### v1.2.0 — 2026-06-12 (admin search)
 - Added `SearchHeaderButton` to the admin header, next to `LogoutButton`.
 - Registered `search` route in admin Stack layout.
 - Created `app/(admin)/search.tsx` — advanced search screen with keyword, category, and date filters, reusing shared components and the `useEvents` hook.
-- Added `AdminSearchFeatureTest.tsx` with 6 tests covering render, category filter, empty states, and navigation to admin event detail.
+- Added `AdminSearchFeatureTest.tsx` with 12 tests covering render, text search, date filter, category filter, loading skeleton, error handling, pagination, empty states, and navigation.
 - See `docs/modules/events.md` for the shared search architecture (v1.3.0).
 
 ### v1.1.1 — 2026-06-12

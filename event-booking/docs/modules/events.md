@@ -8,7 +8,7 @@
 - **API Contracts**: `api-contracts/list-events.yaml` · `api-contracts/get-event-by-id.yaml`
 - **Responsible**: Justin Moreira Matarrita, Abigail Ramírez Chavarría, Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.3.2`
+- **Version**: `1.3.3`
 - **Created**: `2026-06-05`
 - **Last Updated**: `2026-06-12`
 
@@ -667,6 +667,15 @@ npx jest --watch tests/Feature/events/
 ---
 
 ## Changelog
+
+### v1.3.3 — 2026-06-12 (admin search QA fixes)
+
+- **Skeleton compact variant**: added `variant` prop to `EventCardSkeleton` and `SkeletonList` so the loading state visually matches the compact card layout used in admin search. Default variant unchanged for customer screens.
+- **Admin search test coverage expanded**: `AdminSearchFeatureTest` grew from 6 to 12 tests, adding text search debounce, date filter, loading skeleton visibility, server error (500), network error, and pagination.
+- **Accessibility**: added `accessibilityLabel` to all category chips, date button, and clear date button in admin search.
+- **Typed route params**: replaced `router.push(\`/(admin)/events/${id}\`)` with `router.push({ pathname: '/(admin)/events/[id]', params: { id } })` for type-safe navigation.
+- **Component table**: added `EventImage`, `ErrorBanner`, `SkeletonList`, `ListFooterLoader`, and `SearchHeaderButton` to the components table.
+- **File map**: included `search.tsx`, `EventImage.tsx`, `ErrorBanner.tsx`, `SkeletonList.tsx`, `ListFooterLoader.tsx`, and `SearchHeaderButton.tsx`.
 
 ### v1.3.2 — 2026-06-12 (EventImage placeholder)
 
