@@ -31,6 +31,10 @@ export const eventsService = {
     return api.putForm<Event>(`/api/v1/events/${id}`, formData);
   },
 
+  delete(id: string): Promise<void> {
+    return api.delete(`/api/v1/events/${id}`);
+  },
+
   // ── Calendar dashboard ──────────────────────────────────────────────────
 
   getCalendarDates(year: number, month: number): Promise<CalendarDatesResponse> {

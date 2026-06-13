@@ -107,6 +107,43 @@ export const api = {
       body: data ? JSON.stringify(data) : undefined,
     }),
 
-  delete: <T>(endpoint: string) =>
-    request<T>(endpoint, { method: 'DELETE' }),
+  delete: async (endpoint: string) => {
+    const token = await getToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const url = `${API_BASE_URL}${endpoint}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'DELETE',
+        headers,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      let details = body.details;
+      let message = body.message;
+      if (!details && Array.isArray(body.detail)) {
+        details = body.detail;
+        if (!message) message = 'Errores de validación';
+      } else if (!message && typeof body.detail === 'string') {
+        message = body.detail;
+      }
+      throw new ApiError(
+        message || 'Error en la solicitud',
+        response.status,
+        details || undefined,
+      );
+    }
+    if (response.status === 204) return;
+    const text = await response.text();
+    return text ? JSON.parse(text) : undefined;
+  },
 };
