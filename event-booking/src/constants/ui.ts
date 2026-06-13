@@ -186,6 +186,7 @@ export const ERRORS = {
   EVENT_UPDATE_ERROR: 'Error al actualizar el evento',
   CALENDAR_LOAD_ERROR: 'No se pudo cargar el calendario.',
   CALENDAR_EVENTS_ERROR: 'No se pudieron cargar los eventos del día.',
+  CALENDAR_RESERVATIONS_ERROR: 'No se pudieron cargar las reservas del día.',
 } as const;
 
 export const ADMIN = {
@@ -238,7 +239,17 @@ export const CUSTOMER = {
   EVENTS_TITLE: 'Eventos',
   EVENTS_SUBTITLE: 'Explora los eventos disponibles',
   RESERVATIONS_TITLE: 'Mis Reservas',
-  RESERVATIONS_SUBTITLE: 'Historial y estado de tus reservaciones',
+  RESERVATIONS_EMPTY_TITLE: 'Selecciona un día',
+  RESERVATIONS_EMPTY_SUBTITLE: 'Toca un día en el calendario para ver tus reservas',
+  RESERVATIONS_NO_RESERVATIONS_TITLE: 'Sin reservas',
+  RESERVATIONS_NO_RESERVATIONS_SUBTITLE: 'No tienes reservas para este día',
+  RESERVATIONS_LOADING: 'Cargando reservas...',
+  RESERVATIONS_FOR_DAY: 'Reservas del',
+  RESERVATIONS_HEADING: 'Reservas del día',
+  STATUS_CONFIRMED: 'Confirmada',
+  STATUS_CANCELLED: 'Cancelada',
+  TICKET_SINGULAR: 'entrada',
+  TICKET_PLURAL: 'entradas',
 } as const;
 
 export const RESERVATIONS = {
