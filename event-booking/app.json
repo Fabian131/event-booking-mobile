@@ -8,10 +8,17 @@
     "scheme": "eventbooking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "updates": {
+      "url": "https://u.expo.dev/f56d5de8-1844-4beb-b24f-0b112d0cc283",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -21,6 +28,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
+        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.xxtybuxx.eventbooking"
@@ -56,6 +64,9 @@
         "projectId": "f56d5de8-1844-4beb-b24f-0b112d0cc283"
       }
     },
-    "owner": "event-booking"
+    "owner": "event-booking",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
