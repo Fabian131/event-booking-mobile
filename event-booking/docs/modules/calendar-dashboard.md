@@ -6,7 +6,7 @@
 
 ## General Information
 
-- **Module Code**: `EBM-02` (dashboard) · `EBM-XX` (admin search)
+- **Module Code**: `EBM-02` (dashboard) · `EBM-07` (admin search)
 - **API Contract**: `api-contracts/calendar-events.yaml`, `api-contracts/list-events.yaml`
 - **Responsible**: `Fabian Sanchez Salinas`, Abigail Ramírez Chavarría
 - **Status**: Completed
