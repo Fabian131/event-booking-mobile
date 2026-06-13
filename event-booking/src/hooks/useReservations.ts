@@ -8,8 +8,10 @@ export function useReservations(eventId: string) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const requestIdRef = useRef(0);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -32,6 +34,7 @@ export function useReservations(eventId: string) {
       if (currentRequestId !== requestIdRef.current) return;
 
       setReservations(response.data);
+      setHasNextPage(response.pagination.has_next_page);
     } catch (err) {
       if (currentRequestId !== requestIdRef.current) return;
 
@@ -59,20 +62,24 @@ export function useReservations(eventId: string) {
       clearTimeout(searchTimerRef.current);
     }
     searchTimerRef.current = setTimeout(() => {
-      loadReservations(text);
+      loadReservations(text.trim());
     }, 300);
   }, [loadReservations]);
 
   const cancelReservation = useCallback(async (reservationId: string): Promise<boolean> => {
     setCancellingId(reservationId);
     setError(null);
+    setSuccess(null);
     try {
       await reservationsService.cancel(reservationId);
       setReservations((prev) => prev.filter((r) => r.id !== reservationId));
+      setSuccess(RESERVATIONS.CANCEL_SUCCESS);
       return true;
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
+      } else if (err instanceof DOMException && err.name === 'AbortError') {
+        setError(ERRORS.NETWORK);
       } else if (err instanceof TypeError) {
         setError(ERRORS.NETWORK);
       } else {
@@ -88,8 +95,10 @@ export function useReservations(eventId: string) {
     reservations,
     loading,
     error,
+    success,
     search,
     cancellingId,
+    hasNextPage,
     onSearchChange,
     cancelReservation,
     loadReservations,

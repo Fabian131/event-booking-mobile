@@ -20,6 +20,7 @@ export interface Reservation {
   notes: string | null;
   user: ReservationUser;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface ReservationListResponse {
@@ -33,6 +34,7 @@ export interface ReservationListParams {
   status?: ReservationStatus;
   page?: number;
   limit?: number;
+  date?: string;
 }
 
 export interface CreateReservationRequest {

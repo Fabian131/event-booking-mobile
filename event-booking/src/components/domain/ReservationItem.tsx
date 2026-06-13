@@ -52,12 +52,17 @@ export function ReservationItem({ reservation, cancelling = false, onCancel }: R
 
         <View style={styles.actions}>
           {cancelling ? (
-            <ActivityIndicator size="small" color="#dc3545" />
+            <ActivityIndicator
+              size="small"
+              color="#dc3545"
+              accessibilityLabel={RESERVATIONS.CANCEL_LOADING}
+            />
           ) : (
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={handleCancel}
               activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               accessibilityRole="button"
               accessibilityLabel={`${RESERVATIONS.CANCEL_BUTTON} reservación de ${reservation.user.user_name}`}
             >
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#dc3545',

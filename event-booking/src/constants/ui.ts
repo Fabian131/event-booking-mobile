@@ -245,4 +245,5 @@ export const RESERVATIONS = {
   VIEW_RESERVATIONS: 'Ver reservaciones',
   SLOTS_LABEL: 'cupos',
   SLOT_LABEL: 'cupo',
+  PAGINATION_WARNING: 'Hay más reservaciones que no se muestran. Usa el buscador para filtrar.',
 } as const;

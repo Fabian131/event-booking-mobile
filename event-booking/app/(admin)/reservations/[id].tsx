@@ -22,8 +22,10 @@ export default function ReservationsListScreen() {
     reservations,
     loading,
     error,
+    success,
     search,
     cancellingId,
+    hasNextPage,
     onSearchChange,
     cancelReservation,
     loadReservations,
@@ -90,6 +92,12 @@ export default function ReservationsListScreen() {
         )}
       </View>
 
+      {success && (
+        <View style={styles.successBanner}>
+          <ThemedText style={styles.successText}>{success}</ThemedText>
+        </View>
+      )}
+
       {error && reservations.length > 0 && (
         <View style={styles.errorBanner}>
           <ThemedText style={styles.errorText}>{error}</ThemedText>
@@ -103,6 +111,15 @@ export default function ReservationsListScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderContent}
+        ListFooterComponent={
+          hasNextPage ? (
+            <View style={styles.paginationBanner}>
+              <ThemedText style={styles.paginationText}>
+                {RESERVATIONS.PAGINATION_WARNING}
+              </ThemedText>
+            </View>
+          ) : null
+        }
       />
     </ThemedView>
   );
@@ -138,6 +155,19 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     flexGrow: 1,
   },
+  successBanner: {
+    backgroundColor: '#e6f4ea',
+    borderRadius: 8,
+    padding: 12,
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#34a853',
+  },
+  successText: {
+    color: '#1e7e34',
+    textAlign: 'center',
+  },
   errorBanner: {
     backgroundColor: '#fdecea',
     borderRadius: 8,
@@ -150,5 +180,19 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#dc3545',
     textAlign: 'center',
+  },
+  paginationBanner: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  paginationText: {
+    color: '#856404',
+    textAlign: 'center',
+    fontSize: 13,
   },
 });
