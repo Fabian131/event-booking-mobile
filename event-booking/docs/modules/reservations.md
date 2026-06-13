@@ -4,11 +4,11 @@
 
 ## General Information
 
-- **Module Code**: `EBM-13`, `EBM-14`
-- **API Contract**: `api-contracts/create-reservation.yaml`, `api-contracts/calendar-reservations.yaml`, `api-contracts/list-reservations.yaml`
+- **Module Code**: `EBM-13`, `EBM-14`, `EBM-15`
+- **API Contract**: `api-contracts/create-reservation.yaml`, `api-contracts/calendar-reservations.yaml`, `api-contracts/list-reservations.yaml`, `api-contracts/cancel-reservation.yaml`
 - **Responsible**: Luis Alejandro Salazar Vargas
 - **Status**: Completed
-- **Version**: `1.2.1`
+- **Version**: `1.3.0`
 - **Created**: `2026-06-11`
 - **Last Updated**: `2026-06-12`
 
@@ -16,7 +16,7 @@
 
 ## Description
 
-Customer-facing reservation module with two features:
+Customer-facing reservation module with three features:
 
 1. **Booking Form** (EBM-13): Allows authenticated users to secure tickets for a
    specific event. Implements `create-reservation.yaml`.
@@ -25,6 +25,14 @@ Customer-facing reservation module with two features:
    "Reservas" tab where customers can browse their own reservations by date.
    Reuses the `Calendar` component from the admin dashboard. Implements
    `calendar-reservations.yaml` and `list-reservations.yaml`.
+
+3. **Cancel Reservation** (EBM-15): Allows customers to cancel a CONFIRMED
+   reservation directly from the reservation card in the calendar list.
+   A three-dot action button (⋯) opens an action sheet modal with a
+   "Cancelar reserva" option, followed by a native `Alert.alert` confirmation
+   dialog. On confirmation, calls `PATCH /api/v1/reservations/{id}/cancel`.
+   The UI updates optimistically (status → CANCELLED) and the calendar date
+   counts refresh automatically. Implements `cancel-reservation.yaml`.
 
 The screen receives the `event_id` as a URL parameter from the event detail
 screen (which enforces authentication via `AuthGuardModal`). On mount, it
@@ -128,7 +136,7 @@ validación" fallback.
 }
 ```
 
-### Error Responses
+### Error Responses (Create)
 
 | Status | Description                                                          | Screen Message (Spanish)                                       |
 |--------|----------------------------------------------------------------------|----------------------------------------------------------------|
@@ -145,6 +153,27 @@ Note: 400 and 409 responses may arrive as FastAPI `validation_error` format
 `detail` array into `ApiError.details` and defaults the message to
 "Errores de validación". The screen detects this pattern and substitutes
 the appropriate Spanish constant rather than showing raw backend strings.
+
+### Cancel Reservation
+
+**File:** `api-contracts/cancel-reservation.yaml`
+
+| Method | Route                                      | Auth | Description                     |
+|--------|---------------------------------------------|------|---------------------------------|
+| PATCH  | `/api/v1/reservations/{reservation_id}/cancel` | Yes  | Cancel a confirmed reservation  |
+
+**Response (200):**
+
+Returns the full `ReservationResponse` with `status: "CANCELLED"`.
+
+### Error Responses (Cancel)
+
+| Status | Description                     | Screen Message (Spanish)                     |
+|--------|---------------------------------|----------------------------------------------|
+| 400    | Reservation already cancelled   | API error message (banner)                   |
+| 401    | Unauthorized — missing token    | API error message                            |
+| 404    | Reservation not found           | "Esta reservación ya no existe."             |
+| 500    | Unexpected server error         | API error message                            |
 
 ---
 
@@ -168,7 +197,7 @@ src/
 │   ├── domain/
 │   │   ├── Calendar.tsx                   # Reused from admin dashboard (unchanged)
 │   │   ├── EventCard.tsx                  # Time format changed to 12h (consistency)
-│   │   └── ReservationCard.tsx            # Reservation list item with status + notes
+│   │   └── ReservationCard.tsx            # Reservation list item with status, notes, and cancel actions
 │   └── ui/
 │       ├── Button.tsx                     # Submit button with loading spinner
 │       ├── EmptyState.tsx                 # Sold out, error, success states
@@ -286,26 +315,47 @@ useReservationsCalendar() hook
     │     └──► GET /api/v1/reservations?date=
     │           └──► dayReservations: ReservationSummary[]
     │
+    ├──► reservationsService.cancel(reservationId)
+    │     └──► PATCH /api/v1/reservations/{id}/cancel
+    │           └──► Updates local state (status → CANCELLED)
+    │           └──► Refreshes calendar dates silently
+    │
     └──► State: { calendarDates, dayReservations, selectedDate,
                   currentYear, currentMonth, calendarLoading,
-                  reservationsLoading, error, refresh }
+                  reservationsLoading, error, cancellingId,
+                  selectDate, onMonthChange, onYearChange,
+                  refresh, cancelReservation }
 
-Screen Layout:
-┌────────────────────────────────────────────────────────┐
-│ Calendar Section                                       │
-│   └── Calendar component (reused from admin)           │
-│       ├── DateTimePicker (react-native-ui-datepicker)  │
-│       ├── Custom Day (dots for reservations)           │
-│       ├── Month/Year navigation                        │
-│       └── Loading overlay                              │
-├────────────────────────────────────────────────────────┤
-│ Reservations Section                                   │
-│   ├── No date selected → EmptyState                    │
-│   ├── Loading → Loader                                 │
-│   ├── Error → Red banner                               │
-│   ├── No reservations → EmptyState                     │
-│   └── Reservations → Animated list of ReservationCards │
-└────────────────────────────────────────────────────────┘
+Cancel Flow (per card):
+    ReservationCard (CONFIRMED + onCancel)
+        │
+        ├── User taps ⋯ → setMenuVisible(true)
+        │
+        ▼
+    Action Sheet Modal (transparent overlay + centered card)
+        │   Option: "Cancelar reserva" (red text)
+        │   Overlay press dismisses
+        │
+        ▼
+    Alert.alert — Native confirmation
+        │   Title: "¿Cancelar reservación?"
+        │   Message: "Esta acción es permanente. Los cupos se liberarán..."
+        │   [No] (cancel style) → dismiss
+        │   [Sí, cancelar] (destructive style) → onCancel()
+        │
+        ▼
+    cancelReservation(reservationId)
+        │   cancellingId = reservationId → spinner visible
+        │
+        ├──► reservationsService.cancel(id) → PATCH
+        │     │
+        │     ├── 200 → status = CANCELLED, calendar refreshed
+        │     ├── ApiError (400/404) → error banner
+        │     ├── TypeError → network error banner
+        │     └── Generic → fallback error banner
+        │
+        ▼
+    cancellingId = null → spinner hidden, card shows CANCELLED state
 
 useFocusEffect → refresh() on every tab focus
 ```
@@ -369,6 +419,7 @@ useFocusEffect → refresh() on every tab focus
 | `reservationsService.create(d)`      | `POST /api/v1/reservations`         | Creates a new reservation|
 | `reservationsService.getCalendarDates(y, m)` | `GET /api/v1/reservations/calendar` | Month dates with counts  |
 | `reservationsService.list(params)`   | `GET /api/v1/reservations`          | Customer's reservations by date |
+| `reservationsService.cancel(id)`     | `PATCH /api/v1/reservations/{id}/cancel` | Cancels a confirmed reservation |
 
 **HTTP Client:** `src/services/api.ts`
 - Wraps native `fetch` with JSON serialization/deserialization
@@ -389,10 +440,15 @@ useFocusEffect → refresh() on every tab focus
 - Centralizes calendar loading logic for the "Reservas" tab
 - Fetches calendar dates (`getCalendarDates`) and reservations by day (`list`)
 - Manages independent loading states: `calendarLoading`, `reservationsLoading`
+- Provides `cancelReservation(reservationId)` which calls `reservationsService.cancel()`,
+  optimistically updates local state (status → CANCELLED), and silently refreshes
+  calendar dates (`.catch(() => {})` to prevent refresh errors from overwriting success state)
+- Tracks cancellation progress via `cancellingId` state (set to reservation ID during API call,
+  cleared to `null` in `finally`)
 - Provides `refresh` for `useFocusEffect` auto-refresh
 - Returns `{ calendarDates, dayReservations, selectedDate, currentYear,
-  currentMonth, calendarLoading, reservationsLoading, error, selectDate,
-  onMonthChange, onYearChange, refresh }`
+  currentMonth, calendarLoading, reservationsLoading, error, cancellingId,
+  selectDate, onMonthChange, onYearChange, refresh, cancelReservation }`
 
 **Types — `src/types/events.ts`**:
 - `Event` interface provides `remaining_capacity`, `title`, `date`,
@@ -406,9 +462,11 @@ useFocusEffect → refresh() on every tab focus
 | Type                       | Description                                                                                   |
 |----------------------------|-----------------------------------------------------------------------------------------------|
 | `ReservationStatus`        | `'CONFIRMED' \| 'CANCELLED'`                                                                 |
-| `ReservationUserContext`   | `{ user_id, user_name, user_email }`                                                          |
+| `ReservationUser`          | `{ user_id, user_name, user_email }`                                                          |
+| `ReservationUserContext`   | Alias for `ReservationUser`                                                                   |
+| `Reservation`              | `id, user_id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, created_at, updated_at?` |
 | `CreateReservationRequest` | `{ event_id: string, ticket_quantity: number, notes?: string }`                                |
-| `ReservationResponse`      | id, user_id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, timestamps |
+| `ReservationListResponse`  | `{ data: Reservation[], pagination: PaginationMeta }`                                         |
 | `ReservationSummary`       | id, event_id, event_title, event_date, event_start_time, event_end_time, ticket_quantity, status, notes, user, created_at |
 | `ReservationsListParams`   | `{ page?, limit?, date?, status? }`                                                            |
 | `PaginatedReservationsResponse` | `{ data: ReservationSummary[], pagination: { page, limit, total, total_pages, has_next_page } }` |
@@ -453,6 +511,12 @@ useFocusEffect → refresh() on every tab focus
 | `STATUS_CANCELLED`              | 'Cancelada'                                        |
 | `TICKET_SINGULAR`                | 'entrada'                                          |
 | `TICKET_PLURAL`                  | 'entradas'                                         |
+| `CANCEL_ACTION`                | 'Cancelar reserva'                                 |
+| `CANCEL_CONFIRM_TITLE`         | '¿Cancelar reservación?'                           |
+| `CANCEL_CONFIRM_MESSAGE`       | 'Esta acción es permanente. Los cupos se liberarán y no podrás recuperar esta reservación.' |
+| `CANCEL_CONFIRM_OK`            | 'Sí, cancelar'                                     |
+| `CANCEL_CONFIRM_CANCEL`        | 'No'                                               |
+| `CANCEL_ACCESSIBILITY`         | 'Acciones de la reservación'                       |
 
 **File:** `src/constants/ui.ts` — `ERRORS` block (calendar additions)
 
@@ -542,7 +606,13 @@ BookScreen
 | **Day selected**         | Slide-up animation shows ReservationCards for that date                 |
 | **Reservations loading** | "Cargando reservas..." spinner in the bottom section                    |
 | **No reservations**      | "Sin reservas" / "No tienes reservas para este día"                     |
-| **Reservations found**   | List of ReservationCards (green CONFIRMED, red CANCELLED + strikethrough)|
+| **Reservations found**   | List of ReservationCards (green CONFIRMED with ⋯, red CANCELLED + strikethrough)|
+| **Action menu open**     | Centered modal card with "Cancelar reserva" in red text; tap overlay dismisses  |
+| **Cancel confirmation**  | Native Alert.alert warning about permanent action                                 |
+| **Cancelling**           | Inline red spinner next to ticket count; ⋯ button hidden                         |
+| **Cancellation success** | Badge turns red "Cancelada", title gets strikethrough, calendar dots refresh      |
+| **Cancel error (API)**   | Red banner with server-provided or localized error message                       |
+| **Cancel error (404)**   | Red banner: "Esta reservación ya no existe."                                     |
 | **Error**                | Red banner (`#fdecea` / `#dc3545`) with error message                   |
 | **Dots**                 | 1-3 blue dots below dates with reservations (max 3 visually)            |
 | **Today**                | Light blue circle around current day                                    |
@@ -556,13 +626,36 @@ ReservationCard
     ├── View (titleRow)
     │   ├── ThemedText (event_title, defaultSemiBold)
     │   │  ↳ cancelled → line-through + gray color
-    │   └── View (statusBadge, green/red bg, borderRadius: 12)
-    │      └── ThemedText ("Confirmada" / "Cancelada", white, 10px, bold)
-    ├── ThemedText (subtitle)
-    │  ↳ "10:00 AM - 06:00 PM • 2 entradas"  (12h format via formatTime)
-    └── ThemedText (notes, conditional, italic, gray)
-       ↳ Only rendered if reservation.notes is truthy
+    │   └── View (badgeRow)
+    │       ├── View (statusBadge, green/red bg, borderRadius: 12)
+    │       │  └── ThemedText ("Confirmada" / "Cancelada", white, 10px, bold)
+    │       └── TouchableOpacity (menuButton, ⋯, conditional)
+    │          ↳ visible only when CONFIRMED + onCancel prop + !cancelling
+    │          ↳ accessibilityLabel: "Acciones para {event_title}"
+    │          ↳ accessibilityRole: "button", hitSlop: 8
+    ├── View (subtitleRow)
+    │   ├── ThemedText (subtitle)
+    │   │  ↳ "10:00 a.m. - 06:00 p.m. • 2 entradas"  (12h format via formatTime)
+    │   └── ActivityIndicator (conditional, cancelling=true)
+    │      ↳ testID: "cancelling-spinner", color: #dc3545
+    ├── ThemedText (notes, conditional, italic, gray)
+    └── Modal (action menu, transparent, animationType="fade")
+       └── Pressable (overlay, dismisses on press)
+           └── View (menuSheet, centered card, borderRadius 14)
+               └── TouchableOpacity (menuItem)
+                  ↳ ThemedText: "Cancelar reserva" (red, centered)
+                  ↳ accessibilityRole: "button"
+                  ↳ hitSlop: { top: 4, bottom: 4, left: 8, right: 8 }
+                  ↳ onPress → setMenuVisible(false) → Alert.alert
+
+Alert.alert (native confirmation)
+  ↳ title: "¿Cancelar reservación?"
+  ↳ message: "Esta acción es permanente. Los cupos se liberarán..."
+  ↳ buttons: [{ text: "No", style: "cancel" }, { text: "Sí, cancelar", style: "destructive", onPress: onCancel }]
+  ↳ cancelable: true
 ```
+
+**Color accessibility:** CONFIRMED badge uses `#1e7e34` (dark green, 4.9:1 contrast on white = WCAG AA). CANCELLED badge uses `#dc3545` (red, 5.5:1 contrast on white).
 
 ---
 
@@ -589,6 +682,19 @@ ReservationCard
 | 500    | `{ error, message }`                   | `err.message`                                           |
 | Network | `TypeError` thrown by `fetch`          | `ERRORS.NETWORK`                                        |
 | Unknown | Any other error                        | `ERRORS.GENERIC`                                        |
+
+### Cancel Reservation Errors
+
+| Status | API Response format                         | Screen displays                                         |
+|--------|---------------------------------------------|---------------------------------------------------------|
+| 400    | `{ error: "already_cancelled", message }`   | `err.message` in red banner                             |
+| 404    | `{ error: "not_found", message }`           | "Esta reservación ya no existe." in red banner          |
+| 500    | `{ error, message }`                        | `err.message` in red banner                             |
+| Network | `TypeError` thrown by `fetch`              | `ERRORS.NETWORK`                                        |
+| Unknown | Any other error                             | `RESERVATIONS.CANCEL_ERROR` ("Error al cancelar la reservación") |
+| Empty ID| Client-side guard: `cancelReservation('')`  | Returns `false` immediately, no API call, no error      |
+
+**Race condition protection:** `fetchCalendarDates()` (triggered after cancel success) is wrapped in `.catch(() => {})` to prevent calendar refresh errors from overwriting the success state or showing a misleading error banner after a successful cancellation.
 
 ---
 
@@ -620,7 +726,56 @@ Tests use `jest.useFakeTimers()` to control the success banner timeout
 and `jest.mock('@react-navigation/native')` to provide a `useFocusEffect`
 stub that behaves like `useEffect`.
 
-**Total:** 16 tests passing
+**Total:** 17 tests passing
+
+### Unit Tests — `tests/Unit/reservations/ReservationsCalendarUnitTest.ts`
+
+| # | Scenario                                                       | Expected Result                                                    |
+|---|----------------------------------------------------------------|--------------------------------------------------------------------|
+| 1 | Fetch calendar dates on mount                                  | `getCalendarDates` called, dates loaded, `calendarLoading` = false |
+| 2 | Calendar fetch fails                                           | `error` = `ERRORS.CALENDAR_LOAD_ERROR`                             |
+| 3 | Fetch reservations by date and sort chronologically            | `list` called with date, results sorted by start_time              |
+| 4 | Reservation list fetch fails                                   | `error` = `ERRORS.CALENDAR_RESERVATIONS_ERROR`                     |
+| 5 | Month change clears selection and reservations                 | `selectedDate` = null, `dayReservations` = []                      |
+| 6 | Year change clears selection and reservations                  | `selectedDate` = null, `dayReservations` = []                      |
+| 7 | Cancel: status updated to CANCELLED                            | Target reservation has `status: "CANCELLED"`                       |
+| 8 | Cancel: only target reservation affected                       | Other reservations remain `CONFIRMED`                              |
+| 9 | Cancel: calendar dates refreshed after success                 | `getCalendarDates` called                                          |
+|10 | Cancel: ApiError (400) sets error message                      | `error` = `err.message`, `cancellingId` = null                     |
+|11 | Cancel: ApiError (404) sets localized message                  | `error` = "Esta reservación ya no existe."                         |
+|12 | Cancel: TypeError (network) sets network error                 | `error` = `ERRORS.NETWORK`, `cancellingId` = null                  |
+|13 | Cancel: generic error sets fallback                            | `error` = `RESERVATIONS.CANCEL_ERROR`, `cancellingId` = null       |
+|14 | Cancel: clears previous error before new attempt               | First error set, second cancel clears it                           |
+|15 | Cancel: returns `true` on success, `false` on failure          | Boolean return values verified                                     |
+|16 | Cancel: CANCELLED status preserved after refresh               | Status remains CANCELLED in `dayReservations`                      |
+|17 | Cancel: cancellingId null when idle and after operations       | `cancellingId` = null before and after cancel attempts             |
+|18 | Cancel: empty reservationId guard clause                       | Returns `false`, no API call, `cancellingId` null                  |
+
+### Feature Tests — `tests/Feature/Reservations/ReservationCardFeatureTest.tsx`
+
+| # | Scenario                                                       | Expected Result                                                    |
+|---|----------------------------------------------------------------|--------------------------------------------------------------------|
+| 1 | Render event title                                             | Title visible                                                      |
+| 2 | Render CONFIRMED status badge                                  | "Confirmada" badge visible                                         |
+| 3 | Render CANCELLED status badge                                  | "Cancelada" badge visible                                          |
+| 4 | Render ticket quantity with plural wording                     | "3 entradas"                                                       |
+| 5 | Render ticket quantity with singular wording                   | "1 entrada"                                                        |
+| 6 | Render time in 12h format                                      | "10:00 a.m. - 6:00 p.m."                                           |
+| 7 | Render notes when provided                                     | Notes text visible                                                 |
+| 8 | No notes when null                                             | Notes text absent                                                  |
+| 9 | Strikethrough title for CANCELLED                               | CANCELLED badge present, title styled                              |
+|10 | Three-dot button visible (CONFIRMED + onCancel)                | Button with accessibilityLabel rendered                            |
+|11 | No three-dot button for CANCELLED                              | Button absent                                                      |
+|12 | No three-dot button without onCancel                           | Button absent                                                      |
+|13 | Tapping ⋯ opens action menu modal                              | "Cancelar reserva" text visible in modal                           |
+|14 | Alert.alert triggered with correct params                      | Alert called with title, message, and button config                |
+|15 | onCancel called on confirm press                               | `onCancel` invoked once                                            |
+|16 | onCancel NOT called on cancel press                            | `onCancel` not invoked                                             |
+|17 | Action menu closes on option tap                               | "Cancelar reserva" removed from screen                             |
+|18 | ActivityIndicator visible when cancelling=true                 | Spinner found via `testID`                                         |
+|19 | Three-dot button hidden when cancelling=true                   | Button absent from accessibility tree                              |
+
+**Total:** 37 tests (18 unit + 19 feature) for reservations module
 
 ### Mocks
 
@@ -736,6 +891,43 @@ stub that behaves like `useEffect`.
   allowed instead of submitting. The quantity is auto-corrected in the
   input and the reservation is not sent until the user acknowledges.
 
+- **Three-dot action menu (⋯) for cancel**: Following iOS/Android patterns,
+  the cancel action is tucked behind a three-dot icon button rather than a
+  visible text button. This prevents accidental taps on a destructive action.
+  The action sheet modal uses a centered card pattern (not bottom sheet) to
+  focus attention on the single destructive option.
+
+- **Two-step confirmation for cancellation**: The flow requires two explicit
+  user actions: (1) tap ⋯ → tap "Cancelar reserva" in the action sheet, then
+  (2) confirm via native `Alert.alert`. This double opt-in aligns with the
+  acceptance criteria's requirement for a "mandatory native validation dialog".
+
+- **Optimistic UI with state reversion**: On successful cancel, the local
+  reservation status changes to `CANCELLED` immediately without waiting for
+  a full list re-fetch. The `ReservationStatus` type already supported `CANCELLED`
+  (used by CANCELLED cards with strikethrough), so the existing UI handles the
+  new state seamlessly.
+
+- **Silent calendar refresh via `.catch()`**: After a successful cancel,
+  `fetchCalendarDates()` refreshes the calendar dot counts. Errors from this
+  refresh are silently caught (`.catch(() => {})`) to prevent them from
+  overwriting the success state or misleading the user into thinking the
+  cancellation failed when it actually succeeded.
+
+- **Guard clause for empty reservationId**: `cancelReservation('')` returns
+  `false` immediately without making an API call. This prevents unnecessary
+  network requests for invalid IDs and avoids misleading error states.
+
+- **`cancellingId` for per-card spinner**: Rather than a global loading flag,
+  `cancellingId` tracks which specific reservation is being cancelled. This
+  allows the three-dot button to hide and the spinner to show only on the
+  affected card, avoiding a jarring full-list reload.
+
+- **Optional props for backward compatibility**: `ReservationCard` accepts
+  `onCancel` and `cancelling` as optional props. When omitted (e.g., reusing
+  the component in the admin context), the three-dot button does not render,
+  maintaining full backward compatibility with existing usage.
+
 ### Known Limitations
 
 - The booking flow currently only supports creating a single reservation
@@ -751,6 +943,25 @@ stub that behaves like `useEffect`.
 ---
 
 ## Changelog
+
+### v1.3.0 — 2026-06-12
+- **New feature**: Cancel reservation (EBM-15) from customer booking list
+  - Added three-dot action button (⋯) to `ReservationCard` for CONFIRMED reservations
+  - Action sheet `Modal` with "Cancelar reserva" destructive option
+  - Native `Alert.alert` confirmation dialog with permanent-action warning
+  - Optimistic UI update: local status → CANCELLED on 200 response
+  - Inline `ActivityIndicator` during cancellation (`testID="cancelling-spinner"`)
+  - Calendar date counts auto-refresh after cancel (silent `.catch()` protection)
+- Added `cancelReservation(reservationId)` method + `cancellingId` state to `useReservationsCalendar` hook
+- Added `user_id: string` field to `Reservation` TypeScript interface
+- Error handling: `ApiError` with status-based messages (404 → localized), `TypeError` (network), generic fallback
+- Guard clause: `if (!reservationId) return false` prevents empty ID API calls
+- Accessibility: `accessibilityRole="button"`, contextual `accessibilityLabel`, `hitSlop` ≥44pt
+- WCAG AA: CONFIRMED badge color darkened to `#1e7e34` (contrast ratio 4.9:1)
+- Added 6 `CUSTOMER` constants for cancel flow strings
+- Added 18 cancel-specific tests (10 unit + 8 feature)
+- Backend: `fetchCalendarDates` race condition fix + 404 localized message + email dispatch
+- API contract: `api-contracts/cancel-reservation.yaml`
 
 ### v1.2.1 — 2026-06-12
 - **QA fix**: Moved hardcoded `'entrada'`/`'entradas'` to `CUSTOMER.TICKET_SINGULAR`/`TICKET_PLURAL`
@@ -826,15 +1037,15 @@ stub that behaves like `useEffect`.
 
 ## Documentation Checklist
 
-- [x] API contract file linked
+- [x] API contract file linked (4 contracts: create, calendar, list, cancel)
 - [x] File map reflects all created/modified files
 - [x] Component tree shows screen hierarchy
-- [x] All visual states documented
-- [x] All error messages mapped (client + server)
-- [x] Test scenarios verified and passing
+- [x] All visual states documented (including cancel flow: action menu, alert, cancelling, success, errors)
+- [x] All error messages mapped (client + server, including cancel-specific 400/404/network/empty ID)
+- [x] Test scenarios verified and passing (37 total: 18 unit + 19 feature)
 - [ ] Screenshots added for each visual state
-- [x] Design decisions explained
-- [x] Changelog updated
+- [x] Design decisions explained (including cancel-specific patterns)
+- [x] Changelog updated (v1.3.0)
 
 ---
 

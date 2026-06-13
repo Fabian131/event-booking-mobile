@@ -26,10 +26,12 @@ export default function CustomerReservationsScreen() {
     calendarLoading,
     reservationsLoading,
     error,
+    cancellingId,
     selectDate,
     onMonthChange,
     onYearChange,
     refresh,
+    cancelReservation,
   } = useReservationsCalendar();
 
   useFocusEffect(
@@ -80,7 +82,12 @@ export default function CustomerReservationsScreen() {
     return (
       <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
         {dayReservations.map((reservation) => (
-          <ReservationCard key={reservation.id} reservation={reservation} />
+          <ReservationCard
+            key={reservation.id}
+            reservation={reservation}
+            cancelling={cancellingId === reservation.id}
+            onCancel={() => cancelReservation(reservation.id)}
+          />
         ))}
       </Animated.View>
     );
