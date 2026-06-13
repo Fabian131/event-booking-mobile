@@ -92,6 +92,8 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
   }, []);
 
   const cancelReservation = useCallback(async (reservationId: string): Promise<boolean> => {
+    if (!reservationId) return false;
+
     setCancellingId(reservationId);
     setError(null);
     try {
@@ -101,11 +103,15 @@ export function useReservationsCalendar(): UseReservationsCalendarReturn {
           r.id === reservationId ? { ...r, status: 'CANCELLED' as const } : r,
         ),
       );
-      fetchCalendarDates(currentYear, currentMonth);
+      fetchCalendarDates(currentYear, currentMonth).catch(() => {});
       return true;
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
+        if (err.status === 404) {
+          setError('Esta reservación ya no existe.');
+        } else {
+          setError(err.message);
+        }
       } else if (err instanceof TypeError) {
         setError(ERRORS.NETWORK);
       } else {

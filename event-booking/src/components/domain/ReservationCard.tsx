@@ -22,7 +22,7 @@ interface ReservationCardProps {
 export function ReservationCard({ reservation, cancelling = false, onCancel }: ReservationCardProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const isCancelled = reservation.status === 'CANCELLED';
-  const statusColor = isCancelled ? '#dc3545' : '#28a745';
+  const statusColor = isCancelled ? '#dc3545' : '#1e7e34';
   const statusLabel = isCancelled ? CUSTOMER.STATUS_CANCELLED : CUSTOMER.STATUS_CONFIRMED;
   const canCancel = !isCancelled && onCancel && !cancelling;
 
@@ -60,7 +60,7 @@ export function ReservationCard({ reservation, cancelling = false, onCancel }: R
               activeOpacity={0.6}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               accessibilityRole="button"
-              accessibilityLabel={CUSTOMER.CANCEL_ACCESSIBILITY}
+              accessibilityLabel={`Acciones para ${reservation.event_title}`}
             >
               <ThemedText style={styles.menuDots}>⋯</ThemedText>
             </TouchableOpacity>
@@ -80,6 +80,7 @@ export function ReservationCard({ reservation, cancelling = false, onCancel }: R
             size="small"
             color="#dc3545"
             style={styles.cancellingSpinner}
+            testID="cancelling-spinner"
             accessibilityLabel={`Cancelando ${reservation.event_title}`}
           />
         )}
@@ -103,6 +104,7 @@ export function ReservationCard({ reservation, cancelling = false, onCancel }: R
               style={styles.menuItem}
               onPress={handleCancelPress}
               activeOpacity={0.6}
+              hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
               accessibilityRole="button"
               accessibilityLabel={CUSTOMER.CANCEL_ACTION}
             >
