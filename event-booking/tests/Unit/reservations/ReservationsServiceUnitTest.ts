@@ -1,7 +1,9 @@
-import { act, render, screen, waitFor } from '@testing-library/react-native';
 import { reservationsService } from '@/src/services/reservations';
 import type { CalendarDatesResponse } from '@/src/types/events';
-import type { PaginatedReservationsResponse, ReservationSummary } from '@/src/types/reservations';
+import type {
+  PaginatedReservationsResponse,
+  ReservationsListParams,
+} from '@/src/types/reservations';
 
 jest.mock('@/src/services/reservations');
 
