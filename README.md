@@ -130,3 +130,5 @@ To run the app on your mobile device without an emulator:
 4. The app will load automatically in Expo Go.
 
 > **Note:** Your mobile device and computer must be connected to the **same Wi-Fi network**.
+
+VIDEO TY: 
