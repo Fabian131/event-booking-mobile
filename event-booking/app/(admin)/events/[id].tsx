@@ -1,6 +1,8 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, Alert, Pressable } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { ADMIN, CATEGORY, EVENTS } from '@/src/constants/ui';
+import { useState, useRef, useEffect } from 'react';
+import { ADMIN, CATEGORY, EVENTS, ERRORS } from '@/src/constants/ui';
+import { ApiError } from '@/src/types/auth';
 import { Button } from '@/src/components/ui/Button';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { EventImage } from '@/src/components/domain/EventImage';
@@ -9,12 +11,77 @@ import { Loader } from '@/src/components/ui/Loader';
 import { ThemedText } from '@/src/components/ui/themed-text';
 import { ThemedView } from '@/src/components/ui/themed-view';
 import { useEventDetail } from '@/src/hooks/useEventDetail';
+import { eventsService } from '@/src/services/events';
 import { formatEventDate, formatEventTime } from '@/src/utils/dateHelpers';
 
 export default function AdminEventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { event, loading, error } = useEventDetail(id);
+  const [deleting, setDeleting] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const handleDeleteOption = () => {
+    Alert.alert(
+      ADMIN.DETAIL_OPTIONS_LABEL,
+      '',
+      [
+        {
+          text: ADMIN.DETAIL_DELETE_OPTION,
+          style: 'destructive',
+          onPress: handleDeleteConfirm,
+        },
+        { text: EVENTS.EDIT_CONFIRM_CANCEL, style: 'cancel' },
+      ],
+    );
+  };
+
+  const handleDeleteConfirm = () => {
+    Alert.alert(
+      ADMIN.DETAIL_DELETE_CONFIRM_TITLE,
+      ADMIN.DETAIL_DELETE_CONFIRM_MESSAGE,
+      [
+        { text: EVENTS.EDIT_CONFIRM_CANCEL, style: 'cancel' },
+        {
+          text: ADMIN.DETAIL_DELETE_CONFIRM_OK,
+          style: 'destructive',
+          onPress: executeDelete,
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
+  const executeDelete = async () => {
+    setDeleting(true);
+    try {
+      await eventsService.delete(id);
+      if (!mountedRef.current) return;
+      Alert.alert(
+        '',
+        ADMIN.DETAIL_DELETE_SUCCESS,
+        [{ text: 'OK', onPress: () => router.replace('/(admin)') }],
+      );
+    } catch (err) {
+      if (!mountedRef.current) return;
+      const message = err instanceof TypeError
+        ? ERRORS.NETWORK
+        : err instanceof DOMException && err.name === 'AbortError'
+          ? ERRORS.NETWORK
+          : err instanceof ApiError && err.status === 404
+            ? EVENTS.DETAIL_NOT_FOUND
+            : err instanceof ApiError
+              ? err.message
+              : ADMIN.DETAIL_DELETE_ERROR;
+      Alert.alert('', message);
+    } finally {
+      if (mountedRef.current) setDeleting(false);
+    }
+  };
 
   if (loading) {
     return <Loader message={EVENTS.DETAIL_LOADING} />;
@@ -41,8 +108,23 @@ export default function AdminEventDetailScreen() {
         <View style={styles.content}>
           <View style={styles.titleRow}>
             <ThemedText style={styles.title}>{event.title}</ThemedText>
-            <View style={[styles.badge, { backgroundColor: categoryColor }]}>
-              <ThemedText style={styles.badgeText}>{categoryLabel}</ThemedText>
+            <View style={styles.titleActions}>
+              <View style={[styles.badge, { backgroundColor: categoryColor }]}>
+                <ThemedText style={styles.badgeText}>{categoryLabel}</ThemedText>
+              </View>
+              <Pressable
+                onPress={handleDeleteOption}
+                disabled={deleting}
+                accessibilityRole="button"
+                accessibilityLabel={ADMIN.DETAIL_OPTIONS_LABEL}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.optionsButton,
+                  pressed && styles.optionsButtonPressed,
+                ]}
+              >
+                <ThemedText style={styles.optionsDots}>{ADMIN.DETAIL_OPTIONS_ICON}</ThemedText>
+              </Pressable>
             </View>
           </View>
 
@@ -72,11 +154,13 @@ export default function AdminEventDetailScreen() {
           title={ADMIN.DETAIL_EDIT_BUTTON}
           variant="secondary"
           style={styles.footerButton}
+          disabled={deleting}
           onPress={() => router.push(`/(admin)/edit-event/${id}`)}
         />
         <Button
           title={ADMIN.DETAIL_RESERVATIONS_BUTTON}
           style={styles.footerButton}
+          disabled={deleting}
           onPress={() => router.push(`/(admin)/reservations/${id}`)}
         />
       </View>
@@ -109,6 +193,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
+  titleActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     flex: 1,
     fontSize: 28,
@@ -127,6 +216,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  optionsButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  optionsButtonPressed: {
+    backgroundColor: '#f0f0f0',
+  },
+  optionsDots: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#687076',
+    lineHeight: 20,
+    textAlign: 'center',
   },
   divider: {
     height: 1,
